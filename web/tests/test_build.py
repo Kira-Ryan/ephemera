@@ -51,6 +51,7 @@ def make_spool(tmp_path: Path, now: datetime) -> Path:
         "wayback": {"manifest": {"verified": True},
                     "samples": {str(i): {"name": f"f{i}", "verified": True} for i in range(10)}}})
     cyc("cycle_bbbbbbbbbbbb", b, "gaps", 9100, 9050, None)
+    cyc("cycle_eeeeeeeeeeee", now - timedelta(minutes=20), "in-progress", 9200, 3100, None)
     cyc("cycle_cccccccccccc", c, "complete", 8900, 8900, "c3" * 32, witness={
         "ots": {"stamped_utc": utc(c)},
         "wayback": {"manifest": {"verified": True},
@@ -91,7 +92,7 @@ def built(tmp_path):
 def test_ledger_counts_and_coverage(built):
     ledger, _, _ = built
     t = ledger["totals"]
-    assert (t["cycles"], t["complete"], t["attested"]) == (3, 2, 1)
+    assert (t["cycles"], t["complete"], t["attested"]) == (4, 2, 1)
     assert t["cadence_holds"] == 1                      # the 14-hour gap between cycles a and b
     # The 30-minute hole starts ON a tick boundary, so the last tick before it is 2 min earlier;
     # minutes stay covered for 10 min after that tick: uncovered = 30 + 2 - 10 = 22 of 1440.
@@ -102,6 +103,9 @@ def test_page_prints_the_uncomfortable_truths(built):
     """Mutation: drop the gap row styling/text, the loss count, or the cadence-hold figure -> red."""
     _, page, _ = built
     assert "INCOMPLETE: 50 of 9,100 missing, recorded" in page
+    # a pull still running is not a gap: neutral wording, no red row, stamp follows the pull
+    assert "pulling now: 3,100 of 9,200 so far" in page
+    assert page.count('class="gap"') == 1 and "follows the pull" in page
     # the owner's standing voice rule for outward text: no em or en dashes, no smart quotes,
     # no middle-dot separators
     for ch in ("—", "–", "‘", "’", "“", "”", "·"):

@@ -145,7 +145,8 @@ def esc(x) -> str:
 def render(ledger: dict) -> str:
     rows = []
     for c in ledger["cycles"]:
-        gap = c["merkle_root"] is None
+        in_progress = c["status"] == "in-progress"
+        gap = c["merkle_root"] is None and not in_progress
         wb = c["wayback"]
         if wb["skipped"]:
             wb_cell = f"lost: {esc(wb['skipped'])}"
@@ -156,9 +157,14 @@ def render(ledger: dict) -> str:
         else:
             wb_cell = "pending"
         ots = f"block {c['ots']['attested_block']}" if c["ots"]["attested_block"] else (
-            "stamped, attestation pending" if c["ots"]["stamped"] else "pending")
-        status_cell = (f"<b>INCOMPLETE: {c['files_failed']:,} of {c['files_listed']:,} missing, recorded</b>"
-                       if gap else f"{c['files_recorded']:,} / {c['files_listed']:,}")
+            "stamped, attestation pending" if c["ots"]["stamped"] else
+            ("follows the pull" if in_progress else "pending"))
+        if in_progress:
+            status_cell = f"pulling now: {c['files_recorded']:,} of {c['files_listed']:,} so far"
+        elif gap:
+            status_cell = f"<b>INCOMPLETE: {c['files_failed']:,} of {c['files_listed']:,} missing, recorded</b>"
+        else:
+            status_cell = f"{c['files_recorded']:,} / {c['files_listed']:,}"
         rows.append(
             f'<tr class="{"gap" if gap else "ok"}"><td>{esc((c["first_seen_utc"] or "?")[:16].replace("T", " "))}</td>'
             f'<td class="mono">{esc(c["cycle"][6:])}</td><td>{status_cell}</td>'
