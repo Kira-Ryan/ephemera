@@ -249,12 +249,15 @@ def witness_cycle(cycle_dir: Path, session: requests.Session, runner: OtsRunner 
 
     wb = w["wayback"]
     if not wb.get("skipped") and current_sha is not None:
+        def pending(entry: dict) -> bool:
+            return not entry.get("verified") and not entry.get("gave_up")
+
         is_current = rec["manifest_sha256"] == current_sha
-        pending_manifest = "manifest" not in wb or not wb["manifest"].get("verified")
+        pending_manifest = pending(wb.get("manifest") or {})
         names = [f["name"] for f in rec["files"]]
         idx = sample_indices(root, len(names), args.samples)
         samples = wb.setdefault("samples", {})
-        pending_files = [i for i in idx if not samples.get(str(i), {}).get("verified")]
+        pending_files = [i for i in idx if pending(samples.get(str(i), {}))]
         if not is_current:
             if pending_manifest or pending_files:
                 wb["skipped"] = (f"cycle superseded before witnessing completed: "
@@ -262,18 +265,31 @@ def witness_cycle(cycle_dir: Path, session: requests.Session, runner: OtsRunner 
                 log.warning("%s: %s", cycle_dir.name, wb["skipped"])
                 ok = False
         else:
+            def attempt(prev: dict, entry: dict, label: str) -> dict:
+                """Carry the attempt count; after --max-capture-attempts failures the entry gives
+                up - the loss is recorded loudly ONCE and never retried or re-flagged (a capture
+                Wayback keeps refusing must not turn every later pass red)."""
+                nonlocal ok
+                entry["attempts"] = (prev or {}).get("attempts", 0) + 1
+                if not entry.get("verified"):
+                    ok = False
+                    if entry["attempts"] >= args.max_capture_attempts:
+                        entry["gave_up"] = poll.utc_now()
+                        log.warning("%s: giving up on capturing %s after %d attempts (%s)",
+                                    cycle_dir.name, label, entry["attempts"], entry.get("error", "?"))
+                return entry
+
             try:
                 if pending_manifest:
-                    wb["manifest"] = capture(session, args.wayback, f"{args.base}/MANIFEST.txt",
-                                             rec["manifest_sha256"])
-                    ok = ok and wb["manifest"].get("verified", False)
+                    wb["manifest"] = attempt(wb.get("manifest"),
+                                             capture(session, args.wayback, f"{args.base}/MANIFEST.txt",
+                                                     rec["manifest_sha256"]), "MANIFEST.txt")
                 for i in pending_files:
                     pause(args.capture_gap)
                     f = rec["files"][i]
-                    samples[str(i)] = {"name": f["name"],
-                                       **capture(session, args.wayback, f"{args.base}/{f['name']}", f["sha256"])}
-                    if not samples[str(i)].get("verified"):
-                        ok = False
+                    samples[str(i)] = attempt(samples.get(str(i)), {
+                        "name": f["name"],
+                        **capture(session, args.wayback, f"{args.base}/{f['name']}", f["sha256"])}, f["name"])
             except requests.RequestException as e:
                 wb["last_error"] = f"{poll.utc_now()}: {e}"[:400]
                 log.error("%s: Wayback step failed: %s", cycle_dir.name, e)
@@ -298,6 +314,9 @@ def main(argv: list[str] | None = None) -> int:
     ap.add_argument("--capture-gap", type=float, default=12.0,
                     help="seconds between Save-Page-Now submissions; ~8 rapid unauthenticated "
                          "captures trip Wayback's 429 limiter (measured 31 Aug 2026)")
+    ap.add_argument("--max-capture-attempts", type=int, default=5,
+                    help="failed capture attempts per item before the loss is recorded once and "
+                         "never retried (Wayback throttles repeat captures of one URL)")
     ap.add_argument("--ots", choices=["auto", "ots", "docker"], default="auto")
     ap.add_argument("--contact", default=os.environ.get("EPHEMERA_CONTACT"), help="required; goes in the User-Agent")
     ap.add_argument("--interval", type=float, default=300.0)
