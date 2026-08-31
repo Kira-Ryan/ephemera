@@ -1,5 +1,8 @@
 node_modules/
 dist/
+# ... but the deployable site IS tracked (push-to-deploy checks it out on the runner):
+!web/dist/
+!web/dist/**
 .claude/settings.local.json
 __pycache__/
 *.pyc

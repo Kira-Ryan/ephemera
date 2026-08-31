@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Ephemera</title>
+<meta name="description" content="A witnessed archive of the public Starlink ephemerides. The files vanish every eight hours; Ephemera keeps them.">
+<style>
+  :root {
+    --bg: #0c0f1d; --ink: #e8e6df; --dim: #9a97a8; --accent: #ffb347; --line: #2a1f5e;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body { height: 100%; }
+  body {
+    background: var(--bg); color: var(--ink);
+    font: 17px/1.65 Georgia, 'Times New Roman', serif;
+    display: grid; place-items: center; padding: 2rem;
+  }
+  main { max-width: 34rem; }
+  h1 {
+    font-family: ui-monospace, 'Cascadia Code', Consolas, monospace;
+    font-size: 1.05rem; font-weight: 400; letter-spacing: .55em;
+    color: var(--accent); text-transform: uppercase;
+    border-bottom: 1px solid var(--line); padding-bottom: 1.1rem; margin-bottom: 1.6rem;
+  }
+  h1 span { color: var(--dim); letter-spacing: .2em; font-size: .8rem; float: right; margin-top: .2rem; }
+  .tag { font-size: 1.25rem; line-height: 1.5; margin-bottom: 1.4rem; }
+  .tag strong { color: var(--accent); font-weight: 600; }
+  p + p { margin-top: 1rem; }
+  .status, .soon { color: var(--dim); font-size: .95rem; }
+  .status b { color: var(--ink); font-weight: 600; }
+  footer {
+    margin-top: 2.2rem; padding-top: 1.1rem; border-top: 1px solid var(--line);
+    color: var(--dim); font-size: .78rem; line-height: 1.6;
+    font-family: ui-monospace, 'Cascadia Code', Consolas, monospace;
+  }
+  @media (max-width: 480px) { h1 { letter-spacing: .35em; } h1 span { display: none; } .tag { font-size: 1.1rem; } }
+</style>
+</head>
+<body>
+<main>
+  <h1>Ephemera <span>ephemera.space</span></h1>
+  <p class="tag">The largest constellation in history publishes where it is going, with uncertainty,
+  every eight hours — and the files vanish at the next cycle. <strong>Ephemera keeps them.</strong></p>
+  <p class="status">The archive has been running since <b>30&nbsp;August&nbsp;2026</b>. As of
+  31&nbsp;August&nbsp;2026 it holds four complete eight-hour cycles — every file hashed, each cycle
+  bound into a Merkle root, anchored with OpenTimestamps, and sampled into the Wayback Machine.</p>
+  <p class="soon">This page is a placeholder. The archive ledger and a daily scoreboard — how well
+  the public satellite catalogue can actually see the constellation — are under construction.</p>
+  <footer>
+    <p>Operator ephemerides are predictions, not observations. Inputs are archived by this project
+    and witnessed by OpenTimestamps and the Wayback Machine; they are not re-fetchable from the
+    source after one cycle.</p>
+  </footer>
+</main>
+</body>
+</html>
