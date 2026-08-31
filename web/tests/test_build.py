@@ -102,9 +102,11 @@ def test_page_prints_the_uncomfortable_truths(built):
     """Mutation: drop the gap row styling/text, the loss count, or the cadence-hold figure -> red."""
     _, page, _ = built
     assert "INCOMPLETE: 50 of 9,100 missing, recorded" in page
-    # the owner's standing voice rule for outward text: no em or en dashes, no smart quotes
-    for ch in ("—", "–", "‘", "’", "“", "”"):
+    # the owner's standing voice rule for outward text: no em or en dashes, no smart quotes,
+    # no middle-dot separators
+    for ch in ("—", "–", "‘", "’", "“", "”", "·"):
         assert ch not in page, f"typographic character {ch!r} crept into the page"
+    assert "mailto:KiraRyan27@gmail.com" in page and "linkedin.com/in/kira-ryan" in page
     assert 'class="gap"' in page
     assert "1 lost" in page                              # the given-up witness sample
     assert ">1</b>" in page and "cadence holds" in page.lower()
