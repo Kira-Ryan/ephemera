@@ -161,3 +161,8 @@ Cloudflare account.
   appreciatively toward SpaceX the same day.
 - 2026-08-31 - P1b closed (zero overlap between manifests); verify.py + VERIFY.md landed and
   passed against a real cycle; daily root (D16) implemented and deployed; 71 tests green.
+- 2026-08-31 - first daily root built and stamped (2026-08-30, two cycle roots; independent
+  recompute matches). All four cycles Bitcoin-attested. Feed cadence anomaly observed: one
+  manifest held 9.6+ h (watcher healthy, independently confirmed) - recorded in P1. The
+  archive already holds a SIX-DIGIT catalogue object (MEME_100224 / STARLINK-38164): a
+  ready-made datapoint for bulletin #1 (P3).

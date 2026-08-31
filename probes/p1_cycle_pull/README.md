@@ -88,3 +88,12 @@ simply files × size per cycle with no overlap discount; and the steady state st
 files ≈ 18 GB raw ≈ 7.4 GB gzipped per cycle (~0.67 TB/month gzipped). Still open from P1: whether
 the per-cycle file count tracks manoeuvre activity, and the sustained-pull behaviour from a
 datacentre IP.
+
+## Cadence anomaly, 31 Aug 2026 evening
+
+The manifest first seen at 11:44 UTC was still being served, byte-identical (sha `1d424255c9ae...`,
+8,568 lines), at 21:17 UTC - a 9.6-hour hold against the ~8-hour cadence observed until then, with
+the watcher healthy (fresh heartbeat, 304s every two minutes) and an independent fetch agreeing.
+First observed deviation from the nominal cadence; recorded here because cadence is an assumption
+downstream (witnessing windows, ledger coverage), not a guarantee. The count of such holds becomes
+a truth-health statistic once the ledger exists.

@@ -355,6 +355,29 @@ def test_daily_root_is_never_rebuilt_upgrades_and_skips_today(tmp_path, stub_run
         feed.close()
 
 
+def test_impossible_capture_gives_up_after_the_cap_and_goes_quiet(tmp_path):
+    """One file's id_ copy 404s on every attempt (Wayback throttling repeat captures of one URL is
+    the real-world case, measured 31 Aug). The loss must be recorded loudly while attempts remain,
+    then once at give-up, and never re-flag later passes. Mutation: drop the gave_up exclusion from
+    pending(), or stop counting attempts -> pass 3 keeps failing, red."""
+    feed, spool, rec, cycle, origin = build_cycle(tmp_path)
+    del origin[f"{feed.base}/{feed.names[0]}"]  # its id_ fetch will 404 forever
+    wb = FakeWayback(origin)
+    try:
+        set_current(spool, rec["manifest_sha256"])
+        assert wmain(feed, spool, wb, "--max-capture-attempts", "2") == 1  # attempt 1: error
+        assert wmain(feed, spool, wb, "--max-capture-attempts", "2") == 1  # attempt 2: gives up
+        assert wmain(feed, spool, wb, "--max-capture-attempts", "2") == 0  # quiet: loss recorded
+        w = json.loads((cycle / "witness.json").read_text())
+        lost = [s for s in w["wayback"]["samples"].values() if s["name"] == feed.names[0]][0]
+        assert lost["attempts"] == 2 and lost.get("gave_up") and not lost.get("verified")
+        others = [s for s in w["wayback"]["samples"].values() if s["name"] != feed.names[0]]
+        assert others and all(s["verified"] for s in others)
+    finally:
+        feed.close()
+        wb.close()
+
+
 def test_missing_contact_is_refused(tmp_path, monkeypatch):
     monkeypatch.delenv("EPHEMERA_CONTACT", raising=False)
     assert witness.main(["--spool", str(tmp_path / "spool"), "--once"]) == 5
