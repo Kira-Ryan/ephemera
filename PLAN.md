@@ -101,13 +101,14 @@ Cloudflare account.
 
 ## Days 7–14
 
-- [~] **10. Ledger + status page + site skeleton** (`web/`). Placeholder page live path:
-      `web/dist/index.html` (claims-linted, browser-rendered, no measurable claims beyond dated
-      archive facts) — owner deploys to Cloudflare Pages (D19 proposed: Pages replaces S3+CloudFront
-      because Cloudflare Registrar requires Cloudflare DNS; AWS keeps cold storage). Still to build:
-      ledger, status page, Playwright claims tests. DONE 31 Aug:
-      `VERIFY.md` + `archive/verify.py` (independent D09 re-implementation, two coding mutations
-      red; first real-cycle run: full PASS, 8,568 files re-hashed, attested block 964903).
+- [x] **10. Ledger + status page** (1 Sep). web/build.py: spool records -> ledger.json + status
+      page (cycle rows with roots/OTS blocks/Wayback state, daily roots, D18 coverage from the
+      watcher's new heartbeat history, cadence holds; gaps loud, losses printed, as-of on every
+      figure). web/publish.py: build -> claims-lint -> dist-only commit -> push -> auto-deploy;
+      the committed dist is the publication of record. Tests from a synthetic all-uncomfortable
+      spool + real-browser DOM check; three page mutations red. Earlier: VERIFY.md + verify.py.
+      Remaining for the full item: Playwright-grade browser tests can wait; the scoreboard
+      (score/) is its own item.
 - [ ] **11. Allies**: Kelso email once ≥3 witnessed cycles exist; P3 from the VPS; bulletin #1 to
       Kelso and McDowell with a 5-day window; CelesTrak OMM archived per cycle as a separate feed
       with its own root.
@@ -166,3 +167,5 @@ Cloudflare account.
   manifest held 9.6+ h (watcher healthy, independently confirmed) - recorded in P1. The
   archive already holds a SIX-DIGIT catalogue object (MEME_100224 / STARLINK-38164): a
   ready-made datapoint for bulletin #1 (P3).
+- 2026-09-01 - ledger + status page live pipeline: build/publish/deploy chain, D18 coverage
+  from heartbeat history, first real publish committed by publish.py itself.
