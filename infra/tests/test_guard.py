@@ -109,8 +109,8 @@ def stage_cf(tmp_path: Path, *, account: str = CF_ID, allow: str = CF_ID, api_id
     fake_bin.mkdir(exist_ok=True)
     answer = api_id if api_id is not None else account
     curl = fake_bin / "curl"
-    curl.write_text("#!/usr/bin/env bash\n"
-                    f"echo '{{\"success\": true, \"result\": {{\"id\": \"{answer}\"}}}}'\n")
+    curl.write_text("#!/usr/bin/env bash\n"  # the guard's zone lookup: one zone owned by `answer`
+                    f"echo '{{\"success\": true, \"result\": [{{\"id\": \"zone1\", \"account\": {{\"id\": \"{answer}\"}}}}]}}'\n")
     curl.chmod(curl.stat().st_mode | stat.S_IEXEC)
     probe = work / "probe_cf.sh"
     probe.write_text('#!/usr/bin/env bash\n. "$(dirname "${BASH_SOURCE[0]}")/guard_cf.sh"\n'
@@ -131,11 +131,11 @@ def test_cf_guard_refuses_an_account_not_on_the_allowlist(tmp_path):
     assert r.returncode == 1 and "REFUSED" in r.stderr and not (work / "sentinel.txt").exists()
 
 
-def test_cf_guard_refuses_a_token_for_a_different_account(tmp_path):
+def test_cf_guard_refuses_a_token_whose_zone_belongs_to_another_account(tmp_path):
     """The API answer is authoritative: a work token pasted by mistake dies here, before any write."""
     work = stage_cf(tmp_path, api_id=CF_OTHER)
     r = run_probe(work, script="probe_cf.sh")
-    assert r.returncode == 1 and "cannot read the allowlisted account" in r.stderr
+    assert r.returncode == 1 and "cannot see the ephemera.space zone" in r.stderr
     assert not (work / "sentinel.txt").exists()
 
 

@@ -32,19 +32,22 @@ esac
 
 export CLOUDFLARE_API_TOKEN CLOUDFLARE_ACCOUNT_ID
 
-# The token must actually belong to the allowlisted account - a stale or copy-pasted-from-work
-# token fails here, before any write happens.
+# The token must actually control the project's zone, and that zone must belong to the allowlisted
+# account - a stale or copy-pasted-from-work token fails here, before any write happens. (The zone
+# endpoint, not /accounts/{id}: a properly scoped token has Zone:Read on ephemera.space but no
+# Account:Read, verified 31 Aug 2026.)
 _resp="$(curl -sS -H "Authorization: Bearer ${CLOUDFLARE_API_TOKEN}" \
-    "https://api.cloudflare.com/client/v4/accounts/${CLOUDFLARE_ACCOUNT_ID}")" || {
+    "https://api.cloudflare.com/client/v4/zones?name=ephemera.space")" || {
     echo "guard_cf: Cloudflare API unreachable - no verification, no action" >&2
     exit 1
 }
 echo "${_resp}" | python -c "
 import json, os, sys
 r = json.load(sys.stdin)
-sys.exit(0 if r.get('success') and r['result']['id'] == os.environ['CLOUDFLARE_ACCOUNT_ID'] else 1)
+zones = r.get('result') or []
+sys.exit(0 if r.get('success') and zones and zones[0]['account']['id'] == os.environ['CLOUDFLARE_ACCOUNT_ID'] else 1)
 " || {
-    echo "guard_cf: REFUSED - the token cannot read the allowlisted account (wrong account, or missing Account:Read)" >&2
+    echo "guard_cf: REFUSED - the token cannot see the ephemera.space zone under the allowlisted account (wrong account or wrong token scoping)" >&2
     exit 1
 }
 
