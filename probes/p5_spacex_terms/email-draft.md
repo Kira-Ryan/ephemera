@@ -1,8 +1,8 @@
 # P5 - SpaceX public-files terms: request
 
-**Status:** draft, not sent. Rewritten 31 Aug 2026 in plain register; every sentence is true on the
-day it is sent. Send from a personal address. Record the send date and any answer in
-`DOCS/claims-register.md` (Unverified list) and close D06 when answered or after 30 days.
+**Status:** SENT 31 Aug 2026, from kiraryan27@gmail.com. The body below is the text as sent.
+Answer pending; D06 closes on an answer or on 30 Sep 2026 (both tracked in
+`DOCS/claims-register.md`).
 
 **To:** space-safety-onboarding@spacex.com (confirmed 31 Aug 2026: the address is embedded in
 space-safety.starlink.com's own application bundle)

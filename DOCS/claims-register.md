@@ -34,7 +34,7 @@ the site's browser tests so a regression cannot ship.
 
 ## Unverified as of 2026-08-30 (resolve in week one)
 
-- SpaceX public-files terms of use (README states none; it describes the folder as "a mirror of the ephemeris files Starlink uploads to space-track.org"). Draft written `probes/p5_spacex_terms/email-draft.md`; rewritten 30 Aug 2026 so that it claims only what runs at send time. Request sent: *not yet*. Answer: *pending*.
+- SpaceX public-files terms of use (README states none; it describes the folder as "a mirror of the ephemeris files Starlink uploads to space-track.org"). Request sent: **31 Aug 2026**, to space-safety-onboarding@spacex.com (address confirmed from the space-safety.starlink.com application bundle), from a personal address; sent text in `probes/p5_spacex_terms/email-draft.md`. Answer: *pending*. D06 closes on an answer or on 30 Sep 2026.
 - Whether CelesTrak will share or co-publish a SupGP / ephemeris history archive. Ask: *date*.
 - Whether Space-Track's blanket redistribution approval covers bulk `gp_history` pulls at the stated
   rate limits (30 requests/min, 300/hour). Approval covers redistribution, not rate.

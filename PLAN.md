@@ -22,8 +22,8 @@ Cloudflare account.
       free). Two earlier starts (15:32, 15:37) opened visible console windows that were closed,
       which killed the process — hence pythonw. Contact address in the User-Agent is the repo's
       git author address. First manifest seen: 17,861 files.
-- [ ] **2. Send the P5 email** (owner). Draft rewritten 30 Aug to true tense. Record the send date
-      in `DOCS/claims-register.md`.
+- [x] **2. Send the P5 email** (owner, 31 Aug). Sent to space-safety-onboarding@spacex.com from
+      the personal address; recorded in the claims register. D06 closes on an answer or 30 Sep 2026.
 
 ## Days 1–2
 
@@ -158,3 +158,5 @@ Cloudflare account.
   resolver negative-cached the pre-creation answer and 15-second probe retries kept re-priming it
   (negative TTL 300 s) - lesson: after creating a DNS record, wait out the negative TTL before
   probing in a tight loop. DNSSEC ruled out (disabled, no DS).
+- 2026-08-31 - P5 email SENT (owner). D06 30-day clock running; site and README reframed
+  appreciatively toward SpaceX the same day.
