@@ -101,7 +101,10 @@ def test_ledger_counts_and_coverage(built):
 def test_page_prints_the_uncomfortable_truths(built):
     """Mutation: drop the gap row styling/text, the loss count, or the cadence-hold figure -> red."""
     _, page, _ = built
-    assert "INCOMPLETE — 50 of 9,100 missing, recorded" in page
+    assert "INCOMPLETE: 50 of 9,100 missing, recorded" in page
+    # the owner's standing voice rule for outward text: no em or en dashes, no smart quotes
+    for ch in ("—", "–", "‘", "’", "“", "”"):
+        assert ch not in page, f"typographic character {ch!r} crept into the page"
     assert 'class="gap"' in page
     assert "1 lost" in page                              # the given-up witness sample
     assert ">1</b>" in page and "cadence holds" in page.lower()
@@ -137,6 +140,6 @@ def test_page_renders_in_a_real_browser(built, tmp_path):
                         (out / "index.html").resolve().as_uri()],
                        capture_output=True, timeout=60)
     dom = " ".join(r.stdout.decode("utf-8", "replace").split())  # Chrome emits UTF-8; never let
-    assert "INCOMPLETE — 50 of 9,100 missing, recorded" in dom   # the locale codec near it
+    assert "INCOMPLETE: 50 of 9,100 missing, recorded" in dom    # the locale codec near it
     assert "Operator ephemerides are predictions, not observations." in dom
     assert "ledger.json" in dom

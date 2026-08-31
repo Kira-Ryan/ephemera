@@ -157,7 +157,7 @@ def render(ledger: dict) -> str:
             wb_cell = "pending"
         ots = f"block {c['ots']['attested_block']}" if c["ots"]["attested_block"] else (
             "stamped, attestation pending" if c["ots"]["stamped"] else "pending")
-        status_cell = (f"<b>INCOMPLETE — {c['files_failed']:,} of {c['files_listed']:,} missing, recorded</b>"
+        status_cell = (f"<b>INCOMPLETE: {c['files_failed']:,} of {c['files_listed']:,} missing, recorded</b>"
                        if gap else f"{c['files_recorded']:,} / {c['files_listed']:,}")
         rows.append(
             f'<tr class="{"gap" if gap else "ok"}"><td>{esc((c["first_seen_utc"] or "?")[:16].replace("T", " "))}</td>'
@@ -181,7 +181,7 @@ def render(ledger: dict) -> str:
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Ephemera</title>
-<meta name="description" content="An archive of the public Starlink ephemerides. Each eight-hour set is replaced by the next; Ephemera keeps the history.">
+<meta name="description" content="An archive of the public Starlink ephemerides. Each eight-hour set is replaced by the next. Ephemera keeps the history.">
 <style>
   :root {{ --bg: #0c0f1d; --ink: #e8e6df; --dim: #9a97a8; --accent: #ffb347; --line: #2a1f5e; --bad: #ff6b6b; }}
   * {{ margin: 0; padding: 0; box-sizing: border-box; }}
@@ -212,15 +212,16 @@ def render(ledger: dict) -> str:
 <main>
   <h1>Ephemera <span>ephemera.space</span></h1>
   <p class="tag">Every eight hours, SpaceX publishes where each Starlink satellite is going, with
-  its uncertainty — the only public feed of its kind. Each set is replaced by the next.
+  its uncertainty. It is the only public feed of its kind. Each set is replaced by the next.
   <strong>Ephemera keeps the history.</strong></p>
 
   <h2>The archive record</h2>
-  <p>As of <b>{esc(gen)} UTC</b>: <b>{t["cycles"]}</b> cycles archived, <b>{t["complete"]}</b> complete
-  with Merkle roots, <b>{t["attested"]}</b> anchored in Bitcoin via OpenTimestamps,
-  <b>{t["bytes_raw"] / 1e9:.0f} GB</b> of raw ephemerides preserved.
-  Poller heartbeat coverage: {esc(cov_txt)}. Feed cadence holds observed (a manifest served longer
-  than 9 h): <b>{t["cadence_holds"]}</b>. It exists because SpaceX publishes this feed openly.</p>
+  <p>As of <b>{esc(gen)} UTC</b> the archive holds <b>{t["cycles"]}</b> cycles.
+  <b>{t["complete"]}</b> are complete with Merkle roots and <b>{t["attested"]}</b> are anchored in
+  Bitcoin through OpenTimestamps. Raw data kept: <b>{t["bytes_raw"] / 1e9:.0f} GB</b>.
+  Poller heartbeat coverage: {esc(cov_txt)}. Cadence holds (a manifest served longer than
+  9 hours): <b>{t["cadence_holds"]}</b>. This project exists because SpaceX publishes the feed
+  openly.</p>
 
   <div class="tablewrap"><table>
     <tr><th>first seen (utc)</th><th>cycle</th><th>files recorded</th><th>raw&nbsp;gb</th>
@@ -235,13 +236,13 @@ def render(ledger: dict) -> str:
   <h2>Daily roots</h2>
   <p class="dim">{droots}</p>
 
-  <p class="dim">The daily scoreboard — how well the public satellite catalogue can actually see
-  the constellation — is under construction and will appear here.</p>
+  <p class="dim">A daily scoreboard is under construction. It will show how well the public
+  satellite catalogue can actually see the constellation.</p>
 
   <footer>
     <p>Operator ephemerides are predictions, not observations. Inputs are archived by this project
     and witnessed by OpenTimestamps and the Wayback Machine; they are not re-fetchable from the
-    source after one cycle. Every figure above carries the build time it was true at; gapped or
+    source after one cycle. Every figure above carries the build time it was true at. Gapped or
     lost items are printed, never hidden.</p>
   </footer>
 </main>
