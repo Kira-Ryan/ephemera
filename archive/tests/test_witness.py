@@ -1,0 +1,273 @@
+"""Behavioural tests for archive/witness.py, driven through main() against a real spool (built by
+poll.main over the fake feed) and a fake Wayback server. The OTS runner is stubbed - stamping is
+exercised as an interface; the real client was proven in probes P2/P2b."""
+from __future__ import annotations
+
+import gzip
+import hashlib
+import http.server
+import json
+import socketserver
+import sys
+import threading
+from pathlib import Path
+
+import pytest
+
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+import poll  # noqa: E402
+import witness  # noqa: E402
+from test_poll import CONTACT, Feed, build_site, make_file, run  # noqa: E402
+
+TS = "20260831120000"
+
+
+class FakeWayback:
+    """Save-Page-Now double: /save/<url> 302-redirects to /web/<ts>/<url>; /web/<ts>id_/<url>
+    serves the origin bytes gzip-compressed WITH Content-Encoding (requests then hands the caller
+    decoded raw bytes - what the real id_ endpoint did in probe P2b), except for url suffixes in
+    gzip_no_header, which get the gzip bytes with no header (a replay that lost the encoding
+    header - the case witness's gunzip fallback exists for). corrupt: url suffixes whose id_ copy
+    is wrong. limit_once: url suffixes that 429 one time."""
+
+    def __init__(self, origin: dict[str, bytes], corrupt: set | None = None, limit_once: set | None = None,
+                 gzip_no_header: set | None = None):
+        self.origin, self.corrupt = origin, corrupt or set()
+        self.gzip_no_header = gzip_no_header or set()
+        self.limited = dict.fromkeys(limit_once or set(), 1)
+        fake = self
+
+        class Handler(http.server.BaseHTTPRequestHandler):
+            def log_message(self, *a):
+                pass
+
+            def _send(self, code, body=b"", headers=()):
+                self.send_response(code)
+                for k, v in headers:
+                    self.send_header(k, v)
+                self.send_header("Content-Length", str(len(body)))
+                self.end_headers()
+                self.wfile.write(body)
+
+            def do_GET(self):
+                if self.path.startswith("/save/"):
+                    url = self.path[len("/save/"):]
+                    for suffix, left in list(fake.limited.items()):
+                        if url.endswith(suffix) and left > 0:
+                            fake.limited[suffix] -= 1
+                            self._send(429)
+                            return
+                    self._send(302, headers=[("Location", f"/web/{TS}/{url}")])
+                elif self.path.startswith(f"/web/{TS}id_/"):
+                    url = self.path[len(f"/web/{TS}id_/"):]
+                    raw = fake.origin.get(url)
+                    if raw is None:
+                        self._send(404)
+                        return
+                    if any(url.endswith(s) for s in fake.corrupt):
+                        raw = b"corrupted " + raw[:100]
+                    if any(url.endswith(s) for s in fake.gzip_no_header):
+                        self._send(200, gzip.compress(raw))  # gzip payload, no encoding header
+                    else:
+                        self._send(200, gzip.compress(raw), [("Content-Encoding", "gzip")])
+                elif self.path.startswith(f"/web/{TS}/"):
+                    self._send(200, b"<html>captured</html>")
+                else:
+                    self._send(404)
+
+        self.srv = socketserver.ThreadingTCPServer(("127.0.0.1", 0), Handler)
+        self.srv.daemon_threads = True
+        threading.Thread(target=self.srv.serve_forever, daemon=True).start()
+        self.base = f"http://127.0.0.1:{self.srv.server_address[1]}"
+
+    def close(self):
+        self.srv.shutdown()
+        self.srv.server_close()
+
+
+class StubOts:
+    """Interface double for the OpenTimestamps runner. attest_after: upgrades before this many
+    calls report a still-pending proof."""
+
+    mode = "stub"
+
+    def __init__(self, attest_after=1, fail_for: set | None = None):
+        self.attest_after, self.fail_for = attest_after, fail_for or set()
+        self.stamps, self.upgrades = [], []
+
+    def stamp(self, cycle_dir: Path):
+        if cycle_dir.name in self.fail_for:
+            raise RuntimeError("stub: stamping refused for this cycle")
+        (cycle_dir / "root.txt.ots").write_bytes(b"\x00OpenTimestamps stub")
+        self.stamps.append(cycle_dir.name)
+
+    def upgrade(self, cycle_dir: Path):
+        self.upgrades.append(cycle_dir.name)
+
+    def info(self, cycle_dir: Path) -> str:
+        done = self.upgrades.count(cycle_dir.name) >= self.attest_after
+        return "verify BitcoinBlockHeaderAttestation(964715)" if done else "PendingAttestation"
+
+
+def build_cycle(tmp_path):
+    """A real complete cycle in a spool, plus the origin byte map and a fake wayback for it."""
+    site, names = build_site(tmp_path)
+    feed = Feed(site, names)
+    spool = tmp_path / "spool"
+    rc, rec, cycle = run(feed, spool)
+    assert rc == 0
+    origin = {f"{feed.base}/MANIFEST.txt": (site / "MANIFEST.txt").read_bytes(),
+              **{f"{feed.base}/{n}": (site / n).read_bytes() for n in names}}
+    return feed, spool, rec, cycle, origin
+
+
+def set_current(spool: Path, sha: str):
+    poll.write_json_atomic(spool / "heartbeat.json", {"utc": poll.utc_now(), "manifest_sha256": sha})
+
+
+def wmain(feed, spool, wb, *extra) -> int:
+    return witness.main(["--spool", str(spool), "--base", feed.base, "--wayback", wb.base,
+                         "--contact", CONTACT, "--samples", "3", "--capture-gap", "0", "--once", *extra])
+
+
+@pytest.fixture(autouse=True)
+def stub_runner(monkeypatch):
+    stub = StubOts()
+    monkeypatch.setattr(witness, "make_ots_runner", lambda mode: stub)
+    yield stub
+
+
+def test_sample_indices_follow_the_documented_chain_and_are_deterministic():
+    """Mutation: pick indices any other way (random module, different separator) -> red."""
+    root = "ab" * 32
+    got = witness.sample_indices(root, 100, 10)
+    expected, k = [], 0
+    while len(expected) < 10:  # independent inline re-implementation of the documented sentence
+        i = int(hashlib.sha256(f"{root}:{k}".encode()).hexdigest(), 16) % 100
+        if i not in expected:
+            expected.append(i)
+        k += 1
+    assert got == sorted(expected)
+    assert witness.sample_indices(root, 100, 10) == got
+    assert witness.sample_indices("cd" * 32, 100, 10) != got
+    assert witness.sample_indices(root, 2, 10) == [0, 1]
+
+
+def test_full_pass_stamps_and_verifies_manifest_plus_samples(tmp_path, stub_runner):
+    """One sample arrives as gzip bytes without the encoding header, so this pins BOTH verification
+    branches. Mutation: drop the gunzip fallback in verified_sha -> that sample mismatches, red."""
+    feed, spool, rec, cycle, origin = build_cycle(tmp_path)
+    wb = FakeWayback(origin, gzip_no_header={feed.names[2]})
+    try:
+        set_current(spool, rec["manifest_sha256"])
+        assert wmain(feed, spool, wb) == 0
+        w = json.loads((cycle / "witness.json").read_text())
+        assert (cycle / "root.txt.ots").exists() and w["ots"]["runner"] == "stub"
+        assert w["merkle_root"] == rec["merkle_root"]
+        assert w["wayback"]["manifest"]["verified"] and w["wayback"]["manifest"]["timestamp"] == TS
+        assert sorted(map(int, w["wayback"]["samples"])) == witness.sample_indices(rec["merkle_root"], 3, 3)
+        assert all(s["verified"] for s in w["wayback"]["samples"].values())
+        assert {s["name"] for s in w["wayback"]["samples"].values()} == set(feed.names)
+    finally:
+        feed.close()
+        wb.close()
+
+
+def test_id_copy_mismatch_is_recorded_loudly(tmp_path):
+    """The sceptic's check: sha256(gunzip(id_)) must equal the recorded hash. Mutation: skip the
+    re-fetch or compare wire bytes -> this stays green/red the wrong way."""
+    feed, spool, rec, cycle, origin = build_cycle(tmp_path)
+    wb = FakeWayback(origin, corrupt={feed.names[1]})
+    try:
+        set_current(spool, rec["manifest_sha256"])
+        assert wmain(feed, spool, wb) == 1
+        w = json.loads((cycle / "witness.json").read_text())
+        bad = [s for s in w["wayback"]["samples"].values() if s["name"] == feed.names[1]][0]
+        assert bad["verified"] is False and "mismatch" in bad["error"]
+    finally:
+        feed.close()
+        wb.close()
+
+
+def test_superseded_cycle_is_stamped_but_wayback_records_the_loss(tmp_path):
+    """Mutation: drop the is_current check and capture anyway -> the skip note never appears."""
+    feed, spool, rec, cycle, origin = build_cycle(tmp_path)
+    wb = FakeWayback(origin)
+    try:
+        set_current(spool, "0" * 64)  # the feed has moved on
+        assert wmain(feed, spool, wb) == 1
+        w = json.loads((cycle / "witness.json").read_text())
+        assert (cycle / "root.txt.ots").exists()
+        assert "superseded" in w["wayback"]["skipped"] and "3 sample captures never made" in w["wayback"]["skipped"]
+        assert "manifest" not in w["wayback"]
+    finally:
+        feed.close()
+        wb.close()
+
+
+def test_upgrade_records_the_block_height_and_respects_the_backoff(tmp_path, stub_runner):
+    feed, spool, rec, cycle, origin = build_cycle(tmp_path)
+    wb = FakeWayback(origin)
+    try:
+        set_current(spool, rec["manifest_sha256"])
+        stub_runner.attest_after = 2
+        assert wmain(feed, spool, wb) == 0                      # pass 1: stamps only
+        assert wmain(feed, spool, wb, "--upgrade-every", "0") == 0   # pass 2: upgrade -> still pending
+        w = json.loads((cycle / "witness.json").read_text())
+        assert not w["ots"].get("attested") and stub_runner.upgrades == [cycle.name]
+        assert wmain(feed, spool, wb, "--upgrade-every", "1e6") == 0  # pass 3: backoff -> no attempt
+        assert stub_runner.upgrades == [cycle.name]
+        assert wmain(feed, spool, wb, "--upgrade-every", "0") == 0    # pass 4: attested
+        w = json.loads((cycle / "witness.json").read_text())
+        assert w["ots"]["attested"]["block_height"] == 964715
+    finally:
+        feed.close()
+        wb.close()
+
+
+def test_one_cycle_failing_does_not_block_the_next(tmp_path, stub_runner):
+    feed, spool, rec1, cycle1, origin = build_cycle(tmp_path)
+    (feed.site / "MEME_9_STARLINK-9_1_Operational_1_UNCLASSIFIED.txt").write_bytes(make_file(9))
+    names2 = feed.names + ["MEME_9_STARLINK-9_1_Operational_1_UNCLASSIFIED.txt"]
+    (feed.site / "MANIFEST.txt").write_text("\n".join(names2) + "\n")
+    rc2 = poll.main(["--base", feed.base, "--spool", str(spool), "--workers", "4",
+                     "--contact", CONTACT, "--min-free-gb", "0"])
+    assert rc2 == 0
+    cycle2 = [c for c in spool.glob("cycle_*") if c != cycle1][0]
+    rec2 = json.loads((cycle2 / "cycle.json").read_text())
+    origin.update({f"{feed.base}/MANIFEST.txt": (feed.site / "MANIFEST.txt").read_bytes(),
+                   f"{feed.base}/{names2[-1]}": (feed.site / names2[-1]).read_bytes()})
+    wb = FakeWayback(origin)
+    try:
+        set_current(spool, rec2["manifest_sha256"])
+        stub_runner.fail_for = {cycle1.name}
+        assert wmain(feed, spool, wb) == 1
+        w1 = json.loads((cycle1 / "witness.json").read_text())
+        w2 = json.loads((cycle2 / "witness.json").read_text())
+        assert "stamping refused" in w1["ots"]["error"]
+        assert w2["wayback"]["manifest"]["verified"] and (cycle2 / "root.txt.ots").exists()
+    finally:
+        feed.close()
+        wb.close()
+
+
+def test_rate_limit_is_recorded_and_retried_on_the_next_pass(tmp_path):
+    feed, spool, rec, cycle, origin = build_cycle(tmp_path)
+    wb = FakeWayback(origin, limit_once={feed.names[0]})
+    try:
+        set_current(spool, rec["manifest_sha256"])
+        assert wmain(feed, spool, wb) == 1
+        w = json.loads((cycle / "witness.json").read_text())
+        hit = [s for s in w["wayback"]["samples"].values() if s["name"] == feed.names[0]][0]
+        assert "429" in hit["error"]
+        assert wmain(feed, spool, wb) == 0  # the limiter releases; only the missing capture retried
+        w = json.loads((cycle / "witness.json").read_text())
+        assert all(s["verified"] for s in w["wayback"]["samples"].values())
+    finally:
+        feed.close()
+        wb.close()
+
+
+def test_missing_contact_is_refused(tmp_path, monkeypatch):
+    monkeypatch.delenv("EPHEMERA_CONTACT", raising=False)
+    assert witness.main(["--spool", str(tmp_path / "spool"), "--once"]) == 5
