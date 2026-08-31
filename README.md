@@ -19,19 +19,21 @@ self-consistency of the published covariance by lead time; and an honestly defin
 trajectory changes. Kelso keeps the elements. McDowell keeps the objects. This keeps the record of
 how well the world can see.
 
-> **Status: day one (30 Aug 2026).** The poller and its watcher exist and are tested against a
-> local fake feed (20 caller-level tests; 13 named mutations each turn a test red). One home poller
-> on a Cape Town residential link has been capturing continuously since 15:32 UTC on 30 Aug 2026;
-> nothing before that is archived. Not yet in place: a second poller, automated OpenTimestamps and
-> Wayback witnessing (stamping is proven manually on Linux), cold storage. Progress is tracked in
-> `PLAN.md`. Read `DOCS/concept.md` first, then `DOCS/decisions.md`, then `probes/README.md`, then
-> `archive/README.md`.
+> **Status: day two (31 Aug 2026).** One home poller (Cape Town, residential link) has captured
+> every eight-hour cycle since 30 Aug 2026 15:32 UTC; witnessing is automated and live (each
+> cycle's Merkle root OpenTimestamps-stamped, the current cycle's manifest plus ten root-chosen
+> files captured into the Wayback Machine and re-hashed against the record); the placeholder site
+> is up at https://ephemera.space with push-to-deploy. 62 caller-level tests; every named mutation
+> turns a test red. Not yet in place: a second poller, cold storage, the ledger and scoreboard.
+> Progress is tracked in `PLAN.md`. Read `DOCS/concept.md` first, then `DOCS/decisions.md`, then
+> `probes/README.md`, then `archive/README.md`.
 
 ## The one number
 
-**11,099** files per cycle, **2,041,931** bytes each, three cycles a day, and no continuous public
-archive. Measured 30 August 2026 from one manifest and one file; the canonical measurements table,
-with dates and methods, is `probes/p1_cycle_pull/README.md` — re-measure before quoting.
+Around **9,000** files per cycle (8,568–17,861 across the first four captured cycles), about
+**2 MB** each, three cycles a day, and no continuous public archive. Measured 30–31 August 2026;
+the canonical measurements table, with dates and methods, is `probes/p1_cycle_pull/README.md` —
+re-measure before quoting.
 
 ## What this is not
 
@@ -44,17 +46,19 @@ with dates and methods, is `probes/p1_cycle_pull/README.md` — re-measure befor
 - **Not an audit of anyone.** The neutral quantity is *catalogue visibility* — how much of the
   constellation's motion the public catalogue sees — and that is the only headline.
 
-## Repository (planned)
+## Repository
 
 | Path | What |
 |---|---|
 | `DOCS/` | Concept, decision log, claims register — read before building |
 | `probes/` | Cheap experiments that retire the big unknowns before anything is built on them |
-| `archive/` | Pollers, hashing, daily Merkle root, OpenTimestamps and Wayback witnessing |
-| `score/` | Clean-room SGP4 scoring against operator truth; covariance self-consistency; census |
-| `web/` | The static site (Latent Sky pattern: build-time computation, files behind a CDN) |
-| `data/` | Derived, compacted products only; raw files live on cold object storage, never here |
-| `licences/` | Per-source licence and terms audit |
+| `archive/` | Poller, watcher and witness: hashing, Merkle roots, OpenTimestamps, Wayback |
+| `infra/` | Account guards (AWS and Cloudflare) and guarded deploy scripts |
+| `tools/` | The claims lint that enforces the register's wording in `make test` |
+| `web/` | The static site (build-time computation only, no server) |
+| `score/` | *Planned:* clean-room SGP4 scoring against operator truth; self-consistency; census |
+| `data/` | *Planned:* derived products only; raw files live on cold object storage, never here |
+| `licences/` | *Planned:* per-source licence and terms audit |
 
 ## Clean-room rule
 
