@@ -1,0 +1,23 @@
+{
+  // Ephemera window colours: twilight indigo — the sky when a Starlink train is visible — with an
+  // amber badge for the sunlit glint. Per-project colours are the convention across Kira's repos.
+  "workbench.colorCustomizations": {
+    "activityBar.activeBackground": "#2a1f5e",
+    "activityBar.background": "#2a1f5e",
+    "activityBar.foreground": "#e7e7e7",
+    "activityBar.inactiveForeground": "#e7e7e799",
+    "activityBarBadge.background": "#ffb347",
+    "activityBarBadge.foreground": "#15151e",
+    "commandCenter.border": "#e7e7e799",
+    "sash.hoverBorder": "#2a1f5e",
+    "statusBar.background": "#2a1f5e",
+    "statusBar.foreground": "#e7e7e7",
+    "statusBarItem.hoverBackground": "#3b2c85",
+    "statusBarItem.remoteBackground": "#2a1f5e",
+    "statusBarItem.remoteForeground": "#e7e7e7",
+    "titleBar.activeBackground": "#2a1f5e",
+    "titleBar.activeForeground": "#e7e7e7",
+    "titleBar.inactiveBackground": "#2a1f5e",
+    "titleBar.inactiveForeground": "#e7e7e799"
+  }
+}
