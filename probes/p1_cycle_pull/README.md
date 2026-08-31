@@ -35,9 +35,8 @@ volume figure above is therefore a range until the steady state is established.
 
 The cadence is ~8 h with no missed manifest (gaps 6.5 / 8.1 / 7.6 h). The steady state so far is
 ~9,000 files ≈ 18 GB raw ≈ 7.4 GB gzipped per cycle ≈ **0.67 TB/month gzipped** — below both P4
-pricing volumes; the 17,861-file manifest was the outlier. Still open (P1b): how many file names
-repeat across consecutive manifests (a repeated name is the same bytes and need only be stored
-once), and whether the count varies with manoeuvre activity.
+pricing volumes; the 17,861-file manifest was the outlier. The overlap question is closed below
+(P1b): consecutive manifests share no file names at all.
 
 **Method.** 30 Aug 2026, from a Cape Town residential connection (public IP deliberately not
 recorded). Fetched `MANIFEST.txt`, then pulled disjoint 16-file slices with `curl` under
@@ -78,3 +77,14 @@ pulled 50 files in 22 s and 30 files in 7 s at 16 workers from the same link (ab
 the second run had a warmer path). Projection for 11,099 files: **45–80 minutes per cycle**, i.e.
 under 20% of the 8-hour window. Re-running the same cycle answered every file with HTTP 304 in ~1 s
 and produced an identical Merkle root.
+
+## P1b closed, 31 Aug 2026 — consecutive manifests share nothing
+
+Measured over the first four complete cycles: **zero repeated file names between consecutive
+manifests** (0 of ~9,000–17,861 in every pair). The epoch fields inside each file name change every
+cycle, so every cycle is 100% fresh bytes. Consequences: content-addressed deduplication in the
+storage layer (the open question in D15) buys nothing and is dropped; the volume arithmetic is
+simply files × size per cycle with no overlap discount; and the steady state stands at ~9,000
+files ≈ 18 GB raw ≈ 7.4 GB gzipped per cycle (~0.67 TB/month gzipped). Still open from P1: whether
+the per-cycle file count tracks manoeuvre activity, and the sustained-pull behaviour from a
+datacentre IP.

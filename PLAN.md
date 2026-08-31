@@ -77,26 +77,23 @@ Cloudflare account.
 
 ### New since the plan was written
 
-- [~] **P1b — manifest composition.** Four complete cycles (31 Aug): steady state ~9,000 files ≈
-      7.4 GB gz/cycle ≈ 0.67 TB/month; 17,861 was an outlier; cadence ~8 h, none missed. Still to
-      do: count file names repeated across consecutive manifests (same name = same bytes → dedup in
-      D15's storage unit), and watch whether the count tracks manoeuvre activity.
+- [x] **P1b — manifest composition** (closed 31 Aug). Steady state ~9,000 files ≈ 7.4 GB
+      gz/cycle ≈ 0.67 TB/month; cadence ~8 h, none missed. Overlap measured across the first four
+      cycles: **zero repeated names between consecutive manifests** — every cycle is 100% fresh
+      bytes, so D15 keeps the plain per-cycle tar and dedup is dropped. Residual watch: whether
+      the count tracks manoeuvre activity.
 
 ## Days 2–8
 
 - [ ] **6b. Poller A on a non-AWS VPS** (owner provisions; agent bootstraps). First full datacentre
       pull = the P1 rate-limit probe; CelesTrak reachability recorded for P3. Then systemd watcher +
       heartbeat + dead-man ping.
-- [~] **7. Witnessing**: P2b probe DONE (31 Aug): P2 proof upgraded — Bitcoin block 964715; clean
-      `ots verify` needs a Bitcoin node (no explorer fallback) — VERIFY.md must say so; SPN accepts
-      a full 2 MB file and the `id_` copy gunzips to exactly the recorded sha (so the witness check
-      is sha256(gunzip(id_))). `archive/witness.py` BUILT 31 Aug: stamps via native ots or
-      Docker; hourly `ots upgrade` with block height recorded; Wayback manifest + N root-seeded
-      files (SHA-256 chain, re-implementable from one sentence) with sha256(gunzip(id_)) checks;
-      superseded-before-witnessed cycles record the loss; per-cycle witness.json; 8 caller-level
-      tests, 5 mutations red. Still open: daily root over cycle roots (D16); authenticated SPN2
-      (owner's archive.org keys); deploy as the Ephemera-Witness scheduled task after the first
-      live pass.
+- [x] **7. Witnessing** (closed 31 Aug, except SPN2 auth). P2b probe done; archive/witness.py
+      deployed as the Ephemera-Witness task: OTS stamp + hourly upgrade with block heights
+      recorded; Wayback manifest + 10 root-seeded files verified via sha256(gunzip(id_));
+      superseded losses recorded honestly; and the daily root (D16) - each past UTC day's
+      complete-cycle roots, first_seen order, same stamping lifecycle, never rebuilt. Remaining:
+      authenticated SPN2 once the owner's archive.org keys exist.
 - [ ] **8. Cold storage** `archive/ship.py`: one tar per cycle, streamed, S3 full-object SHA-256
       verified before local delete, gapped cycles shipped, 3-day local retention, put-only IAM,
       versioning + Object Lock (governance), billing alarm.
@@ -108,7 +105,9 @@ Cloudflare account.
       `web/dist/index.html` (claims-linted, browser-rendered, no measurable claims beyond dated
       archive facts) — owner deploys to Cloudflare Pages (D19 proposed: Pages replaces S3+CloudFront
       because Cloudflare Registrar requires Cloudflare DNS; AWS keeps cold storage). Still to build:
-      ledger, status page, Playwright claims tests, `VERIFY.md` + `verify.py`.
+      ledger, status page, Playwright claims tests. DONE 31 Aug:
+      `VERIFY.md` + `archive/verify.py` (independent D09 re-implementation, two coding mutations
+      red; first real-cycle run: full PASS, 8,568 files re-hashed, attested block 964903).
 - [ ] **11. Allies**: Kelso email once ≥3 witnessed cycles exist; P3 from the VPS; bulletin #1 to
       Kelso and McDowell with a 5-day window; CelesTrak OMM archived per cycle as a separate feed
       with its own root.
@@ -160,3 +159,5 @@ Cloudflare account.
   probing in a tight loop. DNSSEC ruled out (disabled, no DS).
 - 2026-08-31 - P5 email SENT (owner). D06 30-day clock running; site and README reframed
   appreciatively toward SpaceX the same day.
+- 2026-08-31 - P1b closed (zero overlap between manifests); verify.py + VERIFY.md landed and
+  passed against a real cycle; daily root (D16) implemented and deployed; 71 tests green.

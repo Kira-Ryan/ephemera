@@ -158,6 +158,79 @@ def capture(session: requests.Session, wayback: str, url: str, expected_sha: str
     return entry
 
 
+def ots_step(target_dir: Path, ots: dict, runner: OtsRunner | None, args) -> bool:
+    """One tick of the stamping lifecycle for any directory holding a root.txt: stamp it if there
+    is no proof yet, otherwise retry the upgrade (at most every --upgrade-every seconds) until the
+    proof carries a Bitcoin block height. Used for cycle roots and daily roots alike."""
+    try:
+        if runner is None:
+            ots.setdefault("error", "no OTS runner available on this host")
+            return False
+        if not (target_dir / "root.txt.ots").exists():
+            runner.stamp(target_dir)
+            ots.update({"stamped_utc": poll.utc_now(), "runner": runner.mode, "error": None})
+            log.info("%s: stamped root.txt", target_dir.name)
+        elif not ots.get("attested"):
+            last = ots.get("last_upgrade_attempt_utc")
+            due = last is None or (datetime.now(timezone.utc) - parse_utc(last)).total_seconds() >= args.upgrade_every
+            if due:
+                runner.upgrade(target_dir)
+                ots["last_upgrade_attempt_utc"] = poll.utc_now()
+                m = ATTESTATION_RE.search(runner.info(target_dir))
+                if m:
+                    ots["attested"] = {"block_height": int(m.group(1)), "upgraded_utc": poll.utc_now()}
+                    log.info("%s: attested at Bitcoin block %s", target_dir.name, m.group(1))
+        return True
+    except (RuntimeError, subprocess.SubprocessError, OSError) as e:
+        ots["error"] = str(e)[:400]
+        log.error("%s: OTS step failed: %s", target_dir.name, e)
+        return False
+
+
+def witness_daily(spool: Path, runner: OtsRunner | None, args) -> bool:
+    """D16: for every UTC day strictly before today, build daily/<date>/root.txt - the D09
+    construction over that day's complete-cycle roots in first_seen_utc order - record which
+    cycles entered (and how many gapped cycles could not), and run the same stamping lifecycle
+    on it as on cycle roots. The day's root is built once and never rebuilt."""
+    today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+    days: dict[str, list[dict]] = {}
+    gapped: dict[str, int] = {}
+    for cdir in sorted(spool.glob("cycle_*")):
+        rec_path = cdir / "cycle.json"
+        if not rec_path.exists():
+            continue
+        rec = json.loads(rec_path.read_text())
+        date = (rec.get("first_seen_utc") or "")[:10]
+        if not date or date >= today:
+            continue
+        if rec.get("merkle_root"):
+            days.setdefault(date, []).append(
+                {"cycle": rec["cycle"], "first_seen_utc": rec["first_seen_utc"], "merkle_root": rec["merkle_root"]})
+        else:
+            gapped[date] = gapped.get(date, 0) + 1
+    ok = True
+    for date, cycles in sorted(days.items()):
+        ddir = spool / "daily" / date
+        d_path = ddir / "daily.json"
+        if (ddir / "root.txt").exists():
+            d = json.loads(d_path.read_text())
+        else:
+            cycles.sort(key=lambda c: c["first_seen_utc"])
+            root = poll.merkle_root([c["merkle_root"] for c in cycles])
+            ddir.mkdir(parents=True, exist_ok=True)
+            d = {"schema": 1, "date": date, "built_utc": poll.utc_now(), "cycles": cycles,
+                 "gapped_cycles_excluded": gapped.get(date, 0), "merkle_root": root,
+                 "note": "leaves are the day's complete-cycle roots in first_seen_utc order; D09 construction",
+                 "ots": {}}
+            poll.write_json_atomic(d_path, d)
+            poll.write_bytes_atomic(ddir / "root.txt", (root + "\n").encode("ascii"))
+            log.info("daily %s: root over %d cycle root(s)%s", date, len(cycles),
+                     f" ({d['gapped_cycles_excluded']} gapped excluded)" if gapped.get(date) else "")
+        ok = ots_step(ddir, d["ots"], runner, args) and ok
+        poll.write_json_atomic(d_path, d)
+    return ok
+
+
 def witness_cycle(cycle_dir: Path, session: requests.Session, runner: OtsRunner | None,
                   args, current_sha: str | None) -> bool:
     """Do whatever witnessing is due for one complete cycle. Returns True if no step errored."""
@@ -172,29 +245,7 @@ def witness_cycle(cycle_dir: Path, session: requests.Session, runner: OtsRunner 
         "ots": {}, "wayback": {}}
     ok = True
 
-    ots = w["ots"]
-    try:
-        if runner is None:
-            ots.setdefault("error", "no OTS runner available on this host")
-            ok = False
-        elif not (cycle_dir / "root.txt.ots").exists():
-            runner.stamp(cycle_dir)
-            ots.update({"stamped_utc": poll.utc_now(), "runner": runner.mode, "error": None})
-            log.info("%s: stamped root.txt", cycle_dir.name)
-        elif not ots.get("attested"):
-            last = ots.get("last_upgrade_attempt_utc")
-            due = last is None or (datetime.now(timezone.utc) - parse_utc(last)).total_seconds() >= args.upgrade_every
-            if due:
-                runner.upgrade(cycle_dir)
-                ots["last_upgrade_attempt_utc"] = poll.utc_now()
-                m = ATTESTATION_RE.search(runner.info(cycle_dir))
-                if m:
-                    ots["attested"] = {"block_height": int(m.group(1)), "upgraded_utc": poll.utc_now()}
-                    log.info("%s: attested at Bitcoin block %s", cycle_dir.name, m.group(1))
-    except (RuntimeError, subprocess.SubprocessError, OSError) as e:
-        ots["error"] = str(e)[:400]
-        log.error("%s: OTS step failed: %s", cycle_dir.name, e)
-        ok = False
+    ok = ots_step(cycle_dir, w["ots"], runner, args) and ok
 
     wb = w["wayback"]
     if not wb.get("skipped") and current_sha is not None:
@@ -281,6 +332,11 @@ def main(argv: list[str] | None = None) -> int:
                 except Exception as e:  # noqa: BLE001 - one bad cycle must not stop the others (D16)
                     log.error("%s: witnessing crashed: %s", cycle_dir.name, e)
                     ok = False
+        try:
+            ok = witness_daily(args.spool, runner, args) and ok
+        except Exception as e:  # noqa: BLE001 - the daily root must not stop the loop either
+            log.error("daily-root step crashed: %s", e)
+            ok = False
         log.info("witness pass %d: %s", n, "clean" if ok else "RECORDED ERRORS")
         if args.once or (args.ticks and n >= args.ticks):
             return 0 if ok else 1
