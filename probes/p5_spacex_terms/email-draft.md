@@ -5,8 +5,8 @@ sent: only what is running is stated in the present tense. Send from a personal 
 send date and any answer in `DOCS/claims-register.md` (Unverified list) and close D06 when answered
 or after 30 days.
 
-**To:** the Starlink space-safety onboarding contact (the address published in the
-space-safety.starlink.com documentation; confirm it on the docs page before sending)
+**To:** space-safety-onboarding@spacex.com (confirmed 31 Aug 2026: the address is embedded in
+space-safety.starlink.com's own application bundle)
 **Subject:** Mirroring terms for the public Starlink ephemerides
 
 ---
