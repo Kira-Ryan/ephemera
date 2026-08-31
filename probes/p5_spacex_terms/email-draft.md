@@ -1,4 +1,4 @@
-# P5 — SpaceX public-files terms: request
+# P5 â€” SpaceX public-files terms: request
 
 **Status:** draft, not sent. Rewritten 30 Aug 2026 so that every sentence is true on the day it is
 sent: only what is running is stated in the present tense. Send from a personal address. Record the
@@ -20,8 +20,8 @@ redistributed.
 The project fetches each published set once per cycle with conditional requests, records the SHA-256
 of every file under a per-cycle Merkle root, and keeps the files so that a set which has been
 superseded can still be examined later. I intend to anchor each root with OpenTimestamps, keep the
-raw files on cold storage, and publish derived products — public-catalogue error against the
-operator trajectory by element age, and covariance self-consistency by lead time — as open datasets
+raw files on cold storage, and publish derived products â€” public-catalogue error against the
+operator trajectory by element age, and covariance self-consistency by lead time â€” as open datasets
 with DOIs. The purpose is a witnessed record of the files, which are otherwise unavailable once
 superseded, and a neutral measure of how well the public catalogue tracks the constellation. Nothing
 is sold; the code is MIT and the derived data is intended for CC BY 4.0.
@@ -36,7 +36,7 @@ Three specific questions:
 
 I will honour whatever answer you give, including "no" to mirroring, in which case the archive will
 hold hashes only and the derived products will state that. Thank you for publishing the files at
-all — it is the only public operator-published trajectory of its kind with covariance, and this
+all â€” it is the only public operator-published trajectory of its kind with covariance, and this
 project exists because of it.
 
 Kind regards,
