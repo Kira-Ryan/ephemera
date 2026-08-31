@@ -152,3 +152,9 @@ Cloudflare account.
   and targets an employer account from machine state; deploys now go through infra/cf_site.py's
   direct-upload client, locally and in the push-to-deploy workflow alike. Apex DNS live; custom-
   domain certificate provisioning at the time of the log entry.
+- 2026-08-31 — ephemera.space certificate active; zone answers on Google and Cloudflare public
+  DNS (Status 0, correct A records); push-to-deploy proven end-to-end (runner deployed by itself,
+  identical blake3 hashes cross-OS). Local machine briefly saw NXDOMAIN afterwards: the ISP
+  resolver negative-cached the pre-creation answer and 15-second probe retries kept re-priming it
+  (negative TTL 300 s) - lesson: after creating a DNS record, wait out the negative TTL before
+  probing in a tight loop. DNSSEC ruled out (disabled, no DS).
