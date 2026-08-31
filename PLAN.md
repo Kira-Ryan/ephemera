@@ -87,9 +87,12 @@ Cloudflare account.
 - [ ] **6b. Poller A on a non-AWS VPS** (owner provisions; agent bootstraps). First full datacentre
       pull = the P1 rate-limit probe; CelesTrak reachability recorded for P3. Then systemd watcher +
       heartbeat + dead-man ping.
-- [ ] **7. Witnessing**: P2b probe (SPN on a 2 MB file; `ots upgrade`/`verify` on the P2 evidence
-      from a clean container) → `archive/witness.py` (stamp, hourly upgrade, Wayback manifest + 10
-      root-seeded files with `id_` sha check). Daily root over cycle roots (D16).
+- [~] **7. Witnessing**: P2b probe DONE (31 Aug): P2 proof upgraded — Bitcoin block 964715; clean
+      `ots verify` needs a Bitcoin node (no explorer fallback) — VERIFY.md must say so; SPN accepts
+      a full 2 MB file and the `id_` copy gunzips to exactly the recorded sha (so the witness check
+      is sha256(gunzip(id_))). Next: `archive/witness.py` (stamp, hourly upgrade, Wayback manifest +
+      10 root-seeded files), daily root over cycle roots (D16). Authenticated SPN2 waits on the
+      owner's archive.org keys.
 - [ ] **8. Cold storage** `archive/ship.py`: one tar per cycle, streamed, S3 full-object SHA-256
       verified before local delete, gapped cycles shipped, 3-day local retention, put-only IAM,
       versioning + Object Lock (governance), billing alarm.
@@ -121,6 +124,8 @@ Cloudflare account.
   the ETag cache.
 - 2026-08-31 — four complete overnight cycles with roots (~9k files ≈ 7.4 GB gz each, ~8 h cadence,
   none missed). First commits pushed to the private personal repo.
+- 2026-08-31 — P2b: OTS proof Bitcoin-attested (block 964715); 2 MB Wayback capture verified via
+  gunzip. Guard + in-pull heartbeat landed.
 - 2026-08-31 — `ephemera.space` registered (personal Cloudflare); D01 accepted. Naming panel run
   first: the only rival domains (`ephem.space`, `ephemer.is`, `ephemeris.space`) were already taken. Known gap: `heartbeat.json` is only written between ticks, so during a long pull
   it goes stale for the whole pull — FIXED 31 Aug: the watcher now pulses `action: "pulling"` into
