@@ -1,0 +1,4 @@
+# Witnessing evidence is byte-exact: the OpenTimestamps proof commits to the file's exact bytes
+# (the P2 root.txt is CRLF by history - see probes/p2_witnessing/README.md). Never normalise it.
+probes/p2_witnessing/evidence/** -text
+*.ots binary
