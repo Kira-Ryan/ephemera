@@ -23,6 +23,7 @@ import logging
 import os
 import shutil
 import sys
+import threading
 import time
 from datetime import datetime, timezone
 from pathlib import Path
@@ -92,8 +93,22 @@ def tick(session: requests.Session, args, state: dict) -> tuple[str, int]:
     if status == "complete":
         return ("unchanged-304" if unchanged else "skipped-complete"), 0
     log.info("manifest %s (%s) status=%s -> pulling", sha[:12], "unchanged" if unchanged else "new", status)
-    rc = poll.main(["--base", args.base, "--spool", str(args.spool), "--workers", str(args.workers),
-                    "--contact", args.contact, "--min-free-gb", str(args.min_free_gb)])
+    # A pull runs for the better part of an hour; without a pulse the heartbeat would go stale and a
+    # status page applying D18's ten-minute rule would call a healthy poller dead.
+    pulse_stop = threading.Event()
+
+    def pulse(n: int) -> None:
+        while not pulse_stop.wait(args.pulse):
+            write_heartbeat(args, state, "pulling", None, n)
+
+    pulse_thread = threading.Thread(target=pulse, args=(state.get("tick", 0),), daemon=True)
+    pulse_thread.start()
+    try:
+        rc = poll.main(["--base", args.base, "--spool", str(args.spool), "--workers", str(args.workers),
+                        "--contact", args.contact, "--min-free-gb", str(args.min_free_gb)])
+    finally:
+        pulse_stop.set()
+        pulse_thread.join()
     return "pulled", rc
 
 
@@ -120,6 +135,8 @@ def main(argv: list[str] | None = None) -> int:
     ap.add_argument("--contact", default=os.environ.get("EPHEMERA_CONTACT"), help="required; see poll.py")
     ap.add_argument("--min-free-gb", type=float, default=25.0)
     ap.add_argument("--interval", type=float, default=120.0, help="seconds between manifest checks")
+    ap.add_argument("--pulse", type=float, default=60.0,
+                    help="seconds between heartbeat writes DURING a pull, so a long pull never looks dead")
     ap.add_argument("--once", action="store_true", help="one tick, then exit with the poll exit code")
     ap.add_argument("--ticks", type=int, default=0, help="stop after N ticks (0 = run until interrupted)")
     ap.add_argument("--log-file", type=Path, default=None,
@@ -138,6 +155,7 @@ def main(argv: list[str] | None = None) -> int:
     n = 0
     while True:
         n += 1
+        state["tick"] = n
         try:
             action, rc = tick(session, args, state)
         except KeyboardInterrupt:

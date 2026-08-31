@@ -23,7 +23,7 @@ lint:
 	python tools/claims_lint.py
 
 test: lint
-	python -m pytest archive/tests tools/tests -q -p no:cacheprovider
+	python -m pytest archive/tests tools/tests infra/tests -q -p no:cacheprovider
 
 poll:
 	@test -n "$(CONTACT)" || (echo "set CONTACT=you@example.org (or EPHEMERA_CONTACT)"; exit 1)
