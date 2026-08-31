@@ -1,9 +1,8 @@
-# P5 — SpaceX public-files terms: request
+# P5 - SpaceX public-files terms: request
 
-**Status:** draft, not sent. Rewritten 30 Aug 2026 so that every sentence is true on the day it is
-sent: only what is running is stated in the present tense. Send from a personal address. Record the
-send date and any answer in `DOCS/claims-register.md` (Unverified list) and close D06 when answered
-or after 30 days.
+**Status:** draft, not sent. Rewritten 31 Aug 2026 in plain register; every sentence is true on the
+day it is sent. Send from a personal address. Record the send date and any answer in
+`DOCS/claims-register.md` (Unverified list) and close D06 when answered or after 30 days.
 
 **To:** space-safety-onboarding@spacex.com (confirmed 31 Aug 2026: the address is embedded in
 space-safety.starlink.com's own application bundle)
@@ -13,31 +12,29 @@ space-safety.starlink.com's own application bundle)
 
 Hello,
 
-I run an independent, non-commercial archive project and would like to confirm the terms under which
-the public Starlink ephemeris files at api.starlink.com/public-files/ephemerides/ may be retained and
-redistributed.
+I run a small independent, non-commercial archive project and want to check the terms for keeping
+and redistributing the public Starlink ephemeris files at
+api.starlink.com/public-files/ephemerides/.
 
-The project fetches each published set once per cycle with conditional requests, records the SHA-256
-of every file under a per-cycle Merkle root, and keeps the files so that a set which has been
-superseded can still be examined later. I intend to anchor each root with OpenTimestamps, keep the
-raw files on cold storage, and publish derived products — public-catalogue error against the
-operator trajectory by element age, and covariance self-consistency by lead time — as open datasets
-with DOIs. The purpose is a witnessed record of the files, which are otherwise unavailable once
-superseded, and a neutral measure of how well the public catalogue tracks the constellation. Nothing
-is sold; the code is MIT and the derived data is intended for CC BY 4.0.
+The project pulls each published set once per cycle using conditional requests, records a SHA-256
+for every file and a Merkle root per cycle, and keeps the files so that a superseded set can still
+be examined later. The roots are anchored with OpenTimestamps. The plan from here is to keep the
+raw files on cold storage and publish derived products (public catalogue error against the operator
+trajectory by element age, and covariance self-consistency by lead time) as open datasets with
+DOIs. Nothing is sold. The code is MIT and the derived data will be CC BY 4.0.
 
-Three specific questions:
+Three questions:
 
 1. May the raw files be mirrored as published, with attribution to SpaceX and takedown on request?
-2. Is there a rate or concurrency policy you would like a poller to respect? I plan one
-   manifest-driven pass per eight-hour cycle using conditional requests and would rather ask than
+2. Is there a rate or concurrency policy you would like a poller to respect? I run one
+   manifest-driven pass per eight-hour cycle with conditional requests, and would rather ask than
    guess.
 3. Is there a preferred citation for the files?
 
-I will honour whatever answer you give, including "no" to mirroring, in which case the archive will
-hold hashes only and the derived products will state that. Thank you for publishing the files at
-all — it is the only public operator-published trajectory of its kind with covariance, and this
-project exists because of it.
+Whatever you answer is fine, including no to mirroring. In that case the archive will keep hashes
+only, and the derived products will say so. Thanks for publishing these files at all. They are the
+only public source of operator trajectories with covariance, and this project exists because of
+them.
 
 Kind regards,
 Kira Ryan
