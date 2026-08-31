@@ -17,6 +17,9 @@ spool/
   partial/cycle_<sha12>/           --limit test slices; never get a root
 ```
 
+The watcher also appends one line per tick to `<spool>/heartbeats.jsonl` - the append-only history
+behind the ledger's observed-coverage statistic (D18).
+
 Run one cycle: `python archive/poll.py --spool /path/to/spool --workers 16 --contact you@example.org`.
 Watch the feed: `python archive/run_cycle.py --spool /path/to/spool --contact you@example.org`
 (`--once` for a single tick; `--interval` seconds between manifest checks, default 120). A contact

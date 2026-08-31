@@ -85,6 +85,9 @@ def test_daemon_loop_retries_an_incomplete_cycle_while_the_manifest_is_unchanged
     assert sum(1 for r in rec["files"] if r["status"] == "unchanged-304") == 3  # tick 2 resumed, not re-downloaded
     hb = json.loads((spool / "heartbeat.json").read_text())
     assert hb["tick"] == 3 and hb["cycles_complete"] == 1 and hb["action"] == "unchanged-304"
+    # the append-only history feeds the ledger's D18 coverage; every tick must be a parseable line
+    lines = [json.loads(l) for l in (spool / "heartbeats.jsonl").read_text().splitlines()]
+    assert len(lines) >= 3 and [l["tick"] for l in lines[-3:]] == [1, 2, 3]
 
 
 def test_an_interrupted_pull_stops_the_watcher(feed, tmp_path, monkeypatch):

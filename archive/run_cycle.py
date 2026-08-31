@@ -125,6 +125,10 @@ def write_heartbeat(args, state: dict, action: str, rc: int, n: int) -> None:
         "cycles_complete": count_complete(args.spool),
     }
     poll.write_json_atomic(args.spool / "heartbeat.json", hb)
+    # Append-only history: the ledger's observed-coverage statistic (D18: fraction of minutes with
+    # a heartbeat under ten minutes old) needs every tick, not just the latest one.
+    with open(args.spool / "heartbeats.jsonl", "a", encoding="utf-8") as f:
+        f.write(json.dumps(hb) + "\n")
 
 
 def main(argv: list[str] | None = None) -> int:
