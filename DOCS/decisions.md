@@ -166,3 +166,10 @@ and heartbeats; disagreement between pollers is published, never suppressed. *Ob
 is the fraction of wall-clock minutes with at least one heartbeat under ten minutes old; a cycle is
 *complete* when any poller holds a full record with a root; unobserved windows are published as
 such rather than assumed healthy.
+
+## D01 — Name and scope: accepted (2026-08-31)
+
+The name **Ephemera** is confirmed and the domain **ephemera.space** was registered on 31 August
+2026 on the owner's personal Cloudflare account (registry-premium pricing, accepted knowingly as
+the project's one brand asset; the renewal price was checked at purchase). This closes D01's
+"proposed until the name is confirmed and a domain is registered" condition. Scope is unchanged.

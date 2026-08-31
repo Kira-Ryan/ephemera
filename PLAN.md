@@ -5,13 +5,17 @@ Status marks: `[ ]` not started · `[~]` in progress · `[x]` done (with date) �
 
 Accepted defaults (owner, 30 Aug 2026): personal AWS account (Latent Sky's, guarded by ID) for
 buckets/CDN only; pollers on non-AWS VPSs; storage tier decided after P4; D11 `cycle_<sha12>`;
-D12 root.txt = 64 hex + LF; D01 name "Ephemera", register `ephemera.space`; archive.org account for
-SPN2; repo private until Kelso + IP clause.
+D12 root.txt = 64 hex + LF; archive.org account for SPN2; repo private until Kelso + IP clause.
+**D01 accepted 31 Aug**: name Ephemera, domain `ephemera.space` registered on the personal
+Cloudflare account.
 
 ## Day 0 — 30 Aug 2026
 
-- [ ] **0. Commit + push to a private remote** (owner). `git branch -m main`; first commit of the
-      tree including `probes/p2_witnessing/evidence/`. Gates nothing else.
+- [x] **0. Commit + push to a private remote** (31 Aug). `main` at **github.com/Kira-Ryan/ephemera**
+      (private; personal account confirmed). Per-repo author identity `Kira Ryan
+      <kiraryan27@gmail.com>` — the employer address stays out of the history. `.gitattributes`
+      keeps the P2 evidence byte-exact (autocrlf had silently LF-normalised the stamped CRLF
+      root.txt in the first commit; the committed bytes now hash to the OTS-committed digest).
 - [x] **1. Start capturing from home** (agent, stable from 30 Aug 15:40 UTC). `archive/run_cycle.py`
       running as the Windows scheduled task `Ephemera-Watcher` under `pythonw.exe` (at logon, no
       console window; `--log-file Z:\ephemera\run_cycle.log`; spool `Z:\ephemera\spool`, 1.18 TB
@@ -66,8 +70,10 @@ SPN2; repo private until Kelso + IP clause.
       per-file objects cost USD 55–88/month in PUTs alone. Hetzner prices unverified (client-side
       rendering). Under the larger volume no two-copy layout stays under USD 60 at month 24.
       Not yet compared against a real bill.
-- [ ] **6a. Account guard** `infra/guard.sh` + call-site test (agent). Needs the personal account ID
-      in gitignored `infra/personal.env` (owner).
+- [x] **6a. Account guard** (31 Aug). `infra/guard.sh`: allowlist in gitignored `infra/personal.env`
+      (template committed), STS identity check, refusal on missing/empty allowlist, no override path
+      (a test greps for one); every infra script must source it first (call-site test; mutation red).
+      **Owner: put the personal AWS account ID into `infra/personal.env`** (copy the .example).
 
 ### New since the plan was written
 
@@ -112,6 +118,10 @@ SPN2; repo private until Kelso + IP clause.
 - 2026-08-30 13:40 UTC — watcher moved to `pythonw` (two console-window kills). 7,117 files in the
   first 31 min ≈ 3.8 files/s ≈ 78 min per 17,861-file cycle from the home link.
 - 2026-08-30 14:11 UTC — watcher restarted onto the review-fixed code; resumed the same cycle via
-  the ETag cache. Known gap: `heartbeat.json` is only written between ticks, so during a long pull
-  it goes stale for the whole pull — add an in-pull heartbeat (thread or per-200-files write) before
-  the ledger's 10-minute coverage rule (D18) is applied to it.
+  the ETag cache.
+- 2026-08-31 — four complete overnight cycles with roots (~9k files ≈ 7.4 GB gz each, ~8 h cadence,
+  none missed). First commits pushed to the private personal repo.
+- 2026-08-31 — `ephemera.space` registered (personal Cloudflare); D01 accepted. Naming panel run
+  first: the only rival domains (`ephem.space`, `ephemer.is`, `ephemeris.space`) were already taken. Known gap: `heartbeat.json` is only written between ticks, so during a long pull
+  it goes stale for the whole pull — FIXED 31 Aug: the watcher now pulses `action: "pulling"` into
+  heartbeat.json every 60 s during a pull (`--pulse`; caller-level test, mutation red).

@@ -110,6 +110,41 @@ def test_watcher_forwards_workers_and_min_free_gb(feed, tmp_path, monkeypatch):
     assert argv[argv.index("--contact") + 1] == CONTACT
 
 
+def test_heartbeat_pulses_during_a_long_pull(tmp_path):
+    """During a pull the heartbeat must keep beating with action 'pulling', or a status page would
+    call a healthy poller dead mid-cycle. Mutation: drop the pulse thread -> 'pulling' never appears."""
+    import threading as _threading
+    site, names = build_site(tmp_path, 6)
+    f = Feed(site, names, delay=0.4)
+    try:
+        spool = tmp_path / "spool"
+        seen: set = set()
+        rc_box: list = []
+
+        def go():
+            rc_box.append(run_cycle.main(["--base", f.base, "--spool", str(spool), "--workers", "2",
+                                          "--contact", CONTACT, "--min-free-gb", "0",
+                                          "--once", "--pulse", "0.15"]))
+
+        t = _threading.Thread(target=go)
+        t.start()
+        for _ in range(200):  # sample the heartbeat while the pull runs (~1.2 s)
+            try:
+                seen.add(json.loads((spool / "heartbeat.json").read_text())["action"])
+            except (OSError, ValueError, KeyError):
+                pass
+            if not t.is_alive():
+                break
+            _threading.Event().wait(0.05)
+        t.join()
+        assert rc_box == [0]
+        assert "pulling" in seen, f"no in-pull heartbeat observed; saw {seen}"
+        hb = json.loads((spool / "heartbeat.json").read_text())
+        assert hb["action"] == "pulled" and hb["last_exit"] == 0  # the final write wins
+    finally:
+        f.close()
+
+
 def test_manifest_fetch_failure_is_a_heartbeat_error_not_a_crash(tmp_path):
     spool = tmp_path / "spool"
     rc = run_cycle.main(["--base", "http://127.0.0.1:9", "--spool", str(spool),
