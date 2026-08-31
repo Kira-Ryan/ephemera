@@ -104,8 +104,11 @@ Cloudflare account.
 
 ## Days 7–14
 
-- [ ] **10. Ledger + status page + site skeleton** (`web/`), built on poller A, static to
-      S3 + CloudFront under the guard; Playwright claims tests; `VERIFY.md` + `verify.py`.
+- [~] **10. Ledger + status page + site skeleton** (`web/`). Placeholder page live path:
+      `web/dist/index.html` (claims-linted, browser-rendered, no measurable claims beyond dated
+      archive facts) — owner deploys to Cloudflare Pages (D19 proposed: Pages replaces S3+CloudFront
+      because Cloudflare Registrar requires Cloudflare DNS; AWS keeps cold storage). Still to build:
+      ledger, status page, Playwright claims tests, `VERIFY.md` + `verify.py`.
 - [ ] **11. Allies**: Kelso email once ≥3 witnessed cycles exist; P3 from the VPS; bulletin #1 to
       Kelso and McDowell with a 5-day window; CelesTrak OMM archived per cycle as a separate feed
       with its own root.
@@ -139,3 +142,5 @@ Cloudflare account.
   first: the only rival domains (`ephem.space`, `ephemer.is`, `ephemeris.space`) were already taken. Known gap: `heartbeat.json` is only written between ticks, so during a long pull
   it goes stale for the whole pull — FIXED 31 Aug: the watcher now pulses `action: "pulling"` into
   heartbeat.json every 60 s during a pull (`--pulse`; caller-level test, mutation red).
+- 2026-08-31 — coming-soon page built and linted (web/dist); D19 proposed (site on Cloudflare
+  Pages); awaiting owner deploy + custom domain before the P5 email goes out.

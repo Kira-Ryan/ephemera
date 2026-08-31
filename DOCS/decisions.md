@@ -173,3 +173,14 @@ The name **Ephemera** is confirmed and the domain **ephemera.space** was registe
 2026 on the owner's personal Cloudflare account (registry-premium pricing, accepted knowingly as
 the project's one brand asset; the renewal price was checked at purchase). This closes D01's
 "proposed until the name is confirmed and a domain is registered" condition. Scope is unchanged.
+
+## D19 — Site hosting moves to Cloudflare Pages (2026-08-31, proposed)
+
+Amends the hosting split in D14: the static site is served by Cloudflare Pages on the owner's
+personal Cloudflare account, not S3 + CloudFront. Deciding fact: the domain was registered through
+Cloudflare Registrar, which requires Cloudflare nameservers, so Route 53 was never available for
+DNS; Pages is free for a static site, needs no ACM or CDN configuration, and keeps the site on the
+same personal account as the domain. AWS remains the cold-storage home (D15). The deploy script,
+when it exists, is guarded like every infra script — with a Cloudflare account-ID allowlist in
+`infra/personal.env` alongside the AWS one. The rest of D14 (pollers off AWS, nothing on AWS runs
+continuously, no database) stands.
