@@ -147,3 +147,8 @@ Cloudflare account.
 - 2026-08-31 — Cloudflare deploy pipeline built and pushed: guard_cf (token-only; the machine's
   wrangler OAuth is the employer identity and is never used), cf_site.py, site-bootstrap.sh,
   deploy-site.sh, push-to-deploy workflow. Waiting on the owner's personal API token to go live.
+- 2026-08-31 — ephemera.space LIVE on Cloudflare Pages (personal account, guarded token).
+  wrangler retired after a sentinel test proved it ignores CLOUDFLARE_ACCOUNT_ID for pages deploy
+  and targets an employer account from machine state; deploys now go through infra/cf_site.py's
+  direct-upload client, locally and in the push-to-deploy workflow alike. Apex DNS live; custom-
+  domain certificate provisioning at the time of the log entry.

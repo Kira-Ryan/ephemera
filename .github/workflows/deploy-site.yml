@@ -1,11 +1,12 @@
 # Push-to-deploy for the static site (D19): any push to main that touches web/dist/ redeploys the
-# Cloudflare Pages project. Until the two repository secrets exist the job no-ops with a notice
-# instead of failing, so the workflow can land before the credentials do.
+# Cloudflare Pages project through infra/cf_site.py's direct-upload client (the same path the
+# guarded local scripts use; wrangler is deliberately not used). Until the two repository secrets
+# exist the job no-ops with a notice instead of failing.
 name: deploy-site
 on:
   push:
     branches: [main]
-    paths: ["web/dist/**", ".github/workflows/deploy-site.yml"]
+    paths: ["web/dist/**", "infra/cf_site.py", ".github/workflows/deploy-site.yml"]
 jobs:
   deploy:
     runs-on: ubuntu-latest
@@ -23,10 +24,15 @@ jobs:
           else
             echo "go=true" >> "$GITHUB_OUTPUT"
           fi
-      - name: Deploy web/dist to Cloudflare Pages
+      - uses: actions/setup-python@v5
         if: steps.gate.outputs.go == 'true'
-        uses: cloudflare/wrangler-action@v3
         with:
-          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          command: pages deploy web/dist --project-name=ephemera --commit-dirty=true
+          python-version: "3.12"
+      - name: Deploy web/dist via the Pages direct-upload API
+        if: steps.gate.outputs.go == 'true'
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          pip install -q blake3
+          python infra/cf_site.py deploy

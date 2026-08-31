@@ -6,3 +6,6 @@ urllib3>=2,<3
 
 # Tests
 pytest==8.4.2
+
+# Site deploys only (infra/cf_site.py deploy): the Pages asset hash is blake3.
+blake3==1.0.7

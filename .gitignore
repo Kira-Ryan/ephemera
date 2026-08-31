@@ -19,3 +19,6 @@ probes/**/*.gz
 # Account-specific environment (personal account ids, bucket names, tokens) — local only.
 infra/*.env
 *.secret
+
+# Wrangler's isolated home for guarded deploys (never the machine-level OAuth config)
+.wrangler-home/
