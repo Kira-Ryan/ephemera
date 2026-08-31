@@ -1,0 +1,17 @@
+{
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Read|Edit|Write|Glob|Grep|Bash|PowerShell|NotebookEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python \"${CLAUDE_PROJECT_DIR:-.}/.claude/hooks/clean_room_guard.py\"",
+            "timeout": 10,
+            "statusMessage": "clean-room guard (D02)"
+          }
+        ]
+      }
+    ]
+  }
+}

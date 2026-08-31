@@ -1,0 +1,8 @@
+# Runtime for archive/ (poller and watcher). Pinned to what the tests ran against on 30 Aug 2026.
+requests==2.33.0
+# urllib3 2.x enforces Content-Length (a truncated 200 raises IncompleteRead and becomes a gap);
+# requests alone allows 1.26, which does not.
+urllib3>=2,<3
+
+# Tests
+pytest==8.4.2

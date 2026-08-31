@@ -1,0 +1,21 @@
+node_modules/
+dist/
+.claude/settings.local.json
+__pycache__/
+*.pyc
+.pytest_cache/
+.venv/
+.DS_Store
+
+# Raw operator files. Archived on cold object storage with published hashes — NEVER committed.
+data/raw/
+archive/spool/
+**/heartbeat.json
+
+# Probe working files — full-cycle pulls run to tens of GB.
+probes/**/pull/
+probes/**/*.gz
+
+# Account-specific environment (personal account ids, bucket names, tokens) — local only.
+infra/*.env
+*.secret
