@@ -90,9 +90,13 @@ Cloudflare account.
 - [~] **7. Witnessing**: P2b probe DONE (31 Aug): P2 proof upgraded — Bitcoin block 964715; clean
       `ots verify` needs a Bitcoin node (no explorer fallback) — VERIFY.md must say so; SPN accepts
       a full 2 MB file and the `id_` copy gunzips to exactly the recorded sha (so the witness check
-      is sha256(gunzip(id_))). Next: `archive/witness.py` (stamp, hourly upgrade, Wayback manifest +
-      10 root-seeded files), daily root over cycle roots (D16). Authenticated SPN2 waits on the
-      owner's archive.org keys.
+      is sha256(gunzip(id_))). `archive/witness.py` BUILT 31 Aug: stamps via native ots or
+      Docker; hourly `ots upgrade` with block height recorded; Wayback manifest + N root-seeded
+      files (SHA-256 chain, re-implementable from one sentence) with sha256(gunzip(id_)) checks;
+      superseded-before-witnessed cycles record the loss; per-cycle witness.json; 8 caller-level
+      tests, 5 mutations red. Still open: daily root over cycle roots (D16); authenticated SPN2
+      (owner's archive.org keys); deploy as the Ephemera-Witness scheduled task after the first
+      live pass.
 - [ ] **8. Cold storage** `archive/ship.py`: one tar per cycle, streamed, S3 full-object SHA-256
       verified before local delete, gapped cycles shipped, 3-day local retention, put-only IAM,
       versioning + Object Lock (governance), billing alarm.
@@ -126,6 +130,11 @@ Cloudflare account.
   none missed). First commits pushed to the private personal repo.
 - 2026-08-31 — P2b: OTS proof Bitcoin-attested (block 964715); 2 MB Wayback capture verified via
   gunzip. Guard + in-pull heartbeat landed.
+- 2026-08-31 — witness.py first live pass: all 4 cycle roots Docker-stamped; current cycle's
+  manifest + 7/10 samples captured and verified; 3 samples hit Wayback's unauthenticated 429
+  limiter (~8 rapid captures trips it — hence --capture-gap 12 s; authenticated SPN2 keys remain
+  the real fix). The 3 superseded cycles record "captures never made" as designed. Deployed as
+  scheduled task Ephemera-Witness (pythonw, 300 s interval, Z:\ephemera\witness.log).
 - 2026-08-31 — `ephemera.space` registered (personal Cloudflare); D01 accepted. Naming panel run
   first: the only rival domains (`ephem.space`, `ephemer.is`, `ephemeris.space`) were already taken. Known gap: `heartbeat.json` is only written between ticks, so during a long pull
   it goes stale for the whole pull — FIXED 31 Aug: the watcher now pulses `action: "pulling"` into

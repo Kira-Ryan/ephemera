@@ -46,9 +46,15 @@ Merkle construction (D09): SHA-256 leaves in manifest order; adjacent pairs hash
 SHA-256(left || right); an odd trailing node is paired with a copy of itself. Never change this
 silently - it alters every subsequent root. Any change is a decision entry and a new record schema.
 
-Witnessing (P2): stamp `root.txt` with OpenTimestamps on a Linux host (Docker locally, `make stamp`)
-and submit `MANIFEST.txt` plus sampled files to the Wayback Machine each cycle. Not yet automated
-(PLAN.md item 7).
-
 Measured behaviour of the feed: the canonical table is `probes/p1_cycle_pull/README.md`; numbers
 are cited from there, not restated here.
+
+`witness.py` is the third process (also long-running, `--interval` default 300 s): for every cycle
+with a root it stamps `root.txt` with OpenTimestamps (native `ots`, or Docker where the client
+cannot run - probe P2), folds the Bitcoin attestation in with an hourly `ots upgrade` and records
+the block height, and - while the cycle is still the current one - submits `MANIFEST.txt` plus ten
+files to the Wayback Machine, the ten chosen from the root by a documented SHA-256 chain, then
+fetches each capture back and re-hashes it against the record (gunzipping when the copy is the
+origin's transfer encoding, probe P2b). Results land in `<cycle>/witness.json`; a cycle superseded
+before its captures were made gets `wayback.skipped` with the reason. Witnessing never blocks the
+poller and one cycle's failure never stops another (D16).

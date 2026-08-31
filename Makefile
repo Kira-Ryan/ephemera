@@ -6,7 +6,7 @@ SPOOL   ?= data/raw/spool
 CONTACT ?= $(EPHEMERA_CONTACT)
 CYCLE   ?= $(shell ls -d $(SPOOL)/cycle_* 2>/dev/null | sort | tail -1)
 
-.PHONY: help test lint poll poll-test watch stamp upgrade verify probes
+.PHONY: help test lint poll poll-test watch witness stamp upgrade verify probes
 
 help:
 	@echo "test           claims lint + pytest over archive/tests (local fake feed, no network)"
@@ -14,6 +14,7 @@ help:
 	@echo "poll           pull one full cycle into $(SPOOL) (16 workers; CONTACT=you@example.org)"
 	@echo "poll-test      pull a 5-file slice into $(SPOOL)/partial (smoke test; never gets a root)"
 	@echo "watch          run the watcher against $(SPOOL) until interrupted"
+	@echo "witness        one witnessing pass over $(SPOOL) (stamp, upgrade, Wayback)"
 	@echo "stamp          OpenTimestamps-stamp the latest complete cycle's root.txt (Docker)"
 	@echo "upgrade        fold Bitcoin attestations into the latest cycle's proof (Docker)"
 	@echo "verify         verify the latest cycle's proof (Docker)"
@@ -36,6 +37,10 @@ poll-test:
 watch:
 	@test -n "$(CONTACT)" || (echo "set CONTACT=you@example.org (or EPHEMERA_CONTACT)"; exit 1)
 	python archive/run_cycle.py --spool $(SPOOL) --workers 16 --contact "$(CONTACT)"
+
+witness:
+	@test -n "$(CONTACT)" || (echo "set CONTACT=you@example.org (or EPHEMERA_CONTACT)"; exit 1)
+	python archive/witness.py --spool $(SPOOL) --contact "$(CONTACT)" --once
 
 stamp:
 	@test -n "$(CYCLE)" || (echo "no cycle in $(SPOOL)"; exit 1)
