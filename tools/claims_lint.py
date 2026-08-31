@@ -25,7 +25,7 @@ REPO = Path(__file__).resolve().parents[1]
 REGISTER = REPO / "DOCS" / "claims-register.md"
 # Outward artefacts only (the register's own scope): the rulebook under DOCS/ and the task ledger
 # PLAN.md discuss the prohibited wording by name and are not scanned.
-DEFAULT_TARGETS = ["README.md", "archive/README.md", "probes", "web/dist", "bulletins"]
+DEFAULT_TARGETS = ["README.md", "VERIFY.md", "archive/README.md", "probes", "web/dist", "bulletins"]
 ALLOW_MARKER = "<!-- lint:allow -->"   # a line carrying this is skipped (a deliberate mention)
 CONTEXT_BOUND = {"confirms", "refutes"}
 CONTEXT_WORDS = re.compile(r"\b(fcc|spacex|manoeuvre|maneuver|manoeuvres|maneuvers|declared|census|207,152)\b", re.I)

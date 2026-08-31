@@ -268,6 +268,93 @@ def test_rate_limit_is_recorded_and_retried_on_the_next_pass(tmp_path):
         wb.close()
 
 
+def _second_cycle(feed, spool):
+    """Add a file, change the manifest, pull again: a second complete cycle in the same spool."""
+    extra = "MEME_9_STARLINK-9_1_Operational_1_UNCLASSIFIED.txt"
+    (feed.site / extra).write_bytes(make_file(9))
+    (feed.site / "MANIFEST.txt").write_text("\n".join(feed.names + [extra]) + "\n")
+    rc = poll.main(["--base", feed.base, "--spool", str(spool), "--workers", "4",
+                    "--contact", CONTACT, "--min-free-gb", "0"])
+    assert rc == 0
+    (feed.site / "MANIFEST.txt").write_bytes((feed.site / "MANIFEST.txt").read_bytes())  # unchanged from here
+    return extra
+
+
+def test_daily_root_is_built_over_first_seen_order_and_stamped(tmp_path, stub_runner):
+    """D16. The two cycles' first_seen times are assigned in REVERSE of their directory-name order,
+    so a mutation that sorts by name (or builds today's root early) goes red."""
+    from datetime import datetime, timedelta, timezone
+    feed, spool, rec1, cycle1, origin = build_cycle(tmp_path)
+    _second_cycle(feed, spool)
+    try:
+        cycles = sorted(spool.glob("cycle_*"))  # name order
+        yesterday = (datetime.now(timezone.utc) - timedelta(days=1)).strftime("%Y-%m-%d")
+        times = {cycles[0].name: f"{yesterday}T09:00:00Z", cycles[1].name: f"{yesterday}T01:00:00Z"}
+        for c in cycles:  # later-named cycle gets the EARLIER first_seen
+            r = json.loads((c / "cycle.json").read_text())
+            r["first_seen_utc"] = times[c.name]
+            (c / "cycle.json").write_text(json.dumps(r))
+        current = json.loads((cycles[0] / "cycle.json").read_text())
+        set_current(spool, "0" * 64)  # neither cycle is current: wayback records the loss, rc 1
+        wb = FakeWayback(origin)
+        try:
+            assert wmain(feed, spool, wb) == 1
+        finally:
+            wb.close()
+        ddir = spool / "daily" / yesterday
+        d = json.loads((ddir / "daily.json").read_text())
+        assert [c["cycle"] for c in d["cycles"]] == [cycles[1].name, cycles[0].name]  # first_seen order
+        roots = {c.name: json.loads((c / "cycle.json").read_text())["merkle_root"] for c in cycles}
+        left = bytes.fromhex(roots[cycles[1].name])
+        right = bytes.fromhex(roots[cycles[0].name])
+        expected = hashlib.sha256(left + right).hexdigest()  # independent two-leaf construction
+        assert d["merkle_root"] == expected
+        assert (ddir / "root.txt").read_bytes() == (expected + "\n").encode()
+        assert (ddir / "root.txt.ots").exists() and yesterday in stub_runner.stamps
+        assert d["gapped_cycles_excluded"] == 0
+        assert not (spool / "daily" / datetime.now(timezone.utc).strftime("%Y-%m-%d")).exists()
+    finally:
+        feed.close()
+
+
+def test_daily_root_is_never_rebuilt_upgrades_and_skips_today(tmp_path, stub_runner):
+    """Also pins the today-guard: the second cycle keeps today's first_seen and must NOT get a
+    daily root yet. Mutation: drop the date >= today check -> today's dir appears, red."""
+    from datetime import datetime, timedelta, timezone
+    feed, spool, rec, cycle, origin = build_cycle(tmp_path)
+    extra = _second_cycle(feed, spool)
+    origin.update({f"{feed.base}/MANIFEST.txt": (feed.site / "MANIFEST.txt").read_bytes(),
+                   f"{feed.base}/{extra}": (feed.site / extra).read_bytes()})
+    cycle2 = [c for c in spool.glob("cycle_*") if c != cycle][0]
+    rec2 = json.loads((cycle2 / "cycle.json").read_text())
+    try:
+        yesterday = (datetime.now(timezone.utc) - timedelta(days=1)).strftime("%Y-%m-%d")
+        r = json.loads((cycle / "cycle.json").read_text())
+        r["first_seen_utc"] = f"{yesterday}T03:00:00Z"
+        (cycle / "cycle.json").write_text(json.dumps(r))
+        set_current(spool, rec2["manifest_sha256"])
+        wb = FakeWayback(origin)
+        try:
+            # pass 1 returns 1: cycle 1 was superseded before witnessing and the loss is recorded
+            # once; later passes are clean because the recorded skip is not a new error
+            assert wmain(feed, spool, wb) == 1
+            first = (spool / "daily" / yesterday / "root.txt").read_bytes()
+            assert wmain(feed, spool, wb, "--upgrade-every", "0") == 0
+            assert wmain(feed, spool, wb, "--upgrade-every", "0") == 0
+        finally:
+            wb.close()
+        assert (spool / "daily" / yesterday / "root.txt").read_bytes() == first
+        assert stub_runner.stamps.count(yesterday) == 1
+        d = json.loads((spool / "daily" / yesterday / "daily.json").read_text())
+        assert d["ots"]["attested"]["block_height"] == 964715
+        assert [c["cycle"] for c in d["cycles"]] == [cycle.name]
+        assert first == (r["merkle_root"] + "\n").encode()  # one leaf: the daily root IS the cycle root
+        today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+        assert not (spool / "daily" / today).exists()  # today's root is never built early
+    finally:
+        feed.close()
+
+
 def test_missing_contact_is_refused(tmp_path, monkeypatch):
     monkeypatch.delenv("EPHEMERA_CONTACT", raising=False)
     assert witness.main(["--spool", str(tmp_path / "spool"), "--once"]) == 5
