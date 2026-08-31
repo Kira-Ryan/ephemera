@@ -1,14 +1,16 @@
 # Ephemera
 
-**The largest constellation in history publishes where it is going, with uncertainty, every eight
-hours — and the files vanish at the next cycle. Ephemera keeps them, and publishes every day how well
-the public catalogue can actually see.**
+**Every eight hours, SpaceX publishes where each Starlink satellite is going, with its
+uncertainty — the only public feed of its kind. Each set is replaced by the next, and no
+continuous public archive of them exists. Ephemera keeps the history, and publishes every day how
+well the public catalogue can actually see.**
 
 SpaceX serves a 72-hour ephemeris with full position and velocity covariance for every Starlink
 satellite at `api.starlink.com/public-files/ephemerides/`, refreshed every eight hours. Space-Track
-stopped mirroring those files on 28 July 2025. The server keeps only the current set; a superseded
-file is gone at the next cycle. No continuous public archive exists; the only public sample is one
-week (25 Nov–1 Dec 2024) inside the SpaceTrack-TimeSeries dataset (arXiv 2506.13034).
+stopped mirroring those files on 28 July 2025, and the server keeps only the current set. No
+continuous public archive exists; the only public sample is one week (25 Nov–1 Dec 2024) inside
+the SpaceTrack-TimeSeries dataset (arXiv 2506.13034). This project exists because SpaceX publishes
+the feed openly.
 
 Ephemera archives every file under a witnessed hash chain, and computes from the archive a daily,
 browser-checkable scoreboard: public-catalogue error against operator truth by element age, altitude
