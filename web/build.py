@@ -150,9 +150,9 @@ def render(ledger: dict) -> str:
         if wb["skipped"]:
             wb_cell = f"lost: {esc(wb['skipped'])}"
         elif wb["samples_total"]:
-            wb_cell = f"manifest {'ok' if wb['manifest_verified'] else 'MISSING'} · {wb['samples_verified']}/{wb['samples_total']} samples verified"
+            wb_cell = f"manifest {'ok' if wb['manifest_verified'] else 'MISSING'}, {wb['samples_verified']}/{wb['samples_total']} samples verified"
             if wb["losses"]:
-                wb_cell += f" · {wb['losses']} lost"
+                wb_cell += f", {wb['losses']} lost"
         else:
             wb_cell = "pending"
         ots = f"block {c['ots']['attested_block']}" if c["ots"]["attested_block"] else (
@@ -163,10 +163,10 @@ def render(ledger: dict) -> str:
             f'<tr class="{"gap" if gap else "ok"}"><td>{esc((c["first_seen_utc"] or "?")[:16].replace("T", " "))}</td>'
             f'<td class="mono">{esc(c["cycle"][6:])}</td><td>{status_cell}</td>'
             f'<td>{c["bytes_raw"] / 1e9:.1f}</td>'
-            f'<td class="mono">{esc((c["merkle_root"] or "—")[:12])}</td>'
+            f'<td class="mono">{esc((c["merkle_root"] or "none")[:12])}</td>'
             f'<td>{esc(ots)}</td><td>{wb_cell}</td></tr>')
 
-    droots = " · ".join(f'{esc(d["date"])}: <span class="mono">{esc(d["merkle_root"][:12])}</span>'
+    droots = " &nbsp; ".join(f'{esc(d["date"])}: <span class="mono">{esc(d["merkle_root"][:12])}</span>'
                         f'{" (block " + str(d["attested_block"]) + ")" if d["attested_block"] else " (stamp pending)"}'
                         for d in ledger["daily_roots"]) or "first daily root arrives after the first full UTC day"
     cov = ledger["coverage_24h"]
@@ -238,6 +238,11 @@ def render(ledger: dict) -> str:
 
   <p class="dim">A daily scoreboard is under construction. It will show how well the public
   satellite catalogue can actually see the constellation.</p>
+
+  <h2>Contact</h2>
+  <p class="dim">Kira Ryan.
+  <a href="mailto:KiraRyan27@gmail.com" style="color:var(--accent)">KiraRyan27@gmail.com</a>,
+  <a href="https://www.linkedin.com/in/kira-ryan/" style="color:var(--accent)">linkedin.com/in/kira-ryan</a>.</p>
 
   <footer>
     <p>Operator ephemerides are predictions, not observations. Inputs are archived by this project
