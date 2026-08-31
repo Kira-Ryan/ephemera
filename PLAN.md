@@ -144,3 +144,6 @@ Cloudflare account.
   heartbeat.json every 60 s during a pull (`--pulse`; caller-level test, mutation red).
 - 2026-08-31 — coming-soon page built and linted (web/dist); D19 proposed (site on Cloudflare
   Pages); awaiting owner deploy + custom domain before the P5 email goes out.
+- 2026-08-31 — Cloudflare deploy pipeline built and pushed: guard_cf (token-only; the machine's
+  wrangler OAuth is the employer identity and is never used), cf_site.py, site-bootstrap.sh,
+  deploy-site.sh, push-to-deploy workflow. Waiting on the owner's personal API token to go live.

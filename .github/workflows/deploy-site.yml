@@ -1,0 +1,32 @@
+# Push-to-deploy for the static site (D19): any push to main that touches web/dist/ redeploys the
+# Cloudflare Pages project. Until the two repository secrets exist the job no-ops with a notice
+# instead of failing, so the workflow can land before the credentials do.
+name: deploy-site
+on:
+  push:
+    branches: [main]
+    paths: ["web/dist/**", ".github/workflows/deploy-site.yml"]
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check secrets
+        id: gate
+        env:
+          T: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          A: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          if [ -z "$T" ] || [ -z "$A" ]; then
+            echo "CLOUDFLARE_API_TOKEN / CLOUDFLARE_ACCOUNT_ID secrets not set - skipping deploy."
+            echo "go=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "go=true" >> "$GITHUB_OUTPUT"
+          fi
+      - name: Deploy web/dist to Cloudflare Pages
+        if: steps.gate.outputs.go == 'true'
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          command: pages deploy web/dist --project-name=ephemera --commit-dirty=true

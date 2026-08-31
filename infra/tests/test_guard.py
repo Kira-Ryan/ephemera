@@ -40,11 +40,11 @@ def stage(tmp_path: Path, *, account: str, env: str | None = f'EPHEMERA_AWS_ACCO
     return work
 
 
-def run_probe(work: Path) -> subprocess.CompletedProcess:
+def run_probe(work: Path, script: str = "probe.sh") -> subprocess.CompletedProcess:
     import os
     env = dict(os.environ)
     env["PATH"] = str(work.parent / "bin") + os.pathsep + env["PATH"]
-    return subprocess.run([BASH, str(work / "probe.sh")], capture_output=True, text=True, env=env)
+    return subprocess.run([BASH, str(work / script)], capture_output=True, text=True, env=env)
 
 
 def test_foreign_account_is_refused_before_any_action(tmp_path):
@@ -75,18 +75,72 @@ def test_empty_allowlist_is_a_refusal_not_a_pass(tmp_path):
     assert not (work / "sentinel.txt").exists()
 
 
-def test_guard_has_no_override_path():
-    text = (INFRA / "guard.sh").read_text()
-    body = "\n".join(l for l in text.splitlines() if not l.strip().startswith("#"))
-    assert not re.search(r"(?i)override|force|skip[_-]?guard|EPHEMERA_GUARD_DISABLE", body)
+def test_guards_have_no_override_path():
+    for name in ("guard.sh", "guard_cf.sh"):
+        text = (INFRA / name).read_text()
+        body = "\n".join(l for l in text.splitlines() if not l.strip().startswith("#"))
+        assert not re.search(r"(?i)override|force|skip[_-]?guard|EPHEMERA_GUARD_DISABLE", body), name
 
 
-def test_every_infra_script_sources_the_guard_first():
-    """The call-site rule (CLAUDE.md rule 2). Mutation: drop the source line from whoami.sh -> red."""
-    scripts = [p for p in INFRA.glob("*.sh") if p.name != "guard.sh"]
-    assert scripts, "no guarded scripts found - whoami.sh should exist"
+def test_every_infra_script_sources_a_guard_first():
+    """The call-site rule (CLAUDE.md rule 2). Mutation: drop the source line from any script -> red."""
+    scripts = [p for p in INFRA.glob("*.sh") if p.name not in ("guard.sh", "guard_cf.sh")]
+    assert len(scripts) >= 3, "expected whoami.sh, site-bootstrap.sh, deploy-site.sh at least"
     for s in scripts:
         lines = [l.strip() for l in s.read_text().splitlines()
                  if l.strip() and not l.strip().startswith("#") and not l.strip().startswith("#!")]
-        assert lines and re.match(r'^\.\s+.*guard\.sh"?$', lines[0]), \
-            f"{s.name}: first non-comment line must source guard.sh, got: {lines[:1]}"
+        assert lines and re.match(r'^\.\s+.*guard(_cf)?\.sh"$', lines[0]), \
+            f"{s.name}: first non-comment line must source guard.sh or guard_cf.sh, got: {lines[:1]}"
+
+
+CF_ID = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+CF_OTHER = "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+
+
+def stage_cf(tmp_path: Path, *, account: str = CF_ID, allow: str = CF_ID, api_id: str | None = None) -> Path:
+    """Sandbox with a fake `curl` answering the account-verification call with api_id (default:
+    whatever account was configured), and a guarded probe script that records the exported id."""
+    work = tmp_path / "infra"
+    shutil.copytree(INFRA, work, ignore=shutil.ignore_patterns("tests", "__pycache__", "personal.env"))
+    (work / "personal.env").write_text(
+        f'CLOUDFLARE_API_TOKEN="tok-test"\nCLOUDFLARE_ACCOUNT_ID="{account}"\n'
+        f'EPHEMERA_CF_ACCOUNT_IDS="{allow}"\n')
+    fake_bin = tmp_path / "bin"
+    fake_bin.mkdir(exist_ok=True)
+    answer = api_id if api_id is not None else account
+    curl = fake_bin / "curl"
+    curl.write_text("#!/usr/bin/env bash\n"
+                    f"echo '{{\"success\": true, \"result\": {{\"id\": \"{answer}\"}}}}'\n")
+    curl.chmod(curl.stat().st_mode | stat.S_IEXEC)
+    probe = work / "probe_cf.sh"
+    probe.write_text('#!/usr/bin/env bash\n. "$(dirname "${BASH_SOURCE[0]}")/guard_cf.sh"\n'
+                     'echo "$CLOUDFLARE_ACCOUNT_ID" > "$(dirname "${BASH_SOURCE[0]}")/sentinel.txt"\n')
+    return work
+
+
+def test_cf_guard_passes_and_exports_for_the_allowlisted_account(tmp_path):
+    work = stage_cf(tmp_path)
+    r = run_probe(work, script="probe_cf.sh")
+    assert r.returncode == 0, r.stderr
+    assert (work / "sentinel.txt").read_text().strip() == CF_ID
+
+
+def test_cf_guard_refuses_an_account_not_on_the_allowlist(tmp_path):
+    work = stage_cf(tmp_path, account=CF_OTHER, allow=CF_ID)
+    r = run_probe(work, script="probe_cf.sh")
+    assert r.returncode == 1 and "REFUSED" in r.stderr and not (work / "sentinel.txt").exists()
+
+
+def test_cf_guard_refuses_a_token_for_a_different_account(tmp_path):
+    """The API answer is authoritative: a work token pasted by mistake dies here, before any write."""
+    work = stage_cf(tmp_path, api_id=CF_OTHER)
+    r = run_probe(work, script="probe_cf.sh")
+    assert r.returncode == 1 and "cannot read the allowlisted account" in r.stderr
+    assert not (work / "sentinel.txt").exists()
+
+
+def test_cf_guard_refuses_empty_credentials(tmp_path):
+    work = stage_cf(tmp_path)
+    (work / "personal.env").write_text('CLOUDFLARE_API_TOKEN=""\nCLOUDFLARE_ACCOUNT_ID=""\nEPHEMERA_CF_ACCOUNT_IDS=""\n')
+    r = run_probe(work, script="probe_cf.sh")
+    assert r.returncode == 1 and "refusal" in r.stderr and not (work / "sentinel.txt").exists()
