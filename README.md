@@ -71,6 +71,6 @@ restated in `CLAUDE.md` because coding agents build most of this.
 
 MIT for this repository's code. Derived datasets are intended for CC BY 4.0 (D06, proposed). The
 raw SpaceX files are to be mirrored as published, under terms SpaceX has not stated; the position
-taken is D06 and the status of the request to SpaceX (drafted, not yet sent as of 30 Aug 2026) is
+taken is D06 and the status of the request to SpaceX (sent 31 Aug 2026, answer pending) is
 in `DOCS/claims-register.md`. Space-Track general perturbations will be redistributed only under
 Space-Track's blanket approval for basic SSA data, with citation.
