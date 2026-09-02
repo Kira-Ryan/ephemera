@@ -169,3 +169,12 @@ Cloudflare account.
   ready-made datapoint for bulletin #1 (P3).
 - 2026-09-01 - ledger + status page live pipeline: build/publish/deploy chain, D18 coverage
   from heartbeat history, first real publish committed by publish.py itself.
+- 2026-09-02 - status check, day three: 11 cycles archived (10 complete, 10 attested, 224 GB raw),
+  three daily roots attested, ledger republished every 4 h on schedule, 1.1 TB free. Two fixes:
+  the watcher had never been restarted after the heartbeat-history change (coverage stayed "not
+  yet measured"; restarted, history accumulating, measurable from 3 Sep); and manifest captures
+  were failing every other cycle because Wayback de-duplicates an unchanged URL and returns the
+  previous snapshot - each cycle's manifest now gets its own capture URL (?cycle=<sha12>).
+  Losses on record: cycle 513b92 (Wayback 523 upstream failure, 10 samples), d03dc5 (6 samples,
+  throttling). Authenticated SPN2 (owner's archive.org keys) remains the real cure for throttling.
+  Runway: ~30 GB/day gzipped -> cold storage (item 8) needed within about a month.
