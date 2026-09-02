@@ -24,7 +24,7 @@ lint:
 	python tools/claims_lint.py
 
 test: lint
-	python -m pytest archive/tests tools/tests infra/tests web/tests -q -p no:cacheprovider
+	python -m pytest archive/tests tools/tests infra/tests web/tests score/tests -q -p no:cacheprovider
 
 build:
 	python web/build.py --spool $(SPOOL)
