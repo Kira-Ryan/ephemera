@@ -73,7 +73,8 @@ Cloudflare account.
 - [x] **6a. Account guard** (31 Aug). `infra/guard.sh`: allowlist in gitignored `infra/personal.env`
       (template committed), STS identity check, refusal on missing/empty allowlist, no override path
       (a test greps for one); every infra script must source it first (call-site test; mutation red).
-      **Owner: put the personal AWS account ID into `infra/personal.env`** (copy the .example).
+      Owner supplied the personal account (<redacted>, profile latentsky) on 2 Sep; the guard
+      now pins that profile and forbids the employer account 222222222222 by ID. Proven live.
 
 ### New since the plan was written
 

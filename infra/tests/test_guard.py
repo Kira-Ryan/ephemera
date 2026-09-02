@@ -17,9 +17,12 @@ BASH = shutil.which("bash") or pytest.skip("bash not on PATH", allow_module_leve
 
 PERSONAL_ID = "111111111111"
 FOREIGN_ID = "999999999999"
+EMPLOYER_ID = "222222222222"
+GOOD_ENV = (f'EPHEMERA_AWS_PROFILE="personal"\nEPHEMERA_AWS_ACCOUNT_IDS="{PERSONAL_ID}"\n'
+            f'EPHEMERA_AWS_FORBIDDEN_IDS="{EMPLOYER_ID}"')
 
 
-def stage(tmp_path: Path, *, account: str, env: str | None = f'EPHEMERA_AWS_ACCOUNT_IDS="{PERSONAL_ID}"') -> Path:
+def stage(tmp_path: Path, *, account: str, env: str | None = GOOD_ENV) -> Path:
     """Copy infra/ to a sandbox with a fake `aws` on PATH answering `account`, and a guarded probe
     script that creates sentinel.txt only if the guard lets it through."""
     work = tmp_path / "infra"
@@ -36,7 +39,7 @@ def stage(tmp_path: Path, *, account: str, env: str | None = f'EPHEMERA_AWS_ACCO
     aws.chmod(aws.stat().st_mode | stat.S_IEXEC)
     probe = work / "probe.sh"
     probe.write_text('#!/usr/bin/env bash\n. "$(dirname "${BASH_SOURCE[0]}")/guard.sh"\n'
-                     'echo did-the-thing > "$(dirname "${BASH_SOURCE[0]}")/sentinel.txt"\n')
+                     'echo "did-the-thing profile=$AWS_PROFILE" > "$(dirname "${BASH_SOURCE[0]}")/sentinel.txt"\n')
     return work
 
 
@@ -54,11 +57,30 @@ def test_foreign_account_is_refused_before_any_action(tmp_path):
     assert not (work / "sentinel.txt").exists()  # the guarded script never reached its own body
 
 
-def test_allowlisted_account_passes(tmp_path):
+def test_allowlisted_account_passes_and_pins_the_profile(tmp_path):
+    """The guard exports AWS_PROFILE from personal.env before any call, so the machine's default
+    (employer) profile is never consulted. Mutation: drop the export -> the probe sees no profile."""
     work = stage(tmp_path, account=PERSONAL_ID)
     r = run_probe(work)
     assert r.returncode == 0, r.stderr
-    assert (work / "sentinel.txt").read_text().strip() == "did-the-thing"
+    assert (work / "sentinel.txt").read_text().strip() == "did-the-thing profile=personal"
+
+
+def test_missing_profile_is_a_refusal(tmp_path):
+    work = stage(tmp_path, account=PERSONAL_ID, env=f'EPHEMERA_AWS_ACCOUNT_IDS="{PERSONAL_ID}"')
+    r = run_probe(work)
+    assert r.returncode == 1 and "EPHEMERA_AWS_PROFILE is empty" in r.stderr
+    assert not (work / "sentinel.txt").exists()
+
+
+def test_forbidden_employer_id_is_refused_even_if_allowlisted(tmp_path):
+    """The forbidden list wins over everything. Mutation: check the allowlist first -> red."""
+    env = (f'EPHEMERA_AWS_PROFILE="personal"\nEPHEMERA_AWS_ACCOUNT_IDS="{EMPLOYER_ID} {PERSONAL_ID}"\n'
+           f'EPHEMERA_AWS_FORBIDDEN_IDS="{EMPLOYER_ID}"')
+    work = stage(tmp_path, account=EMPLOYER_ID, env=env)
+    r = run_probe(work)
+    assert r.returncode == 1 and "FORBIDDEN" in r.stderr and EMPLOYER_ID in r.stderr
+    assert not (work / "sentinel.txt").exists()
 
 
 def test_missing_personal_env_is_a_refusal(tmp_path):
