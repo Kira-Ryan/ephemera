@@ -184,3 +184,20 @@ same personal account as the domain. AWS remains the cold-storage home (D15). Th
 when it exists, is guarded like every infra script — with a Cloudflare account-ID allowlist in
 `infra/personal.env` alongside the AWS one. The rest of D14 (pollers off AWS, nothing on AWS runs
 continuously, no database) stands.
+
+## D15 — amendment: what the shipped tar's integrity check actually is (2026-09-02, proposed)
+
+As built (`archive/ship.py`): one uncompressed tar per finished cycle (gapped cycles included) is
+multipart-uploaded straight into S3 Glacier Deep Archive in eu-west-1, bucket `ephemera-space-raw`
+(Object Lock governance mode with no default retention, public access blocked, cost tag
+`project=ephemera`, stale multipart uploads aborted after 7 days). S3 offers no full-object SHA-256
+for multipart uploads, so the earlier wording is corrected: transit integrity comes from per-part
+CRC32 checksums that S3 validates before accepting each part; content identity is the tar's SHA-256,
+computed locally before upload and stored in the object's metadata (`x-amz-meta-sha256`) and in the
+cycle's `ship.json`; the post-upload check compares size, metadata and storage class. A restore is
+verified against that recorded SHA-256 (`VERIFY.md`). The small records (cycle.json, root.txt,
+root.txt.ots, witness.json, MANIFEST.txt) sit beside the tar in STANDARD class so verifiers and
+the ledger never need a restore, and are re-synced whenever their bytes change. Local `files/` are
+deleted only after a verified upload and `--keep-days` (3); the shipper never edits the poller's
+cycle.json - its state lives in `ship.json`. Single copy of record for now (P4); the witnessed
+roots mean a lost object can be detected but not faked.
