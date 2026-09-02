@@ -184,3 +184,6 @@ Cloudflare account.
   Lock, no public access, cost tag), archive/ship.py built with moto tests (real restore-then-read
   path, lying-HEAD failure path), D15 amended to state the real integrity check. First single-cycle
   probe upload launched from the home uplink to size the recurring task.
+- 2026-09-02 - uplink measured at 4.2 MB/s (34 Mbit/s): ~46 min per cycle including packing;
+  Ephemera-Shipper task registered (one cycle per 30-min run, IgnoreNew, 2 h limit); backlog of
+  11 cycles drains in ~10 h. Local disk starts freeing itself three days after each ship.

@@ -97,3 +97,12 @@ the watcher healthy (fresh heartbeat, 304s every two minutes) and an independent
 First observed deviation from the nominal cadence; recorded here because cadence is an assumption
 downstream (witnessing windows, ledger coverage), not a guarantee. The count of such holds becomes
 a truth-health statistic once the ledger exists.
+
+## Uplink, 2 Sep 2026 - the home link's upload side
+
+First real shipment of a cycle tar (9.26 GB) from the Cape Town residential link to S3 eu-west-1:
+multipart parts of 512 MB, 4 concurrent, measured over a 4-minute window at **4.2 MB/s
+(34 Mbit/s)**, so one cycle uploads in about 37 minutes. Packing the tar from the SATA disk ran at
+about 17 MB/s (9 minutes per cycle). Steady-state need is 3 cycles/day, i.e. about 2.3 hours of
+upload a day against 24 available; the home link keeps pace with margin, and the 11-cycle backlog
+drains in roughly 10 hours at one cycle per half-hour shipper run.
