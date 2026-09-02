@@ -95,9 +95,9 @@ Cloudflare account.
       superseded losses recorded honestly; and the daily root (D16) - each past UTC day's
       complete-cycle roots, first_seen order, same stamping lifecycle, never rebuilt. Remaining:
       authenticated SPN2 once the owner's archive.org keys exist.
-- [ ] **8. Cold storage** `archive/ship.py`: one tar per cycle, streamed, S3 full-object SHA-256
-      verified before local delete, gapped cycles shipped, 3-day local retention, put-only IAM,
-      versioning + Object Lock (governance), billing alarm.
+- [~] **8. Cold storage** (2 Sep). `archive/ship.py` + `infra/guard.py` + `infra/s3_bucket.py` built,
+      tested (moto), bucket live in the personal account. Remaining: measure the home uplink with
+      the first cycle, register the Ephemera-Shipper task, clear the backlog, first restore drill.
 - [ ] **9. Poller B** on a second provider/region; uploads unless A has an equal non-null root.
 
 ## Days 7–14
@@ -179,3 +179,8 @@ Cloudflare account.
   Losses on record: cycle 513b92 (Wayback 523 upstream failure, 10 samples), d03dc5 (6 samples,
   throttling). Authenticated SPN2 (owner's archive.org keys) remains the real cure for throttling.
   Runway: ~30 GB/day gzipped -> cold storage (item 8) needed within about a month.
+- 2026-09-02 - cold storage landed: personal AWS account wired through both guards (bash + Python,
+  profile pinned, employer ID forbidden), bucket ephemera-space-raw created in eu-west-1 (Object
+  Lock, no public access, cost tag), archive/ship.py built with moto tests (real restore-then-read
+  path, lying-HEAD failure path), D15 amended to state the real integrity check. First single-cycle
+  probe upload launched from the home uplink to size the recurring task.
