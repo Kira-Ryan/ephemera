@@ -191,3 +191,5 @@ Cloudflare account.
   Ephemera-Shipper task registered (one cycle per 30-min run, IgnoreNew, 2 h limit); backlog of
   11 cycles drains in ~10 h. Local disk starts freeing itself three days after each ship.
 - 2026-09-02 - first cycle in Deep Archive, independently HEAD-verified; item 8 closed bar the restore drill.
+- 2026-09-02 - Space-Track account obtained (owner); credentials in the gitignored personal.env.
+  Unblocks the public-catalogue feed (GP pulls per cycle) and therefore score/ v0.
