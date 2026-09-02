@@ -205,3 +205,11 @@ Ten ideas for the 3D front end, all accepted by the owner including the new-feed
 9). Order of work is in the document: score/ v0 first (it is what every idea draws), then the
 per-cycle globe pack, then web/globe/ with the Ghost Shadow (idea 1). Per-idea status lives in the
 document's tracking table, not here.
+- 2026-09-02 - score/ v0 built and run (item 12 opened). Probe P6: the MEME files are EME2000
+  (J2000 read gives 0.2-4 km residuals at fresh age; TEME read gives a systematic 32-45 km).
+  score/visibility.py scores a cycle against a catalogue snapshot at the file's record epochs every
+  6 h; first full run on cycle f5112bb77a2a vs snapshot 20:07 UTC: 11,091 of 11,092 scored, one
+  decayed set (46173, still in the operator feed), no failures, 10 min wall time; numbers and
+  caveats in score/README.md. Not yet scheduled, not yet on the site, no globe pack yet.
+  Next: run it per cycle from the ledger task, publish the summary with as-of and method, then the
+  globe pack (DOCS/globe-vision.md order of work).
