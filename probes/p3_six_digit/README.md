@@ -19,3 +19,11 @@ library — python-sgp4 (`Satrec.sgp4init` from OMM fields; TLE parsing of Alpha
 (`EarthSatellite` from OMM and from TLE), Orekit (TLE parser), GPredict and KeepTrack (manual). Record
 pass / fail / silent-drop with versions. Also count how many active-catalogue objects are six-digit, so
 the bulletin can say how much of the sky a TLE-only pipeline is now blind to.
+
+## Datapoint, 2 Sep 2026 - the public catalogue side
+
+First Space-Track snapshot (`gp` class, `OBJECT_NAME/STARLINK~~`, personal account): 12,811 records
+(one latest element set per object, decayed objects included since epochs run back to 2020), of which
+**365 carry six-digit NORAD ids** (>= 100000). So the six-digit regime is already live in the public
+catalogue for Starlink, not only in SpaceX's own file names (NORAD 100224 first archived 31 Aug).
+Scoring must filter to current objects (DECAY_DATE null, recent epoch) before comparing.
