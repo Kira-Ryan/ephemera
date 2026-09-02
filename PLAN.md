@@ -199,3 +199,9 @@ Cloudflare account.
   bad login / non-JSON / empty result return 1 loudly. First real snapshot 20:07 UTC: 12,811 records,
   14.6 MB raw, 1.9 MB gzipped, 365 six-digit ids. Scheduled as Ephemera-Catalogue (every 2 h).
   Not yet witnessed or shipped (own feed, own root - next), and not yet on the status page.
+
+## 13. The globe (owner vision, 2 Sep 2026) - `DOCS/globe-vision.md`
+Ten ideas for the 3D front end, all accepted by the owner including the new-feed ones (3, 5, 6, 7,
+9). Order of work is in the document: score/ v0 first (it is what every idea draws), then the
+per-cycle globe pack, then web/globe/ with the Ghost Shadow (idea 1). Per-idea status lives in the
+document's tracking table, not here.
