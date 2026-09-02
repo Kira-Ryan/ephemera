@@ -95,9 +95,12 @@ Cloudflare account.
       superseded losses recorded honestly; and the daily root (D16) - each past UTC day's
       complete-cycle roots, first_seen order, same stamping lifecycle, never rebuilt. Remaining:
       authenticated SPN2 once the owner's archive.org keys exist.
-- [~] **8. Cold storage** (2 Sep). `archive/ship.py` + `infra/guard.py` + `infra/s3_bucket.py` built,
-      tested (moto), bucket live in the personal account. Remaining: measure the home uplink with
-      the first cycle, register the Ephemera-Shipper task, clear the backlog, first restore drill.
+- [x] **8. Cold storage** (live 2 Sep). `archive/ship.py` + `infra/guard.py` + bucket
+      `ephemera-space-raw` (eu-west-1, Object Lock, no public access). First cycle
+      (0a85a65d5dbe, 9.26 GB) shipped from the home uplink at ~5 MB/s and verified in DEEP_ARCHIVE
+      with its SHA-256 in metadata; Ephemera-Shipper task drains the backlog one cycle per 30 min.
+      Remaining under this item: the first restore drill (12-48 h Bulk restore, in-region, verify
+      against the recorded sha), and a real-bill check against P4 after the first month.
 - [ ] **9. Poller B** on a second provider/region; uploads unless A has an equal non-null root.
 
 ## Days 7–14
@@ -187,3 +190,4 @@ Cloudflare account.
 - 2026-09-02 - uplink measured at 4.2 MB/s (34 Mbit/s): ~46 min per cycle including packing;
   Ephemera-Shipper task registered (one cycle per 30-min run, IgnoreNew, 2 h limit); backlog of
   11 cycles drains in ~10 h. Local disk starts freeing itself three days after each ship.
+- 2026-09-02 - first cycle in Deep Archive, independently HEAD-verified; item 8 closed bar the restore drill.
