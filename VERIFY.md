@@ -41,7 +41,10 @@ that merkle root against the same block on any block explorer you trust.
 files - chosen by index as `int(sha256(root_hex + ":" + k), 16) mod n_files` for k = 0, 1, ... -
 were submitted while live. Fetch a capture's `id_` URL (in `witness.json`), gunzip it (the copy is
 the origin's gzip transfer encoding), and its SHA-256 must equal the recorded hash:
-`python archive/verify.py <cycle> --wayback` does exactly that.
+`python archive/verify.py <cycle> --wayback` does exactly that. The manifest is captured under
+`MANIFEST.txt?cycle=<sha12>`: the origin serves the same bytes with or without the query (checked
+2 Sep 2026), and the query is there because the Wayback Machine would otherwise hand back the
+previous cycle's snapshot of that never-changing URL.
 
 Operator ephemerides are predictions, not observations. Inputs are archived by this project and
 witnessed by OpenTimestamps and the Wayback Machine; they are not re-fetchable from the source

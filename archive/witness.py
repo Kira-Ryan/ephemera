@@ -281,8 +281,15 @@ def witness_cycle(cycle_dir: Path, session: requests.Session, runner: OtsRunner 
 
             try:
                 if pending_manifest:
+                    # MANIFEST.txt is the one URL that never changes, and Wayback de-duplicates
+                    # repeat captures of an unchanged URL by handing back the previous snapshot
+                    # (measured 2 Sep 2026: the copy hashed to the PREVIOUS cycle's manifest).
+                    # A per-cycle query gives each manifest its own capture; the origin serves
+                    # identical bytes with or without it (verified), and the copy is still
+                    # re-hashed against this cycle's recorded manifest sha.
+                    manifest_url = f"{args.base}/MANIFEST.txt?cycle={rec['manifest_sha256'][:12]}"
                     wb["manifest"] = attempt(wb.get("manifest"),
-                                             capture(session, args.wayback, f"{args.base}/MANIFEST.txt",
+                                             capture(session, args.wayback, manifest_url,
                                                      rec["manifest_sha256"]), "MANIFEST.txt")
                 for i in pending_files:
                     pause(args.capture_gap)

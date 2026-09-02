@@ -60,7 +60,7 @@ class FakeWayback:
                     self._send(302, headers=[("Location", f"/web/{TS}/{url}")])
                 elif self.path.startswith(f"/web/{TS}id_/"):
                     url = self.path[len(f"/web/{TS}id_/"):]
-                    raw = fake.origin.get(url)
+                    raw = fake.origin.get(url.split("?")[0])  # like the real origin: query ignored
                     if raw is None:
                         self._send(404)
                         return
@@ -165,6 +165,8 @@ def test_full_pass_stamps_and_verifies_manifest_plus_samples(tmp_path, stub_runn
         assert (cycle / "root.txt.ots").exists() and w["ots"]["runner"] == "stub"
         assert w["merkle_root"] == rec["merkle_root"]
         assert w["wayback"]["manifest"]["verified"] and w["wayback"]["manifest"]["timestamp"] == TS
+        # each cycle's manifest gets its own capture URL (Wayback de-duplicates an unchanged URL)
+        assert w["wayback"]["manifest"]["url"].endswith(f"/MANIFEST.txt?cycle={rec['manifest_sha256'][:12]}")
         assert sorted(map(int, w["wayback"]["samples"])) == witness.sample_indices(rec["merkle_root"], 3, 3)
         assert all(s["verified"] for s in w["wayback"]["samples"].values())
         assert {s["name"] for s in w["wayback"]["samples"].values()} == set(feed.names)
