@@ -1,10 +1,10 @@
 {
  "schema": 1,
- "generated_utc": "2026-09-02T08:20:00Z",
+ "generated_utc": "2026-09-02T12:20:00Z",
  "poller": "home (Cape Town, residential; single poller until poller A exists)",
  "method": "built from each cycle's cycle.json and witness.json in the poller's spool; coverage is the fraction of the last 24 h's minutes with a watcher heartbeat under 10 minutes old (D18); a cadence hold is a manifest first-seen gap over 9 h",
  "totals": {
-  "cycles": 10,
+  "cycles": 11,
   "complete": 10,
   "attested": 10,
   "bytes_raw": 224466771277,
@@ -12,6 +12,29 @@
  },
  "coverage_24h": null,
  "cycles": [
+  {
+   "cycle": "cycle_f5112bb77a2a",
+   "manifest_sha256": "f5112bb77a2a05b80f659618b1c48dade9b6c2d2e039981bfa70e7a58ac6ecd0",
+   "first_seen_utc": "2026-09-02T12:08:13Z",
+   "status": "in-progress",
+   "files_listed": 11092,
+   "files_recorded": 0,
+   "files_failed": 0,
+   "bytes_raw": 0,
+   "wall_seconds": null,
+   "merkle_root": null,
+   "ots": {
+    "stamped": false,
+    "attested_block": null
+   },
+   "wayback": {
+    "manifest_verified": false,
+    "samples_verified": 0,
+    "samples_total": 0,
+    "losses": 0,
+    "skipped": null
+   }
+  },
   {
    "cycle": "cycle_0a85a65d5dbe",
    "manifest_sha256": "0a85a65d5dbe623ff4c5b115e16c7e9ff62f179b9c6b266ee1c76255cef2e80a",
