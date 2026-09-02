@@ -61,3 +61,9 @@ fetches each capture back and re-hashes it against the record (gunzipping when t
 origin's transfer encoding, probe P2b). Results land in `<cycle>/witness.json`; a cycle superseded
 before its captures were made gets `wayback.skipped` with the reason. Witnessing never blocks the
 poller and one cycle's failure never stops another (D16).
+
+`ship.py` is the fourth process (every 30 min): each finished cycle is packed into one tar,
+uploaded to S3 Glacier Deep Archive with its SHA-256 in the object metadata, verified by HEAD, and
+recorded in `<cycle>/ship.json`; the small records go beside it in STANDARD; local `files/` are
+deleted only after a verified upload and three days (D15 amendment). The AWS account guard
+(`infra/guard.py`) runs first and cannot be skipped.

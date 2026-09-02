@@ -63,3 +63,11 @@ A historical footnote: the probe-P2 evidence proof (`probes/p2_witnessing/eviden
 block 964715) commits to a root.txt whose bytes end in CRLF, because it was written on Windows
 before D12 fixed the canonical form; it is kept exactly as stamped, and `ots verify` must be run
 against those bytes as they are.
+
+## Cold storage
+
+Each finished cycle is also kept as one tar in S3 Glacier Deep Archive
+(`s3://ephemera-space-raw/cycles/<sha12>/files.tar`, eu-west-1) with the tar's SHA-256 in the object
+metadata and in the cycle's `ship.json`; the small records sit beside it in Standard class. A
+restore takes 12 to 48 hours (Bulk tier); once restored, the SHA-256 of the downloaded tar must
+equal the recorded one, and `verify.py` then runs over the unpacked directory as above.
