@@ -193,3 +193,9 @@ Cloudflare account.
 - 2026-09-02 - first cycle in Deep Archive, independently HEAD-verified; item 8 closed bar the restore drill.
 - 2026-09-02 - Space-Track account obtained (owner); credentials in the gitignored personal.env.
   Unblocks the public-catalogue feed (GP pulls per cycle) and therefore score/ v0.
+- 2026-09-02 - archive/gp_pull.py: the public-catalogue feed. One login + one Space-Track query per
+  pass, Starlink GP as JSON, stored gzipped under spool/gp/<stamp>_<sha12>/ with a record (sha256 of
+  the raw bytes, count, epoch range, six-digit count); unchanged catalogues are not stored twice;
+  bad login / non-JSON / empty result return 1 loudly. First real snapshot 20:07 UTC: 12,811 records,
+  14.6 MB raw, 1.9 MB gzipped, 365 six-digit ids. Scheduled as Ephemera-Catalogue (every 2 h).
+  Not yet witnessed or shipped (own feed, own root - next), and not yet on the status page.
