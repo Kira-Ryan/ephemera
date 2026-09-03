@@ -1,6 +1,6 @@
 {
  "schema": 1,
- "generated_utc": "2026-09-03T16:20:00Z",
+ "generated_utc": "2026-09-03T20:20:00Z",
  "poller": "home (Cape Town, residential; single poller until poller A exists)",
  "method": "built from each cycle's cycle.json and witness.json in the poller's spool; coverage is the fraction of the last 24 h's minutes with a watcher heartbeat under 10 minutes old (D18); a cadence hold is a manifest first-seen gap over 9 h",
  "totals": {
@@ -36,11 +36,28 @@
      "median_km": 13.205,
      "p90_km": 120.091,
      "mean_age_h": 51.22,
+     "median_age_h": 50.5,
      "within_km": {
       "1": 0.0734,
       "10": 0.4401,
       "30": 0.6624
-     }
+     },
+     "lost": 3726,
+     "lost_fraction": 0.026
+    },
+    "at_file_start": {
+     "median_km": 2.973,
+     "p90_km": 16.866,
+     "mean_age_h": 15.36,
+     "median_age_h": 12.56,
+     "within_km": {
+      "1": 0.2157,
+      "10": 0.8095,
+      "30": 0.9553
+     },
+     "lost": 41,
+     "lost_fraction": 0.0037,
+     "satellites": 11090
     },
     "by_age": [
      {
@@ -49,11 +66,14 @@
       "median_km": 1.414,
       "p90_km": 12.347,
       "mean_age_h": 5.52,
+      "median_age_h": 5.64,
       "within_km": {
        "1": 0.377,
        "10": 0.8837,
        "30": 0.988
-      }
+      },
+      "lost": 0,
+      "lost_fraction": 0.0
      },
      {
       "bin": "6-12 h",
@@ -61,11 +81,14 @@
       "median_km": 2.389,
       "p90_km": 13.91,
       "mean_age_h": 8.88,
+      "median_age_h": 8.45,
       "within_km": {
        "1": 0.2688,
        "10": 0.8637,
        "30": 0.9627
-      }
+      },
+      "lost": 0,
+      "lost_fraction": 0.0
      },
      {
       "bin": "12-24 h",
@@ -73,11 +96,14 @@
       "median_km": 4.609,
       "p90_km": 25.603,
       "mean_age_h": 18.0,
+      "median_age_h": 18.34,
       "within_km": {
        "1": 0.1487,
        "10": 0.7469,
        "30": 0.9112
-      }
+      },
+      "lost": 25,
+      "lost_fraction": 0.0014
      },
      {
       "bin": "24-48 h",
@@ -85,11 +111,14 @@
       "median_km": 10.857,
       "p90_km": 74.574,
       "mean_age_h": 35.93,
+      "median_age_h": 36.2,
       "within_km": {
        "1": 0.0798,
        "10": 0.4805,
        "30": 0.7993
-      }
+      },
+      "lost": 656,
+      "lost_fraction": 0.0153
      },
      {
       "bin": "48-72 h",
@@ -97,11 +126,14 @@
       "median_km": 24.83,
       "p90_km": 220.68,
       "mean_age_h": 59.7,
+      "median_age_h": 59.98,
       "within_km": {
        "1": 0.0446,
        "10": 0.3491,
        "30": 0.5419
-      }
+      },
+      "lost": 1446,
+      "lost_fraction": 0.033
      },
      {
       "bin": "over 72 h",
@@ -109,11 +141,61 @@
       "median_km": 39.561,
       "p90_km": 234.191,
       "mean_age_h": 84.35,
+      "median_age_h": 80.69,
       "within_km": {
        "1": 0.027,
        "10": 0.2737,
        "30": 0.4628
-      }
+      },
+      "lost": 1599,
+      "lost_fraction": 0.0477
+     }
+    ],
+    "by_shell": [
+     {
+      "bin": "under 400 km",
+      "n": 14148,
+      "median_km": 102.514,
+      "p90_km": 818.397,
+      "mean_age_h": 48.75,
+      "median_age_h": 48.07,
+      "within_km": {
+       "1": 0.0429,
+       "10": 0.2463,
+       "30": 0.3702
+      },
+      "lost": 1033,
+      "lost_fraction": 0.073
+     },
+     {
+      "bin": "400-500 km",
+      "n": 117666,
+      "median_km": 12.958,
+      "p90_km": 83.348,
+      "mean_age_h": 51.72,
+      "median_age_h": 51.16,
+      "within_km": {
+       "1": 0.0685,
+       "10": 0.441,
+       "30": 0.6801
+      },
+      "lost": 2106,
+      "lost_fraction": 0.0179
+     },
+     {
+      "bin": "500-600 km",
+      "n": 11393,
+      "median_km": 4.676,
+      "p90_km": 217.712,
+      "mean_age_h": 49.16,
+      "median_age_h": 48.55,
+      "within_km": {
+       "1": 0.1612,
+       "10": 0.671,
+       "30": 0.8417
+      },
+      "lost": 587,
+      "lost_fraction": 0.0515
      }
     ],
     "pack": "Z:\\ephemera\\spool\\score\\globe_a39dfdfee0fd.json"
@@ -141,11 +223,28 @@
      "median_km": 16.322,
      "p90_km": 149.287,
      "mean_age_h": 57.92,
+     "median_age_h": 57.5,
      "within_km": {
       "1": 0.0563,
       "10": 0.3982,
       "30": 0.6217
-     }
+     },
+     "lost": 4496,
+     "lost_fraction": 0.0314
+    },
+    "at_file_start": {
+     "median_km": 4.562,
+     "p90_km": 23.545,
+     "mean_age_h": 22.04,
+     "median_age_h": 20.5,
+     "within_km": {
+      "1": 0.1489,
+      "10": 0.7289,
+      "30": 0.9247
+     },
+     "lost": 43,
+     "lost_fraction": 0.0039,
+     "satellites": 11091
     },
     "by_age": [
      {
@@ -154,11 +253,14 @@
       "median_km": 0.68,
       "p90_km": 2.323,
       "mean_age_h": 2.8,
+      "median_age_h": 3.11,
       "within_km": {
        "1": 0.7143,
        "10": 1.0,
        "30": 1.0
-      }
+      },
+      "lost": 0,
+      "lost_fraction": 0.0
      },
      {
       "bin": "6-12 h",
@@ -166,11 +268,14 @@
       "median_km": 5.216,
       "p90_km": 39.25,
       "mean_age_h": 11.26,
+      "median_age_h": 11.46,
       "within_km": {
        "1": 0.1505,
        "10": 0.6505,
        "30": 0.8718
-      }
+      },
+      "lost": 2,
+      "lost_fraction": 0.0019
      },
      {
       "bin": "12-24 h",
@@ -178,11 +283,14 @@
       "median_km": 5.166,
       "p90_km": 42.414,
       "mean_age_h": 18.63,
+      "median_age_h": 18.93,
       "within_km": {
        "1": 0.1402,
        "10": 0.7246,
        "30": 0.8716
-      }
+      },
+      "lost": 30,
+      "lost_fraction": 0.0026
      },
      {
       "bin": "24-48 h",
@@ -190,11 +298,14 @@
       "median_km": 10.97,
       "p90_km": 81.158,
       "mean_age_h": 36.4,
+      "median_age_h": 36.59,
       "within_km": {
        "1": 0.076,
        "10": 0.4773,
        "30": 0.8031
-      }
+      },
+      "lost": 668,
+      "lost_fraction": 0.0161
      },
      {
       "bin": "48-72 h",
@@ -202,11 +313,14 @@
       "median_km": 24.964,
       "p90_km": 221.4,
       "mean_age_h": 59.86,
+      "median_age_h": 59.97,
       "within_km": {
        "1": 0.0452,
        "10": 0.35,
        "30": 0.5419
-      }
+      },
+      "lost": 1595,
+      "lost_fraction": 0.0363
      },
      {
       "bin": "over 72 h",
@@ -214,11 +328,61 @@
       "median_km": 39.605,
       "p90_km": 214.049,
       "mean_age_h": 86.57,
+      "median_age_h": 84.41,
       "within_km": {
        "1": 0.0258,
        "10": 0.2851,
        "30": 0.465
-      }
+      },
+      "lost": 2201,
+      "lost_fraction": 0.0484
+     }
+    ],
+    "by_shell": [
+     {
+      "bin": "under 400 km",
+      "n": 14149,
+      "median_km": 124.529,
+      "p90_km": 947.553,
+      "mean_age_h": 53.63,
+      "median_age_h": 52.89,
+      "within_km": {
+       "1": 0.0288,
+       "10": 0.2154,
+       "30": 0.3486
+      },
+      "lost": 1304,
+      "lost_fraction": 0.0922
+     },
+     {
+      "bin": "400-500 km",
+      "n": 117455,
+      "median_km": 16.023,
+      "p90_km": 97.322,
+      "mean_age_h": 58.78,
+      "median_age_h": 58.55,
+      "within_km": {
+       "1": 0.0525,
+       "10": 0.3968,
+       "30": 0.6363
+      },
+      "lost": 2388,
+      "lost_fraction": 0.0203
+     },
+     {
+      "bin": "500-600 km",
+      "n": 11616,
+      "median_km": 5.453,
+      "p90_km": 461.261,
+      "mean_age_h": 54.46,
+      "median_age_h": 54.07,
+      "within_km": {
+       "1": 0.1285,
+       "10": 0.6355,
+       "30": 0.806
+      },
+      "lost": 804,
+      "lost_fraction": 0.0692
      }
     ],
     "pack": "Z:\\ephemera\\spool\\score\\globe_1e726fe006d9.json"
@@ -246,11 +410,28 @@
      "median_km": 14.311,
      "p90_km": 132.597,
      "mean_age_h": 52.85,
+     "median_age_h": 52.29,
      "within_km": {
       "1": 0.0688,
       "10": 0.4276,
       "30": 0.6443
-     }
+     },
+     "lost": 3850,
+     "lost_fraction": 0.0279
+    },
+    "at_file_start": {
+     "median_km": 3.387,
+     "p90_km": 16.805,
+     "mean_age_h": 16.92,
+     "median_age_h": 15.33,
+     "within_km": {
+      "1": 0.1961,
+      "10": 0.8006,
+      "30": 0.9523
+     },
+     "lost": 39,
+     "lost_fraction": 0.0037,
+     "satellites": 10655
     },
     "by_age": [
      {
@@ -259,11 +440,14 @@
       "median_km": 0.676,
       "p90_km": 0.676,
       "mean_age_h": -0.63,
+      "median_age_h": -0.63,
       "within_km": {
        "1": 1.0,
        "10": 1.0,
        "30": 1.0
-      }
+      },
+      "lost": 0,
+      "lost_fraction": 0.0
      },
      {
       "bin": "0-6 h",
@@ -271,11 +455,14 @@
       "median_km": 2.043,
       "p90_km": 13.845,
       "mean_age_h": 4.85,
+      "median_age_h": 4.84,
       "within_km": {
        "1": 0.2945,
        "10": 0.8222,
        "30": 0.9767
-      }
+      },
+      "lost": 0,
+      "lost_fraction": 0.0
      },
      {
       "bin": "6-12 h",
@@ -283,11 +470,14 @@
       "median_km": 2.296,
       "p90_km": 15.832,
       "mean_age_h": 8.75,
+      "median_age_h": 8.54,
       "within_km": {
        "1": 0.2723,
        "10": 0.8434,
        "30": 0.9535
-      }
+      },
+      "lost": 1,
+      "lost_fraction": 0.0003
      },
      {
       "bin": "12-24 h",
@@ -295,11 +485,14 @@
       "median_km": 4.488,
       "p90_km": 28.862,
       "mean_age_h": 18.27,
+      "median_age_h": 18.89,
       "within_km": {
        "1": 0.1555,
        "10": 0.7676,
        "30": 0.902
-      }
+      },
+      "lost": 26,
+      "lost_fraction": 0.0018
      },
      {
       "bin": "24-48 h",
@@ -307,11 +500,14 @@
       "median_km": 11.028,
       "p90_km": 77.274,
       "mean_age_h": 35.97,
+      "median_age_h": 36.22,
       "within_km": {
        "1": 0.0791,
        "10": 0.4761,
        "30": 0.8063
-      }
+      },
+      "lost": 621,
+      "lost_fraction": 0.0149
      },
      {
       "bin": "48-72 h",
@@ -319,11 +515,14 @@
       "median_km": 26.494,
       "p90_km": 240.825,
       "mean_age_h": 59.8,
+      "median_age_h": 59.97,
       "within_km": {
        "1": 0.044,
        "10": 0.3421,
        "30": 0.5292
-      }
+      },
+      "lost": 1548,
+      "lost_fraction": 0.0366
      },
      {
       "bin": "over 72 h",
@@ -331,11 +530,61 @@
       "median_km": 45.238,
       "p90_km": 213.101,
       "mean_age_h": 84.52,
+      "median_age_h": 81.62,
       "within_km": {
        "1": 0.0249,
        "10": 0.2796,
        "30": 0.4442
-      }
+      },
+      "lost": 1654,
+      "lost_fraction": 0.0472
+     }
+    ],
+    "by_shell": [
+     {
+      "bin": "under 400 km",
+      "n": 13320,
+      "median_km": 116.815,
+      "p90_km": 871.773,
+      "mean_age_h": 49.37,
+      "median_age_h": 49.14,
+      "within_km": {
+       "1": 0.0331,
+       "10": 0.2227,
+       "30": 0.3535
+      },
+      "lost": 1075,
+      "lost_fraction": 0.0807
+     },
+     {
+      "bin": "400-500 km",
+      "n": 113233,
+      "median_km": 13.998,
+      "p90_km": 88.736,
+      "mean_age_h": 53.72,
+      "median_age_h": 53.41,
+      "within_km": {
+       "1": 0.0642,
+       "10": 0.4283,
+       "30": 0.6611
+      },
+      "lost": 2081,
+      "lost_fraction": 0.0184
+     },
+     {
+      "bin": "500-600 km",
+      "n": 11475,
+      "median_km": 4.754,
+      "p90_km": 365.603,
+      "mean_age_h": 48.33,
+      "median_age_h": 48.24,
+      "within_km": {
+       "1": 0.1556,
+       "10": 0.659,
+       "30": 0.8161
+      },
+      "lost": 694,
+      "lost_fraction": 0.0605
      }
     ],
     "pack": "Z:\\ephemera\\spool\\score\\globe_b37c74c03907.json"
@@ -363,11 +612,28 @@
      "median_km": 12.053,
      "p90_km": 115.06,
      "mean_age_h": 49.97,
+     "median_age_h": 49.56,
      "within_km": {
       "1": 0.0761,
       "10": 0.4606,
       "30": 0.6778
-     }
+     },
+     "lost": 3572,
+     "lost_fraction": 0.0249
+    },
+    "at_file_start": {
+     "median_km": 2.664,
+     "p90_km": 13.73,
+     "mean_age_h": 14.11,
+     "median_age_h": 12.53,
+     "within_km": {
+      "1": 0.2294,
+      "10": 0.8498,
+      "30": 0.9664
+     },
+     "lost": 38,
+     "lost_fraction": 0.0034,
+     "satellites": 11091
     },
     "by_age": [
      {
@@ -376,11 +642,14 @@
       "median_km": 1.755,
       "p90_km": 12.869,
       "mean_age_h": 4.38,
+      "median_age_h": 4.4,
       "within_km": {
        "1": 0.3178,
        "10": 0.8819,
        "30": 0.9778
-      }
+      },
+      "lost": 0,
+      "lost_fraction": 0.0
      },
      {
       "bin": "6-12 h",
@@ -388,11 +657,14 @@
       "median_km": 2.372,
       "p90_km": 17.089,
       "mean_age_h": 9.64,
+      "median_age_h": 10.02,
       "within_km": {
        "1": 0.2504,
        "10": 0.8478,
        "30": 0.9458
-      }
+      },
+      "lost": 3,
+      "lost_fraction": 0.0006
      },
      {
       "bin": "12-24 h",
@@ -400,11 +672,14 @@
       "median_km": 4.527,
       "p90_km": 25.592,
       "mean_age_h": 18.67,
+      "median_age_h": 18.68,
       "within_km": {
        "1": 0.1477,
        "10": 0.7713,
        "30": 0.9086
-      }
+      },
+      "lost": 32,
+      "lost_fraction": 0.0019
      },
      {
       "bin": "24-48 h",
@@ -412,11 +687,14 @@
       "median_km": 10.575,
       "p90_km": 74.325,
       "mean_age_h": 36.23,
+      "median_age_h": 36.1,
       "within_km": {
        "1": 0.0788,
        "10": 0.4866,
        "30": 0.8077
-      }
+      },
+      "lost": 727,
+      "lost_fraction": 0.0166
      },
      {
       "bin": "48-72 h",
@@ -424,11 +702,14 @@
       "median_km": 25.111,
       "p90_km": 228.63,
       "mean_age_h": 60.12,
+      "median_age_h": 59.97,
       "within_km": {
        "1": 0.044,
        "10": 0.3482,
        "30": 0.5394
-      }
+      },
+      "lost": 1588,
+      "lost_fraction": 0.0363
      },
      {
       "bin": "over 72 h",
@@ -436,11 +717,61 @@
       "median_km": 33.178,
       "p90_km": 165.224,
       "mean_age_h": 83.78,
+      "median_age_h": 80.78,
       "within_km": {
        "1": 0.026,
        "10": 0.3054,
        "30": 0.487
-      }
+      },
+      "lost": 1222,
+      "lost_fraction": 0.04
+     }
+    ],
+    "by_shell": [
+     {
+      "bin": "under 400 km",
+      "n": 14141,
+      "median_km": 78.238,
+      "p90_km": 768.572,
+      "mean_age_h": 45.83,
+      "median_age_h": 45.07,
+      "within_km": {
+       "1": 0.0431,
+       "10": 0.2648,
+       "30": 0.4028
+      },
+      "lost": 952,
+      "lost_fraction": 0.0673
+     },
+     {
+      "bin": "400-500 km",
+      "n": 117234,
+      "median_km": 11.841,
+      "p90_km": 79.366,
+      "mean_age_h": 50.85,
+      "median_age_h": 50.66,
+      "within_km": {
+       "1": 0.0706,
+       "10": 0.4626,
+       "30": 0.6961
+      },
+      "lost": 1942,
+      "lost_fraction": 0.0166
+     },
+     {
+      "bin": "500-600 km",
+      "n": 11844,
+      "median_km": 4.356,
+      "p90_km": 309.877,
+      "mean_age_h": 46.27,
+      "median_age_h": 45.94,
+      "within_km": {
+       "1": 0.1696,
+       "10": 0.6754,
+       "30": 0.8253
+      },
+      "lost": 678,
+      "lost_fraction": 0.0572
      }
     ],
     "pack": "Z:\\ephemera\\spool\\score\\globe_3572d8775913.json"
@@ -468,11 +799,28 @@
      "median_km": 8.854,
      "p90_km": 87.515,
      "mean_age_h": 41.89,
+     "median_age_h": 41.45,
      "within_km": {
       "1": 0.1123,
       "10": 0.525,
       "30": 0.7318
-     }
+     },
+     "lost": 2734,
+     "lost_fraction": 0.0191
+    },
+    "at_file_start": {
+     "median_km": 1.465,
+     "p90_km": 9.114,
+     "mean_age_h": 6.03,
+     "median_age_h": 4.47,
+     "within_km": {
+      "1": 0.3807,
+      "10": 0.9097,
+      "30": 0.9612
+     },
+     "lost": 33,
+     "lost_fraction": 0.003,
+     "satellites": 11091
     },
     "by_age": [
      {
@@ -481,11 +829,14 @@
       "median_km": 1.12,
       "p90_km": 11.631,
       "mean_age_h": -2.95,
+      "median_age_h": -2.99,
       "within_km": {
        "1": 0.4644,
        "10": 0.8937,
        "30": 0.9345
-      }
+      },
+      "lost": 0,
+      "lost_fraction": 0.0
      },
      {
       "bin": "0-6 h",
@@ -493,11 +844,14 @@
       "median_km": 1.061,
       "p90_km": 5.609,
       "mean_age_h": 3.11,
+      "median_age_h": 3.07,
       "within_km": {
        "1": 0.4749,
        "10": 0.9402,
        "30": 0.9777
-      }
+      },
+      "lost": 0,
+      "lost_fraction": 0.0
      },
      {
       "bin": "6-12 h",
@@ -505,11 +859,14 @@
       "median_km": 2.006,
       "p90_km": 9.973,
       "mean_age_h": 9.07,
+      "median_age_h": 9.05,
       "within_km": {
        "1": 0.2833,
        "10": 0.9002,
        "30": 0.9719
-      }
+      },
+      "lost": 1,
+      "lost_fraction": 0.0001
      },
      {
       "bin": "12-24 h",
@@ -517,11 +874,14 @@
       "median_km": 4.245,
       "p90_km": 19.385,
       "mean_age_h": 18.15,
+      "median_age_h": 18.28,
       "within_km": {
        "1": 0.1536,
        "10": 0.7937,
        "30": 0.924
-      }
+      },
+      "lost": 30,
+      "lost_fraction": 0.0014
      },
      {
       "bin": "24-48 h",
@@ -529,11 +889,14 @@
       "median_km": 10.556,
       "p90_km": 70.543,
       "mean_age_h": 35.98,
+      "median_age_h": 35.99,
       "within_km": {
        "1": 0.0786,
        "10": 0.4866,
        "30": 0.8133
-      }
+      },
+      "lost": 654,
+      "lost_fraction": 0.0148
      },
      {
       "bin": "48-72 h",
@@ -541,11 +904,14 @@
       "median_km": 25.351,
       "p90_km": 218.172,
       "mean_age_h": 59.97,
+      "median_age_h": 59.96,
       "within_km": {
        "1": 0.0414,
        "10": 0.3454,
        "30": 0.5402
-      }
+      },
+      "lost": 1516,
+      "lost_fraction": 0.0348
      },
      {
       "bin": "over 72 h",
@@ -553,11 +919,61 @@
       "median_km": 27.85,
       "p90_km": 134.419,
       "mean_age_h": 82.5,
+      "median_age_h": 78.9,
       "within_km": {
        "1": 0.031,
        "10": 0.3248,
        "30": 0.5101
-      }
+      },
+      "lost": 533,
+      "lost_fraction": 0.0329
+     }
+    ],
+    "by_shell": [
+     {
+      "bin": "under 400 km",
+      "n": 14152,
+      "median_km": 42.91,
+      "p90_km": 602.304,
+      "mean_age_h": 37.73,
+      "median_age_h": 36.99,
+      "within_km": {
+       "1": 0.0745,
+       "10": 0.3308,
+       "30": 0.4635
+      },
+      "lost": 682,
+      "lost_fraction": 0.0482
+     },
+     {
+      "bin": "400-500 km",
+      "n": 116938,
+      "median_km": 8.664,
+      "p90_km": 63.316,
+      "mean_age_h": 42.8,
+      "median_age_h": 42.62,
+      "within_km": {
+       "1": 0.1065,
+       "10": 0.5309,
+       "30": 0.7539
+      },
+      "lost": 1486,
+      "lost_fraction": 0.0127
+     },
+     {
+      "bin": "500-600 km",
+      "n": 12136,
+      "median_km": 3.6,
+      "p90_km": 214.719,
+      "mean_age_h": 38.01,
+      "median_age_h": 37.72,
+      "within_km": {
+       "1": 0.2115,
+       "10": 0.6949,
+       "30": 0.8316
+      },
+      "lost": 566,
+      "lost_fraction": 0.0466
      }
     ],
     "pack": "Z:\\ephemera\\spool\\score\\globe_f5112bb77a2a.json"
@@ -585,11 +1001,28 @@
      "median_km": 6.397,
      "p90_km": 67.422,
      "mean_age_h": 34.0,
+     "median_age_h": 33.56,
      "within_km": {
       "1": 0.1489,
       "10": 0.5902,
       "30": 0.7822
-     }
+     },
+     "lost": 2104,
+     "lost_fraction": 0.0147
+    },
+    "at_file_start": {
+     "median_km": 1.299,
+     "p90_km": 8.149,
+     "mean_age_h": -1.87,
+     "median_age_h": -3.42,
+     "within_km": {
+      "1": 0.4056,
+      "10": 0.9149,
+      "30": 0.9502
+     },
+     "lost": 32,
+     "lost_fraction": 0.0029,
+     "satellites": 11091
     },
     "by_age": [
      {
@@ -598,11 +1031,14 @@
       "median_km": 1.175,
       "p90_km": 10.374,
       "mean_age_h": -5.99,
+      "median_age_h": -5.49,
       "within_km": {
        "1": 0.4425,
        "10": 0.8987,
        "30": 0.9348
-      }
+      },
+      "lost": 0,
+      "lost_fraction": 0.0
      },
      {
       "bin": "0-6 h",
@@ -610,11 +1046,14 @@
       "median_km": 1.017,
       "p90_km": 4.943,
       "mean_age_h": 2.9,
+      "median_age_h": 2.79,
       "within_km": {
        "1": 0.4939,
        "10": 0.9467,
        "30": 0.9806
-      }
+      },
+      "lost": 0,
+      "lost_fraction": 0.0
      },
      {
       "bin": "6-12 h",
@@ -622,11 +1061,14 @@
       "median_km": 1.969,
       "p90_km": 8.505,
       "mean_age_h": 8.88,
+      "median_age_h": 8.78,
       "within_km": {
        "1": 0.2912,
        "10": 0.9142,
        "30": 0.9764
-      }
+      },
+      "lost": 3,
+      "lost_fraction": 0.0003
      },
      {
       "bin": "12-24 h",
@@ -634,11 +1076,14 @@
       "median_km": 4.065,
       "p90_km": 20.351,
       "mean_age_h": 17.85,
+      "median_age_h": 18.0,
       "within_km": {
        "1": 0.1518,
        "10": 0.7997,
        "30": 0.9204
-      }
+      },
+      "lost": 34,
+      "lost_fraction": 0.0015
      },
      {
       "bin": "24-48 h",
@@ -646,11 +1091,14 @@
       "median_km": 10.345,
       "p90_km": 74.696,
       "mean_age_h": 35.82,
+      "median_age_h": 35.96,
       "within_km": {
        "1": 0.0752,
        "10": 0.4915,
        "30": 0.8152
-      }
+      },
+      "lost": 636,
+      "lost_fraction": 0.0145
      },
      {
       "bin": "48-72 h",
@@ -658,11 +1106,14 @@
       "median_km": 22.502,
       "p90_km": 106.911,
       "mean_age_h": 58.71,
+      "median_age_h": 58.48,
       "within_km": {
        "1": 0.0421,
        "10": 0.363,
        "30": 0.5683
-      }
+      },
+      "lost": 1015,
+      "lost_fraction": 0.0264
      },
      {
       "bin": "over 72 h",
@@ -670,11 +1121,61 @@
       "median_km": 27.153,
       "p90_km": 208.364,
       "mean_age_h": 82.95,
+      "median_age_h": 77.02,
       "within_km": {
        "1": 0.0264,
        "10": 0.3298,
        "30": 0.513
-      }
+      },
+      "lost": 416,
+      "lost_fraction": 0.0571
+     }
+    ],
+    "by_shell": [
+     {
+      "bin": "under 400 km",
+      "n": 14160,
+      "median_km": 22.627,
+      "p90_km": 457.824,
+      "mean_age_h": 29.81,
+      "median_age_h": 29.11,
+      "within_km": {
+       "1": 0.0847,
+       "10": 0.3944,
+       "30": 0.5272
+      },
+      "lost": 544,
+      "lost_fraction": 0.0384
+     },
+     {
+      "bin": "400-500 km",
+      "n": 116695,
+      "median_km": 6.196,
+      "p90_km": 50.102,
+      "mean_age_h": 34.93,
+      "median_age_h": 34.75,
+      "within_km": {
+       "1": 0.1464,
+       "10": 0.6008,
+       "30": 0.8083
+      },
+      "lost": 1110,
+      "lost_fraction": 0.0095
+     },
+     {
+      "bin": "500-600 km",
+      "n": 12376,
+      "median_km": 3.018,
+      "p90_km": 185.191,
+      "mean_age_h": 30.02,
+      "median_age_h": 29.71,
+      "within_km": {
+       "1": 0.2455,
+       "10": 0.7144,
+       "30": 0.8278
+      },
+      "lost": 450,
+      "lost_fraction": 0.0364
      }
     ],
     "pack": "Z:\\ephemera\\spool\\score\\globe_0a85a65d5dbe.json"
@@ -702,11 +1203,28 @@
      "median_km": 5.42,
      "p90_km": 59.917,
      "mean_age_h": 29.14,
+     "median_age_h": 28.58,
      "within_km": {
       "1": 0.1697,
       "10": 0.6186,
       "30": 0.8035
-     }
+     },
+     "lost": 1792,
+     "lost_fraction": 0.0127
+    },
+    "at_file_start": {
+     "median_km": 1.211,
+     "p90_km": 10.323,
+     "mean_age_h": -6.77,
+     "median_age_h": -8.35,
+     "within_km": {
+      "1": 0.4294,
+      "10": 0.8975,
+      "30": 0.944
+     },
+     "lost": 42,
+     "lost_fraction": 0.0039,
+     "satellites": 10901
     },
     "by_age": [
      {
@@ -715,11 +1233,14 @@
       "median_km": 1.213,
       "p90_km": 12.113,
       "mean_age_h": -7.77,
+      "median_age_h": -7.3,
       "within_km": {
        "1": 0.4311,
        "10": 0.889,
        "30": 0.9329
-      }
+      },
+      "lost": 11,
+      "lost_fraction": 0.0006
      },
      {
       "bin": "0-6 h",
@@ -727,11 +1248,14 @@
       "median_km": 1.068,
       "p90_km": 4.797,
       "mean_age_h": 2.94,
+      "median_age_h": 2.91,
       "within_km": {
        "1": 0.4734,
        "10": 0.9524,
        "30": 0.9855
-      }
+      },
+      "lost": 0,
+      "lost_fraction": 0.0
      },
      {
       "bin": "6-12 h",
@@ -739,11 +1263,14 @@
       "median_km": 1.972,
       "p90_km": 8.664,
       "mean_age_h": 8.91,
+      "median_age_h": 8.86,
       "within_km": {
        "1": 0.2831,
        "10": 0.9143,
        "30": 0.9764
-      }
+      },
+      "lost": 2,
+      "lost_fraction": 0.0002
      },
      {
       "bin": "12-24 h",
@@ -751,11 +1278,14 @@
       "median_km": 4.2,
       "p90_km": 19.561,
       "mean_age_h": 17.91,
+      "median_age_h": 18.01,
       "within_km": {
        "1": 0.1478,
        "10": 0.7984,
        "30": 0.9229
-      }
+      },
+      "lost": 32,
+      "lost_fraction": 0.0015
      },
      {
       "bin": "24-48 h",
@@ -763,11 +1293,14 @@
       "median_km": 10.697,
       "p90_km": 74.789,
       "mean_age_h": 35.89,
+      "median_age_h": 35.97,
       "within_km": {
        "1": 0.0742,
        "10": 0.4819,
        "30": 0.8111
-      }
+      },
+      "lost": 662,
+      "lost_fraction": 0.0153
      },
      {
       "bin": "48-72 h",
@@ -775,11 +1308,14 @@
       "median_km": 23.152,
       "p90_km": 94.114,
       "mean_age_h": 57.85,
+      "median_age_h": 56.97,
       "within_km": {
        "1": 0.0418,
        "10": 0.3574,
        "30": 0.5655
-      }
+      },
+      "lost": 700,
+      "lost_fraction": 0.0214
      },
      {
       "bin": "over 72 h",
@@ -787,11 +1323,61 @@
       "median_km": 47.645,
       "p90_km": 1336.431,
       "mean_age_h": 87.0,
+      "median_age_h": 76.43,
       "within_km": {
        "1": 0.0218,
        "10": 0.2763,
        "30": 0.4289
-      }
+      },
+      "lost": 385,
+      "lost_fraction": 0.109
+     }
+    ],
+    "by_shell": [
+     {
+      "bin": "under 400 km",
+      "n": 13643,
+      "median_km": 18.788,
+      "p90_km": 401.454,
+      "mean_age_h": 25.29,
+      "median_age_h": 24.98,
+      "within_km": {
+       "1": 0.0852,
+       "10": 0.4106,
+       "30": 0.5502
+      },
+      "lost": 489,
+      "lost_fraction": 0.0358
+     },
+     {
+      "bin": "400-500 km",
+      "n": 114898,
+      "median_km": 5.181,
+      "p90_km": 44.63,
+      "mean_age_h": 30.12,
+      "median_age_h": 29.82,
+      "within_km": {
+       "1": 0.1695,
+       "10": 0.6328,
+       "30": 0.8314
+      },
+      "lost": 915,
+      "lost_fraction": 0.008
+     },
+     {
+      "bin": "500-600 km",
+      "n": 12459,
+      "median_km": 2.798,
+      "p90_km": 192.931,
+      "mean_age_h": 24.37,
+      "median_age_h": 24.16,
+      "within_km": {
+       "1": 0.2635,
+       "10": 0.7158,
+       "30": 0.8235
+      },
+      "lost": 388,
+      "lost_fraction": 0.0311
      }
     ],
     "pack": "Z:\\ephemera\\spool\\score\\globe_51d5c047650a.json"
@@ -819,11 +1405,28 @@
      "median_km": 4.659,
      "p90_km": 50.61,
      "mean_age_h": 25.98,
+     "median_age_h": 25.54,
      "within_km": {
       "1": 0.1882,
       "10": 0.649,
       "30": 0.8304
-     }
+     },
+     "lost": 1376,
+     "lost_fraction": 0.0096
+    },
+    "at_file_start": {
+     "median_km": 1.147,
+     "p90_km": 12.283,
+     "mean_age_h": -9.89,
+     "median_age_h": -11.42,
+     "within_km": {
+      "1": 0.4488,
+      "10": 0.8874,
+      "30": 0.9375
+     },
+     "lost": 80,
+     "lost_fraction": 0.0072,
+     "satellites": 11048
     },
     "by_age": [
      {
@@ -832,11 +1435,14 @@
       "median_km": 1.174,
       "p90_km": 12.315,
       "mean_age_h": -8.8,
+      "median_age_h": -7.87,
       "within_km": {
        "1": 0.4398,
        "10": 0.8882,
        "30": 0.9348
-      }
+      },
+      "lost": 49,
+      "lost_fraction": 0.002
      },
      {
       "bin": "0-6 h",
@@ -844,11 +1450,14 @@
       "median_km": 1.096,
       "p90_km": 4.736,
       "mean_age_h": 3.19,
+      "median_age_h": 3.4,
       "within_km": {
        "1": 0.4633,
        "10": 0.9563,
        "30": 0.9921
-      }
+      },
+      "lost": 0,
+      "lost_fraction": 0.0
      },
      {
       "bin": "6-12 h",
@@ -856,11 +1465,14 @@
       "median_km": 1.999,
       "p90_km": 9.052,
       "mean_age_h": 9.14,
+      "median_age_h": 9.34,
       "within_km": {
        "1": 0.2791,
        "10": 0.9091,
        "30": 0.9725
-      }
+      },
+      "lost": 1,
+      "lost_fraction": 0.0001
      },
      {
       "bin": "12-24 h",
@@ -868,11 +1480,14 @@
       "median_km": 4.211,
       "p90_km": 19.558,
       "mean_age_h": 18.14,
+      "median_age_h": 18.01,
       "within_km": {
        "1": 0.1493,
        "10": 0.7957,
        "30": 0.9232
-      }
+      },
+      "lost": 19,
+      "lost_fraction": 0.0009
      },
      {
       "bin": "24-48 h",
@@ -880,11 +1495,14 @@
       "median_km": 10.624,
       "p90_km": 68.538,
       "mean_age_h": 36.11,
+      "median_age_h": 35.97,
       "within_km": {
        "1": 0.0739,
        "10": 0.4844,
        "30": 0.8126
-      }
+      },
+      "lost": 607,
+      "lost_fraction": 0.0139
      },
      {
       "bin": "48-72 h",
@@ -892,11 +1510,14 @@
       "median_km": 18.782,
       "p90_km": 78.623,
       "mean_age_h": 57.22,
+      "median_age_h": 55.93,
       "within_km": {
        "1": 0.0455,
        "10": 0.3885,
        "30": 0.6075
-      }
+      },
+      "lost": 335,
+      "lost_fraction": 0.0119
      },
      {
       "bin": "over 72 h",
@@ -904,11 +1525,61 @@
       "median_km": 44.144,
       "p90_km": 5534.826,
       "mean_age_h": 90.63,
+      "median_age_h": 75.58,
       "within_km": {
        "1": 0.0227,
        "10": 0.2858,
        "30": 0.4442
-      }
+      },
+      "lost": 365,
+      "lost_fraction": 0.1562
+     }
+    ],
+    "by_shell": [
+     {
+      "bin": "under 400 km",
+      "n": 13589,
+      "median_km": 14.27,
+      "p90_km": 295.499,
+      "mean_age_h": 21.88,
+      "median_age_h": 21.15,
+      "within_km": {
+       "1": 0.0999,
+       "10": 0.4443,
+       "30": 0.5978
+      },
+      "lost": 173,
+      "lost_fraction": 0.0127
+     },
+     {
+      "bin": "400-500 km",
+      "n": 116456,
+      "median_km": 4.421,
+      "p90_km": 38.828,
+      "mean_age_h": 26.9,
+      "median_age_h": 26.72,
+      "within_km": {
+       "1": 0.1887,
+       "10": 0.665,
+       "30": 0.8584
+      },
+      "lost": 818,
+      "lost_fraction": 0.007
+     },
+     {
+      "bin": "500-600 km",
+      "n": 12620,
+      "median_km": 2.662,
+      "p90_km": 196.42,
+      "mean_age_h": 21.9,
+      "median_age_h": 21.67,
+      "within_km": {
+       "1": 0.2788,
+       "10": 0.722,
+       "30": 0.8219
+      },
+      "lost": 385,
+      "lost_fraction": 0.0305
      }
     ],
     "pack": "Z:\\ephemera\\spool\\score\\globe_7414ea02eac1.json"
@@ -936,11 +1607,28 @@
      "median_km": 3.515,
      "p90_km": 39.49,
      "mean_age_h": 18.15,
+     "median_age_h": 17.73,
      "within_km": {
       "1": 0.2211,
       "10": 0.6958,
       "30": 0.8681
-     }
+     },
+     "lost": 1088,
+     "lost_fraction": 0.0076
+    },
+    "at_file_start": {
+     "median_km": 1.375,
+     "p90_km": 20.725,
+     "mean_age_h": -17.72,
+     "median_age_h": -19.25,
+     "within_km": {
+      "1": 0.3885,
+      "10": 0.8737,
+      "30": 0.9138
+     },
+     "lost": 130,
+     "lost_fraction": 0.0118,
+     "satellites": 11035
     },
     "by_age": [
      {
@@ -949,11 +1637,14 @@
       "median_km": 1.226,
       "p90_km": 13.384,
       "mean_age_h": -12.07,
+      "median_age_h": -10.86,
       "within_km": {
        "1": 0.4256,
        "10": 0.8844,
        "30": 0.9297
-      }
+      },
+      "lost": 168,
+      "lost_fraction": 0.0043
      },
      {
       "bin": "0-6 h",
@@ -961,11 +1652,14 @@
       "median_km": 1.103,
       "p90_km": 5.023,
       "mean_age_h": 3.02,
+      "median_age_h": 3.0,
       "within_km": {
        "1": 0.4635,
        "10": 0.9509,
        "30": 0.9881
-      }
+      },
+      "lost": 0,
+      "lost_fraction": 0.0
      },
      {
       "bin": "6-12 h",
@@ -973,11 +1667,14 @@
       "median_km": 2.039,
       "p90_km": 9.426,
       "mean_age_h": 9.03,
+      "median_age_h": 9.01,
       "within_km": {
        "1": 0.268,
        "10": 0.9057,
        "30": 0.9788
-      }
+      },
+      "lost": 0,
+      "lost_fraction": 0.0
      },
      {
       "bin": "12-24 h",
@@ -985,11 +1682,14 @@
       "median_km": 4.264,
       "p90_km": 19.294,
       "mean_age_h": 18.02,
+      "median_age_h": 17.97,
       "within_km": {
        "1": 0.1483,
        "10": 0.792,
        "30": 0.9257
-      }
+      },
+      "lost": 17,
+      "lost_fraction": 0.0008
      },
      {
       "bin": "24-48 h",
@@ -997,11 +1697,14 @@
       "median_km": 10.955,
       "p90_km": 64.721,
       "mean_age_h": 36.01,
+      "median_age_h": 35.97,
       "within_km": {
        "1": 0.0685,
        "10": 0.4743,
        "30": 0.8162
-      }
+      },
+      "lost": 494,
+      "lost_fraction": 0.0114
      },
      {
       "bin": "48-72 h",
@@ -1009,11 +1712,14 @@
       "median_km": 16.327,
       "p90_km": 65.19,
       "mean_age_h": 55.91,
+      "median_age_h": 54.67,
       "within_km": {
        "1": 0.0463,
        "10": 0.4071,
        "30": 0.6465
-      }
+      },
+      "lost": 66,
+      "lost_fraction": 0.0041
      },
      {
       "bin": "over 72 h",
@@ -1021,11 +1727,61 @@
       "median_km": 3468.173,
       "p90_km": 12715.581,
       "mean_age_h": 131.87,
+      "median_age_h": 137.03,
       "within_km": {
        "1": 0.0194,
        "10": 0.1252,
        "30": 0.1693
-      }
+      },
+      "lost": 343,
+      "lost_fraction": 0.6049
+     }
+    ],
+    "by_shell": [
+     {
+      "bin": "under 400 km",
+      "n": 13413,
+      "median_km": 12.09,
+      "p90_km": 205.549,
+      "mean_age_h": 14.12,
+      "median_age_h": 13.36,
+      "within_km": {
+       "1": 0.1099,
+       "10": 0.4668,
+       "30": 0.6337
+      },
+      "lost": 82,
+      "lost_fraction": 0.0061
+     },
+     {
+      "bin": "400-500 km",
+      "n": 116177,
+      "median_km": 3.272,
+      "p90_km": 29.598,
+      "mean_age_h": 19.07,
+      "median_age_h": 18.89,
+      "within_km": {
+       "1": 0.2256,
+       "10": 0.7204,
+       "30": 0.9019
+      },
+      "lost": 612,
+      "lost_fraction": 0.0053
+     },
+     {
+      "bin": "500-600 km",
+      "n": 12896,
+      "median_km": 2.393,
+      "p90_km": 254.066,
+      "mean_age_h": 14.02,
+      "median_age_h": 13.83,
+      "within_km": {
+       "1": 0.2954,
+       "10": 0.7125,
+       "30": 0.8071
+      },
+      "lost": 394,
+      "lost_fraction": 0.0306
      }
     ],
     "pack": "Z:\\ephemera\\spool\\score\\globe_7be3c2c6fc2c.json"
@@ -1053,11 +1809,28 @@
      "median_km": 2.857,
      "p90_km": 30.966,
      "mean_age_h": 8.1,
+     "median_age_h": 7.51,
      "within_km": {
       "1": 0.232,
       "10": 0.7455,
       "30": 0.8971
-     }
+     },
+     "lost": 1070,
+     "lost_fraction": 0.0075
+    },
+    "at_file_start": {
+     "median_km": 2.017,
+     "p90_km": 43.635,
+     "mean_age_h": -27.78,
+     "median_age_h": -29.3,
+     "within_km": {
+      "1": 0.2807,
+      "10": 0.8409,
+      "30": 0.8893
+     },
+     "lost": 233,
+     "lost_fraction": 0.0211,
+     "satellites": 11034
     },
     "by_age": [
      {
@@ -1066,11 +1839,14 @@
       "median_km": 1.53,
       "p90_km": 18.112,
       "mean_age_h": -16.58,
+      "median_age_h": -15.78,
       "within_km": {
        "1": 0.3511,
        "10": 0.8682,
        "30": 0.9185
-      }
+      },
+      "lost": 457,
+      "lost_fraction": 0.008
      },
      {
       "bin": "0-6 h",
@@ -1078,11 +1854,14 @@
       "median_km": 1.189,
       "p90_km": 6.611,
       "mean_age_h": 3.04,
+      "median_age_h": 3.2,
       "within_km": {
        "1": 0.4315,
        "10": 0.9342,
        "30": 0.9858
-      }
+      },
+      "lost": 1,
+      "lost_fraction": 0.0001
      },
      {
       "bin": "6-12 h",
@@ -1090,11 +1869,14 @@
       "median_km": 2.12,
       "p90_km": 11.759,
       "mean_age_h": 9.05,
+      "median_age_h": 9.2,
       "within_km": {
        "1": 0.2524,
        "10": 0.8844,
        "30": 0.9669
-      }
+      },
+      "lost": 1,
+      "lost_fraction": 0.0001
      },
      {
       "bin": "12-24 h",
@@ -1102,11 +1884,14 @@
       "median_km": 4.515,
       "p90_km": 22.059,
       "mean_age_h": 18.04,
+      "median_age_h": 17.99,
       "within_km": {
        "1": 0.1244,
        "10": 0.7788,
        "30": 0.9198
-      }
+      },
+      "lost": 22,
+      "lost_fraction": 0.001
      },
      {
       "bin": "24-48 h",
@@ -1114,11 +1899,14 @@
       "median_km": 10.233,
       "p90_km": 41.717,
       "mean_age_h": 34.41,
+      "median_age_h": 34.17,
       "within_km": {
        "1": 0.0706,
        "10": 0.4934,
        "30": 0.852
-      }
+      },
+      "lost": 218,
+      "lost_fraction": 0.0061
      },
      {
       "bin": "48-72 h",
@@ -1126,11 +1914,14 @@
       "median_km": 19.611,
       "p90_km": 64.859,
       "mean_age_h": 52.99,
+      "median_age_h": 51.96,
       "within_km": {
        "1": 0.0442,
        "10": 0.3743,
        "30": 0.6198
-      }
+      },
+      "lost": 47,
+      "lost_fraction": 0.0086
      },
      {
       "bin": "over 72 h",
@@ -1138,11 +1929,61 @@
       "median_km": 7838.129,
       "p90_km": 13281.419,
       "mean_age_h": 152.52,
+      "median_age_h": 159.89,
       "within_km": {
        "1": 0.0026,
        "10": 0.0289,
        "30": 0.0342
-      }
+      },
+      "lost": 324,
+      "lost_fraction": 0.8526
+     }
+    ],
+    "by_shell": [
+     {
+      "bin": "under 400 km",
+      "n": 13400,
+      "median_km": 11.757,
+      "p90_km": 139.539,
+      "mean_age_h": 3.84,
+      "median_age_h": 3.13,
+      "within_km": {
+       "1": 0.0978,
+       "10": 0.4701,
+       "30": 0.6478
+      },
+      "lost": 88,
+      "lost_fraction": 0.0066
+     },
+     {
+      "bin": "400-500 km",
+      "n": 115912,
+      "median_km": 2.607,
+      "p90_km": 21.304,
+      "mean_age_h": 9.14,
+      "median_age_h": 8.86,
+      "within_km": {
+       "1": 0.2396,
+       "10": 0.7819,
+       "30": 0.9378
+      },
+      "lost": 479,
+      "lost_fraction": 0.0041
+     },
+     {
+      "bin": "500-600 km",
+      "n": 13165,
+      "median_km": 2.257,
+      "p90_km": 344.256,
+      "mean_age_h": 3.28,
+      "median_age_h": 3.27,
+      "within_km": {
+       "1": 0.3016,
+       "10": 0.7057,
+       "30": 0.7923
+      },
+      "lost": 503,
+      "lost_fraction": 0.0382
      }
     ],
     "pack": "Z:\\ephemera\\spool\\score\\globe_d03dc522da18.json"
@@ -1170,11 +2011,28 @@
      "median_km": 2.805,
      "p90_km": 25.472,
      "mean_age_h": 2.14,
+     "median_age_h": 1.69,
      "within_km": {
       "1": 0.2112,
       "10": 0.7788,
       "30": 0.9122
-     }
+     },
+     "lost": 1073,
+     "lost_fraction": 0.008
+    },
+    "at_file_start": {
+     "median_km": 2.917,
+     "p90_km": 56.79,
+     "mean_age_h": -33.72,
+     "median_age_h": -35.24,
+     "within_km": {
+      "1": 0.2113,
+      "10": 0.7945,
+      "30": 0.8798
+     },
+     "lost": 266,
+     "lost_fraction": 0.0255,
+     "satellites": 10421
     },
     "by_age": [
      {
@@ -1183,11 +2041,14 @@
       "median_km": 1.9,
       "p90_km": 20.17,
       "mean_age_h": -19.39,
+      "median_age_h": -18.6,
       "within_km": {
        "1": 0.2825,
        "10": 0.8567,
        "30": 0.9147
-      }
+      },
+      "lost": 636,
+      "lost_fraction": 0.0099
      },
      {
       "bin": "0-6 h",
@@ -1195,11 +2056,14 @@
       "median_km": 1.62,
       "p90_km": 7.256,
       "mean_age_h": 3.11,
+      "median_age_h": 3.29,
       "within_km": {
        "1": 0.3201,
        "10": 0.9308,
        "30": 0.988
-      }
+      },
+      "lost": 0,
+      "lost_fraction": 0.0
      },
      {
       "bin": "6-12 h",
@@ -1207,11 +2071,14 @@
       "median_km": 2.276,
       "p90_km": 11.624,
       "mean_age_h": 9.11,
+      "median_age_h": 9.29,
       "within_km": {
        "1": 0.2391,
        "10": 0.8804,
        "30": 0.9713
-      }
+      },
+      "lost": 1,
+      "lost_fraction": 0.0001
      },
      {
       "bin": "12-24 h",
@@ -1219,11 +2086,14 @@
       "median_km": 4.636,
       "p90_km": 22.192,
       "mean_age_h": 18.11,
+      "median_age_h": 18.0,
       "within_km": {
        "1": 0.1179,
        "10": 0.7717,
        "30": 0.9195
-      }
+      },
+      "lost": 15,
+      "lost_fraction": 0.0007
      },
      {
       "bin": "24-48 h",
@@ -1231,11 +2101,14 @@
       "median_km": 8.89,
       "p90_km": 35.146,
       "mean_age_h": 33.23,
+      "median_age_h": 31.98,
       "within_km": {
        "1": 0.0723,
        "10": 0.5357,
        "30": 0.8781
-      }
+      },
+      "lost": 72,
+      "lost_fraction": 0.0027
      },
      {
       "bin": "48-72 h",
@@ -1243,11 +2116,14 @@
       "median_km": 16.162,
       "p90_km": 75.617,
       "mean_age_h": 51.92,
+      "median_age_h": 50.78,
       "within_km": {
        "1": 0.0484,
        "10": 0.405,
        "30": 0.6648
-      }
+      },
+      "lost": 34,
+      "lost_fraction": 0.0173
      },
      {
       "bin": "over 72 h",
@@ -1255,11 +2131,61 @@
       "median_km": 9575.606,
       "p90_km": 13385.143,
       "mean_age_h": 153.68,
+      "median_age_h": 156.92,
       "within_km": {
        "1": 0.0059,
        "10": 0.0119,
        "30": 0.0119
-      }
+      },
+      "lost": 315,
+      "lost_fraction": 0.9347
+     }
+    ],
+    "by_shell": [
+     {
+      "bin": "under 400 km",
+      "n": 13394,
+      "median_km": 11.398,
+      "p90_km": 129.154,
+      "mean_age_h": -1.92,
+      "median_age_h": -2.76,
+      "within_km": {
+       "1": 0.0925,
+       "10": 0.4778,
+       "30": 0.6516
+      },
+      "lost": 131,
+      "lost_fraction": 0.0098
+     },
+     {
+      "bin": "400-500 km",
+      "n": 110423,
+      "median_km": 2.586,
+      "p90_km": 16.362,
+      "mean_age_h": 3.06,
+      "median_age_h": 2.84,
+      "within_km": {
+       "1": 0.2178,
+       "10": 0.8228,
+       "30": 0.956
+      },
+      "lost": 463,
+      "lost_fraction": 0.0042
+     },
+     {
+      "bin": "500-600 km",
+      "n": 10696,
+      "median_km": 2.248,
+      "p90_km": 390.199,
+      "mean_age_h": -2.32,
+      "median_age_h": -2.34,
+      "within_km": {
+       "1": 0.2923,
+       "10": 0.7013,
+       "30": 0.7856
+      },
+      "lost": 479,
+      "lost_fraction": 0.0448
      }
     ],
     "pack": "Z:\\ephemera\\spool\\score\\globe_513b92c4683e.json"
