@@ -213,3 +213,21 @@ document's tracking table, not here.
   caveats in score/README.md. Not yet scheduled, not yet on the site, no globe pack yet.
   Next: run it per cycle from the ledger task, publish the summary with as-of and method, then the
   globe pack (DOCS/globe-vision.md order of work).
+- 2026-09-03 - Scoring runs unattended and the globe is live. score/run.py scores one cycle per
+  30-min pass (Ephemera-Score task, 4 workers, ~8 min per cycle on the home PC while the watcher
+  pulls) into spool/score/, paired with the latest catalogue snapshot fetched before the cycle;
+  the ledger build renders the catalogue-visibility section and copies the newest globe pack
+  (5.3 MB) to web/dist/globe/pack.json; web/globe/ draws it with Cesium + satellite.js (keyless).
+  First unattended-quality cycle 1e726fe006d9 vs the 04:10 UTC snapshot: 11,091 of 11,118 scored,
+  27 without a public set, none unreadable. Follow-ups, in order:
+  (a) a "lost" category in the scorer: 769 satellites (7%) sit beyond 1,000 km at some epoch,
+      i.e. the public set is not on the file's trajectory at all (stale sets after manoeuvres,
+      2-3 days old); today they are counted inside "beyond 30 km" and the globe lists them apart;
+      they are the concept's "lost element sets" covariate and deserve their own line and bin;
+  (b) the pack in git: ~5 MB per scored cycle, three a day, is too much history; move packs to
+      object storage behind the site (R2 or the S3 bucket with a public prefix) and keep git for
+      the summary only;
+  (c) headless Chrome verified the page's own numbers and the point cloud but not the Earth
+      surface tiles (they load on animation frames it skips); confirm in a real browser;
+  (d) the ten older cycles are pending in run.json and drain one per half hour; three cycles were
+      already shipped and deleted locally before scoring existed and stay listed as skipped.

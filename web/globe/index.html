@@ -161,9 +161,13 @@
     };
     showInstant(base, summarise(sats, base));
 
-    const worst = sats.slice().sort((a, b) => b.max - a.max).slice(0, 15);
+    const gross = sats.filter((s) => s.max > 1000);
+    const worst = sats.filter((s) => s.max <= 1000).sort((a, b) => b.max - a.max).slice(0, 15);
     let select = () => {};
-    $("worst").innerHTML = worst.map((s, i) => '<button data-i="' + i + '"><span class="mono">' + s.id + "</span> "
+    $("worst").innerHTML = (gross.length ? '<p class="mono" style="color:var(--dim);margin-bottom:.4rem">' + fmt(gross.length)
+      + " satellites are beyond 1,000 km at some point: there the public set is not on the file's trajectory at all "
+      + "(shown red on the globe, listed separately from the manoeuvre-scale cases below).</p>" : "")
+      + worst.map((s, i) => '<button data-i="' + i + '"><span class="mono">' + s.id + "</span> "
       + s.name + ' <span class="mono">' + s.max.toFixed(1) + " km at most</span></button>").join("");
     $("worst").addEventListener("click", (ev) => {
       const b = ev.target.closest("button");
@@ -184,6 +188,8 @@
       return;
     }
     viewer.scene.globe.enableLighting = true;
+    viewer.scene.globe.baseColor = Cesium.Color.fromCssColorString("#16234a");
+    viewer.scene.globe.showGroundAtmosphere = true;
     const clock = viewer.clock;
     clock.startTime = Cesium.JulianDate.fromDate(base);
     clock.stopTime = Cesium.JulianDate.fromDate(end);
