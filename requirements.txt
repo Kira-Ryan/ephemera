@@ -9,3 +9,7 @@ pytest==8.4.2
 
 # Site deploys only (infra/cf_site.py deploy): the Pages asset hash is blake3.
 blake3==1.0.7
+\n
+# Site build only (web/brand.py): the favicon, apple icon and social card are rasterised from the
+# same geometry as the SVG mark, so a site build on a clean machine needs Pillow.
+pillow==12.3.0

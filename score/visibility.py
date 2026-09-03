@@ -33,7 +33,7 @@ import math
 import statistics
 import sys
 from concurrent.futures import ProcessPoolExecutor
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
@@ -44,6 +44,8 @@ import frames  # noqa: E402
 SCHEMA = 1
 EARTH_RADIUS_KM = 6378.137
 THRESHOLDS_KM = (1.0, 10.0, 30.0)
+LOST_KM = 1000.0                 # beyond this the public set is not on the file's trajectory at all
+PSEUDO_ID_FLOOR = 700_000_000    # SpaceX serves ids in this range for objects the catalogue has no entry for
 AGE_BINS_H = ((None, 0.0, "set newer than epoch"), (0.0, 6.0, "0-6 h"), (6.0, 12.0, "6-12 h"),
               (12.0, 24.0, "12-24 h"), (24.0, 48.0, "24-48 h"), (48.0, 72.0, "48-72 h"), (72.0, None, "over 72 h"))
 SHELLS_KM = ((None, 400.0, "under 400 km"), (400.0, 500.0, "400-500 km"), (500.0, 600.0, "500-600 km"),
@@ -113,22 +115,72 @@ def _bin(value: float, bins) -> str:
 
 def _stats(rows: list[dict]) -> dict:
     ds = sorted(r["dist_km"] for r in rows)
+    ages = sorted(r["age_h"] for r in rows)
     n = len(ds)
     return {"n": n, "median_km": round(statistics.median(ds), 3),
             "p90_km": round(ds[min(n - 1, int(math.ceil(0.9 * n)) - 1)], 3),
-            "mean_age_h": round(sum(r["age_h"] for r in rows) / n, 2),
-            "within_km": {str(int(t)): round(sum(1 for d in ds if d <= t) / n, 4) for t in THRESHOLDS_KM}}
+            "mean_age_h": round(sum(ages) / n, 2), "median_age_h": round(statistics.median(ages), 2),
+            "within_km": {str(int(t)): round(sum(1 for d in ds if d <= t) / n, 4) for t in THRESHOLDS_KM},
+            "lost": sum(1 for d in ds if d > LOST_KM),
+            "lost_fraction": round(sum(1 for d in ds if d > LOST_KM) / n, 4)}
 
 
-def summarise(rows: list[dict]) -> dict:
+def at_file_start(rows: list[dict]) -> dict | None:
+    """The headline: one comparison per satellite, at the first evaluation epoch of its own file,
+    i.e. how well the public catalogue placed the constellation at the moment the operator published.
+
+    This is the only figure comparable between cycles. Every other cut mixes prediction horizon with
+    element age: later epochs in a file are both further ahead and scored against an older element
+    set. Taking each satellite once, at its file's own start, holds the horizon at zero and leaves
+    element age as the only variable, which is what the scoreboard is about."""
     if not rows:
-        return {"overall": None, "by_age": [], "by_shell": []}
+        return None
+    first: dict[int, dict] = {}
+    for r in rows:
+        k = r["norad"]
+        if k not in first or r["epoch"] < first[k]["epoch"]:
+            first[k] = r
+    st = _stats(list(first.values()))
+    st["satellites"] = st.pop("n")
+    return st
+
+
+def catalogue_age(rows: list[dict], fetched_utc: str | None) -> dict | None:
+    """How old the public element sets themselves were when the snapshot was taken.
+
+    Distinct from the element age of a comparison, which also carries the operator file's forward
+    prediction horizon and so runs far larger. This is the truth-health figure: catalogue staleness.
+    """
+    if not rows or not fetched_utc:
+        return None
+    fetched = datetime.strptime(fetched_utc, "%Y-%m-%dT%H:%M:%SZ").replace(tzinfo=timezone.utc)
+    first: dict[int, dict] = {}
+    for r in rows:
+        k = r["norad"]
+        if k not in first or r["epoch"] < first[k]["epoch"]:
+            first[k] = r
+    ages = []
+    for r in first.values():
+        epoch = datetime.strptime(r["epoch"], "%Y-%m-%dT%H:%M:%SZ").replace(tzinfo=timezone.utc)
+        set_epoch = epoch - timedelta(hours=r["age_h"])
+        ages.append((fetched - set_epoch).total_seconds() / 3600)
+    ages.sort()
+    return {"sets": len(ages), "mean_h": round(sum(ages) / len(ages), 2),
+            "median_h": round(statistics.median(ages), 2),
+            "p90_h": round(ages[min(len(ages) - 1, int(math.ceil(0.9 * len(ages))) - 1)], 2),
+            "over_72h": sum(1 for a in ages if a > 72)}
+
+
+def summarise(rows: list[dict], fetched_utc: str | None = None) -> dict:
+    if not rows:
+        return {"overall": None, "at_file_start": None, "catalogue_age": None, "by_age": [], "by_shell": []}
     by_age = {label: [] for _, _, label in AGE_BINS_H}
     by_shell = {label: [] for _, _, label in SHELLS_KM}
     for r in rows:
         by_age[_bin(r["age_h"], AGE_BINS_H)].append(r)
         by_shell[_bin(r["alt_km"], SHELLS_KM)].append(r)
-    return {"overall": _stats(rows),
+    return {"overall": _stats(rows), "at_file_start": at_file_start(rows),
+            "catalogue_age": catalogue_age(rows, fetched_utc),
             "by_age": [{"bin": k, **_stats(v)} for k, v in by_age.items() if v],
             "by_shell": [{"bin": k, **_stats(v)} for k, v in by_shell.items() if v]}
 
@@ -138,7 +190,8 @@ def score_cycle(cycle_dir: Path, catalogue: cat.Catalogue, eval_step_min: float,
     names = (cycle_dir / "MANIFEST.txt").read_text().split()
     if limit:
         names = names[:limit]
-    counts = {"files": len(names), "scored": 0, "no_public_set": 0, "decayed_set": 0, "propagation_failed": 0, "unreadable": 0}
+    counts = {"files": len(names), "scored": 0, "no_public_set": 0, "uncatalogued": 0, "decayed_set": 0,
+              "propagation_failed": 0, "unreadable": 0}
     satellites = {"scored": [], "no_public_set": [], "decayed_set": [], "propagation_failed": [], "unreadable": []}
     rows: list[dict] = []
     tasks = []
@@ -156,6 +209,8 @@ def score_cycle(cycle_dir: Path, catalogue: cat.Catalogue, eval_step_min: float,
         es = catalogue.sets.get(norad)
         if es is None:
             counts["no_public_set"] += 1
+            if norad >= PSEUDO_ID_FLOOR:
+                counts["uncatalogued"] += 1
             satellites["no_public_set"].append(norad)
             continue
         if es.decay_date:
@@ -192,15 +247,18 @@ def build_report(cycle_dir: Path, catalogue: cat.Catalogue, eval_step_min: float
                    "taken as J2000) and differenced against the operator-published trajectory (EME2000) at the "
                    f"file's own record epochs every {eval_step_min:g} min. Distance in km; components in the "
                    "operator's radial/in-track/cross-track frame; altitude is geocentric radius minus 6378.137 km; "
-                   "element age is evaluation epoch minus element-set epoch, signed. Both inputs are predictions; "
-                   "the operator's includes planned trajectory changes the public set cannot know about."),
+                   "element age is evaluation epoch minus element-set epoch, signed. A comparison beyond "
+                   f"{LOST_KM:g} km is counted as lost: the public set is not on the file's trajectory at all. "
+                   "at_file_start takes each satellite once, at the first epoch of its own file, which is the only "
+                   "cut comparable between cycles. Both inputs are predictions; the operator's includes planned "
+                   "trajectory changes the public set cannot know about."),
         "inputs": {"cycle": cycle_dir.name, "first_seen_utc": rec.get("first_seen_utc"),
                    "merkle_root": rec.get("merkle_root"), "manifest_sha256": rec.get("manifest_sha256"),
                    "catalogue_snapshot": catalogue.snapshot_id, "catalogue_sha256": catalogue.sha256,
                    "catalogue_fetched_utc": catalogue.fetched_utc, "catalogue_sets": len(catalogue.sets),
                    "limit": limit or None, **(extra_inputs or {})},
         "eval_step_min": eval_step_min, "thresholds_km": list(THRESHOLDS_KM),
-        "counts": counts, "summary": summarise(rows), "satellites": satellites,
+        "counts": counts, "summary": summarise(rows, catalogue.fetched_utc), "satellites": satellites,
     }
     return report, rows
 

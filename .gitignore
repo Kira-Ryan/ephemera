@@ -25,3 +25,7 @@ infra/*.env
 
 # Wrangler's isolated home for guarded deploys (never the machine-level OAuth config)
 .wrangler-home/
+
+# Derived score and globe products written by web/build.py runs done by hand.
+# The spool under Z: is the store of record; nothing here needs committing.
+data/

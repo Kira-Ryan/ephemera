@@ -231,3 +231,24 @@ document's tracking table, not here.
       tiles, lighting and atmosphere under the constellation (globe3.png, 11:37 local);
   (d) the ten older cycles are pending in run.json and drain one per half hour; three cycles were
       already shipped and deleted locally before scoring existed and stay listed as skipped.
+
+- 2026-09-03 - Design, accuracy and brand pass over the whole site, after a 43-agent review.
+  Confirmed and fixed: the per-cycle table's "median km, all" column was an artefact of snapshot
+  pairing (correlation 0.95 with mean element age), so the page now leads with an at-file-start
+  figure that holds the prediction horizon at zero and marks hindsight pairings as not comparable;
+  witness failures were spelled "MISSING" whether the copy was never made or hashed to another
+  cycle's manifest, and those are now separate states, rendered amber, counted in the ledger;
+  "raw data kept" was the uncompressed source volume, now stated as source bytes, stored bytes,
+  and how much exists only in cold storage; a cycle first seen at 23:24 sits under no daily root
+  and the page now says so; a complete cycle without a public catalogue entry is counted as
+  uncatalogued (27 in the newest cycle, a launch batch under SpaceX pseudo ids); comparisons
+  beyond 1,000 km are a named "lost" category rather than hidden inside "beyond 30 km".
+  New: web/brand.py generates the mark from geometry (three fading arcs, a head, a kept block)
+  plus the favicon, apple icon and social card, all verified at true favicon sizes in a browser;
+  score/resummarise.py rebuilds every report's summary from stored rows in seconds instead of
+  re-propagating; tools/claims_lint.py now reads HTML without the quoting-as-mention rule (it was
+  blind to attributes and script strings, which is most of the globe's prose) and asserts the
+  register's required caveats on the built pages, which immediately caught three missing ones.
+  The globe keeps its caveats at phone width, and its colour ramp no longer collapses under
+  red-green colour blindness. Still open: the 5 MB globe pack is committed on every scored cycle
+  and belongs in object storage (follow-up (b) above), which is the one review finding not fixed.

@@ -48,8 +48,12 @@ def make_spool(tmp_path: Path, now: datetime) -> Path:
 
     cyc("cycle_aaaaaaaaaaaa", a, "complete", 9000, 9000, "a1" * 32, witness={
         "ots": {"stamped_utc": utc(a), "attested": {"block_height": 964904}},
-        "wayback": {"manifest": {"verified": True},
-                    "samples": {str(i): {"name": f"f{i}", "verified": True} for i in range(10)}}})
+        "wayback": {"manifest": {"verified": True, "timestamp": "20260831060000",
+                                 "id_url": "https://web.archive.org/web/20260831060000id_/https://example.invalid/MANIFEST.txt",
+                                 "sha256_of_copy": "a1" * 32},
+                    "samples": {str(i): {"name": f"f{i}", "verified": True, "timestamp": "20260831060100",
+                                         "id_url": f"https://web.archive.org/web/20260831060100id_/https://example.invalid/f{i}",
+                                         "sha256_of_copy": f"{i:02d}" * 32} for i in range(10)}}})
     cyc("cycle_bbbbbbbbbbbb", b, "gaps", 9100, 9050, None)
     cyc("cycle_eeeeeeeeeeee", now - timedelta(minutes=20), "in-progress", 9200, 3100, None)
     cyc("cycle_cccccccccccc", c, "complete", 8900, 8900, "c3" * 32, witness={
@@ -113,12 +117,14 @@ def test_page_prints_the_uncomfortable_truths(built):
     assert "mailto:KiraRyan27@gmail.com" in page and "linkedin.com/in/kira-ryan" in page
     assert 'class="gap"' in page
     assert "1 lost" in page                              # the given-up witness sample
+    assert 'class="warn"' in page                        # and its row is marked, not silent
     assert ">1</b>" in page and "cadence holds" in page.lower()
     assert "block 964904" in page and "stamp" in page.lower()
     flat = " ".join(page.split())                       # the template wraps lines mid-phrase
     assert "Operator ephemerides are predictions, not observations." in flat
     assert "not re-fetchable from the source after one cycle" in flat
     assert "As of <b>2026-09-01 12:00" in page          # every figure carries its as-of time
+    assert "built 2026-09-01 12:00 UTC" in page
 
 
 def test_coverage_short_history_says_not_measured(tmp_path):
