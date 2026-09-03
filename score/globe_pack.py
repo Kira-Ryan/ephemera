@@ -8,6 +8,11 @@ satellite's own first epoch, given as `t0_s` seconds after the pack's `base`). T
 propagates the public set for the ghost and subtracts the interpolated deviation for the operator
 position, so an 11,000-satellite cycle fits in a few megabytes instead of the 22 GB of files.
 
+The deviation is decomposed in the PUBLIC satellite's frame, not the operator's. The browser only
+has the public element set, so that is the only frame it can rebuild; rotating out of the operator's
+frame instead was measured at 15,616 km of error on a satellite whose predictions were far apart,
+which drew it off its orbit entirely.
+
 The pack is derived from a visibility report and its rows file, never from live feeds, and
 carries the same inputs (cycle id and root, snapshot id and hash) plus its own as-of time.
 """
@@ -36,6 +41,11 @@ def build_pack(report: dict, rows: list[dict], catalogue: cat.Catalogue) -> dict
         by_sat.setdefault(r["norad"], []).append(r)
     if not by_sat:
         raise ValueError("no rows to pack")
+    missing = next((n for n, rs in by_sat.items() if "g_radial_km" not in rs[0]), None)
+    if missing is not None:
+        raise ValueError(
+            f"rows for {missing} carry no public-frame decomposition, so a pack built from them would "
+            "draw satellites off their orbits; rescore this cycle with the current score/visibility.py")
     base = min(parse_utc(rs[0]["epoch"]) for rs in by_sat.values())
     step_s = int(report["eval_step_min"] * 60)
     sats = []
@@ -52,7 +62,8 @@ def build_pack(report: dict, rows: list[dict], catalogue: cat.Catalogue) -> dict
             "t0_s": int(round((t0 - base).total_seconds())),
             "alt_km": round(rs[0]["alt_km"], 1),
             "max_km": round(max(r["dist_km"] for r in rs), 3),
-            "ric_m": [int(round(1000 * r[key])) for r in rs for key in ("radial_km", "intrack_km", "cross_km")],
+            "ric_m": [int(round(1000 * r[key])) for r in rs
+                      for key in ("g_radial_km", "g_intrack_km", "g_cross_km")],
         })
     return {
         "schema": SCHEMA, "kind": "globe_pack_v0",
@@ -61,7 +72,12 @@ def build_pack(report: dict, rows: list[dict], catalogue: cat.Catalogue) -> dict
         "method": ("Per satellite: the public element set from the catalogue snapshot, and the scored deviation "
                    "(public minus operator, radial/in-track/cross-track, metres) at the scorer's evaluation epochs. "
                    "The browser propagates the element set with SGP4 for the public position and subtracts the "
-                   "deviation, interpolated linearly between evaluation epochs, for the operator position. Both are "
+                   "deviation, interpolated linearly between evaluation epochs, for the operator position. The "
+                   "deviation is given in the public satellite's radial/in-track/cross-track frame, which is the "
+                   "frame the browser can rebuild exactly. The operator position is therefore a reconstruction: "
+                   "measured against the archived files it lands within about a kilometre of the published "
+                   "trajectory at ordinary separations, and within a few hundred kilometres for the satellites "
+                   "whose predictions are thousands of kilometres apart. Both are "
                    "predictions; the operator's includes planned trajectory changes the public set cannot know about. "
                    + report["method"]),
         "base": base.strftime("%Y-%m-%dT%H:%M:%SZ"), "step_s": step_s,

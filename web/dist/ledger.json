@@ -1,6 +1,6 @@
 {
  "schema": 2,
- "generated_utc": "2026-09-03T21:33:11Z",
+ "generated_utc": "2026-09-03T22:00:21Z",
  "poller": "home (Cape Town, residential; single poller until poller A exists)",
  "method": "built from each cycle's cycle.json, witness.json and ship.json in the poller's spool; coverage is the fraction of the last 24 h's minutes with a watcher heartbeat under 10 minutes old (D18); a cadence hold is a manifest first-seen gap over 9 h; source bytes are the responses as served, stored bytes are the gzipped archive objects the shipper recorded",
  "totals": {
@@ -21,8 +21,8 @@
    {
     "cycle": "cycle_a39dfdfee0fd",
     "first_seen_utc": "2026-09-03T12:09:25Z",
-    "as_of": "2026-09-03T13:26:22Z",
-    "method": "Public element set (Space-Track gp snapshot) propagated with SGP4 (skyfield 1.55, python-sgp4 2.27; TEME to GCRS by Skyfield, taken as J2000) and differenced against the operator-published trajectory (EME2000) at the file's own record epochs every 360 min. Distance in km; components in the operator's radial/in-track/cross-track frame; altitude is geocentric radius minus 6378.137 km; element age is evaluation epoch minus element-set epoch, signed. Both inputs are predictions; the operator's includes planned trajectory changes the public set cannot know about.",
+    "as_of": "2026-09-03T21:54:15Z",
+    "method": "Public element set (Space-Track gp snapshot) propagated with SGP4 (skyfield 1.55, python-sgp4 2.27; TEME to GCRS by Skyfield, taken as J2000) and differenced against the operator-published trajectory (EME2000) at the file's own record epochs every 360 min. Distance in km; components in the operator's radial/in-track/cross-track frame; altitude is geocentric radius minus 6378.137 km; element age is evaluation epoch minus element-set epoch, signed. A comparison beyond 1000 km is counted as lost: the public set is not on the file's trajectory at all. at_file_start takes each satellite once, at the first epoch of its own file, which is the only cut comparable between cycles. Both inputs are predictions; the operator's includes planned trajectory changes the public set cannot know about.",
     "eval_step_min": 360.0,
     "snapshot": "20260903T101011Z_ff964e6b31f2",
     "snapshot_fetched_utc": "2026-09-03T10:10:11Z",
@@ -32,6 +32,7 @@
      "files": 11117,
      "scored": 11090,
      "no_public_set": 27,
+     "uncatalogued": 27,
      "decayed_set": 0,
      "propagation_failed": 0,
      "unreadable": 0
