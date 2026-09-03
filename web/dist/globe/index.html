@@ -5,9 +5,12 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Ephemera globe</title>
 <meta name="description" content="Every Starlink satellite drawn twice: where the operator says it is going, and where the public catalogue puts it.">
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<meta name="theme-color" content="#090c17">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/cesium@1.131.0/Build/Cesium/Widgets/widgets.css">
 <style>
-  :root { --bg: #0c0f1d; --ink: #e8e6df; --dim: #9a97a8; --accent: #ffb347; --line: #2a1f5e; --bad: #ff6b6b; }
+  :root { --bg: #090c17; --ink: #eceada; --dim: #b9b7c6; --accent: #ffb347; --line: #3d4a75; --bad: #ff7a7a;
+          --km-1: #7fd4ff; --km-10: #ffe08a; --km-30: #ff8c42; --km-far: #ff4d5e; }
   * { margin: 0; padding: 0; box-sizing: border-box; }
   html, body { height: 100%; background: var(--bg); color: var(--ink); font: 14px/1.5 Georgia, 'Times New Roman', serif; overflow: hidden; }
   #globe { position: absolute; inset: 0; }
@@ -32,7 +35,13 @@
   .cesium-viewer-bottom { display: none; }
   .cesium-viewer-timelineContainer { bottom: 0; }
   .cesium-viewer-animationContainer { bottom: 0; }
-  @media (max-width: 800px) { #right { display: none; } #foot { display: none; } #top { max-width: calc(100% - 1.6rem); } }
+  /* The caveats are required on every page at every width, so #foot is bounded and scrolled here,
+     never hidden. The Cesium container, and html/body overflow, are deliberately untouched. */
+  @media (max-width: 800px) {
+    #right { display: none; }
+    #top { max-width: calc(100% - 1.6rem); }
+    #foot { bottom: .8rem; max-height: 44vh; overflow: auto; font-size: .72rem; }
+  }
 </style>
 </head>
 <body>
@@ -45,10 +54,10 @@
   <div id="webgl"></div>
   <div class="legend">
     solid point: operator trajectory, coloured by distance from the ghost
-    <span style="background:#7bd88f"></span>under 1 km
-    <span style="background:#ffd166"></span>under 10 km
-    <span style="background:#ff9f43"></span>under 30 km
-    <span style="background:#ff5c5c"></span>30 km and beyond
+    <span style="background:var(--km-1)"></span>under 1 km
+    <span style="background:var(--km-10)"></span>under 10 km
+    <span style="background:var(--km-30)"></span>under 30 km
+    <span style="background:var(--km-far)"></span>30 km and beyond
     <br>ghost: the public catalogue's element set, propagated in your browser
     <label><input type="checkbox" id="tethers" checked> tethers from 10 km</label>
   </div>
@@ -67,8 +76,14 @@
   The solid point is the operator-published trajectory, rebuilt from the scored deviation at six-hour
   epochs, so it is a reconstruction, not the file itself. The operator's file includes planned
   trajectory changes the public set cannot know about; a large distance is that gap, not an error of
-  the satellite. Inputs are archived by this project and witnessed by OpenTimestamps and the Wayback
-  Machine; they are not re-fetchable from the source after one cycle. <span id="provenance"></span>
+  the satellite. Starlink is the only operator with public covariance; other operators enter via
+  CelesTrak SupGP without covariance. Public GP data is too noisy to test sub-metre covariance; the
+  self-consistency scoreboard measures prediction-versus-later-prediction. That scoreboard is not
+  built yet.
+  Inputs are archived by this project and witnessed by OpenTimestamps and the Wayback Machine; they
+  are not re-fetchable from the source after one cycle. Public element sets come from Space-Track.org and are redistributed under
+  Space-Track's blanket approval for basic space situational awareness data, with citation.
+  <span id="provenance"></span>
 </div>
 
 <script>window.CESIUM_BASE_URL = "https://cdn.jsdelivr.net/npm/cesium@1.131.0/Build/Cesium/";</script>
@@ -79,7 +94,9 @@
   "use strict";
   const $ = (id) => document.getElementById(id);
   const PACK_URL = "pack.json";
-  const COLOURS = [[1, "#7bd88f"], [10, "#ffd166"], [30, "#ff9f43"], [Infinity, "#ff5c5c"]];
+  // Blue to red, not green to red: the near end separates by hue on the axis red/green colour
+  // blindness leaves intact, and the far end separates by lightness. The number is always shown too.
+  const COLOURS = [[1, "#7fd4ff"], [10, "#ffe08a"], [30, "#ff8c42"], [Infinity, "#ff4d5e"]];
   const fmt = (n) => n.toLocaleString("en-GB");
   const iso = (d) => d.toISOString().slice(0, 16).replace("T", " ") + " UTC";
 
@@ -165,8 +182,10 @@
     const worst = sats.filter((s) => s.max <= 1000).sort((a, b) => b.max - a.max).slice(0, 15);
     let select = () => {};
     $("worst").innerHTML = (gross.length ? '<p class="mono" style="color:var(--dim);margin-bottom:.4rem">' + fmt(gross.length)
-      + " satellites are beyond 1,000 km at some point: there the public set is not on the file's trajectory at all "
-      + "(shown red on the globe, listed separately from the manoeuvre-scale cases below).</p>" : "")
+      + " satellites are more than 1,000 km from the ghost at some point in this cycle: the public element"
+      + " set is not on the file's trajectory at all. They are listed apart from the smaller separations"
+      + " below because they would otherwise fill the list. Ephemera does not label any separation as a"
+      + " manoeuvre; that needs a detector this project has not built.</p>" : "")
       + worst.map((s, i) => '<button data-i="' + i + '"><span class="mono">' + s.id + "</span> "
       + s.name + ' <span class="mono">' + s.max.toFixed(1) + " km at most</span></button>").join("");
     $("worst").addEventListener("click", (ev) => {

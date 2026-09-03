@@ -8,6 +8,14 @@ realism") and is allowed; an unquoted use is a violation. Two phrases, "confirms
 are only violations in a sentence that also talks about the FCC / SpaceX / manoeuvre figure, which
 is the sense D04 prohibits. The register itself is never scanned.
 
+In HTML there is no quoting-as-mention convention: attribute values and script string literals are
+the page's own words, so only backticks and *emphasis* count as mentions there. Without that, the
+whole of an interactive page's prose is invisible to this lint.
+
+The register's "Required caveats" are checked as well, on the built home page and the globe: each
+bullet must appear, whitespace-insensitive, or the build fails. A caveat that quietly stops being
+rendered is a failure no amount of looking for bad words can catch.
+
 A line carrying `<!-- lint:allow -->` is skipped: a deliberate mention that the quoting rule
 cannot express. Use it sparingly and only for mentions, never for uses.
 
@@ -26,6 +34,8 @@ REGISTER = REPO / "DOCS" / "claims-register.md"
 # Outward artefacts only (the register's own scope): the rulebook under DOCS/ and the task ledger
 # PLAN.md discuss the prohibited wording by name and are not scanned.
 DEFAULT_TARGETS = ["README.md", "VERIFY.md", "archive/README.md", "probes", "web/dist", "bulletins"]
+# Built pages that must each carry every required caveat, relative to a scanned directory.
+CAVEAT_PAGES = ("index.html", "globe/index.html")
 ALLOW_MARKER = "<!-- lint:allow -->"   # a line carrying this is skipped (a deliberate mention)
 CONTEXT_BOUND = {"confirms", "refutes"}
 CONTEXT_WORDS = re.compile(r"\b(fcc|spacex|manoeuvre|maneuver|manoeuvres|maneuvers|declared|census|207,152)\b", re.I)
@@ -49,11 +59,48 @@ def load_rules(register: Path | None = None) -> list[str]:
     return sorted(phrases, key=len, reverse=True)
 
 
-def strip_mentions(line: str) -> str:
-    """Blank out quoted / code / emphasised spans so a mention of a phrase is not a use of it."""
+def load_required(register: Path | None = None) -> list[str]:
+    """The bullets of the "Required caveats" section: the longest quoted span in each."""
+    text = (register or REGISTER).read_text(encoding="utf-8")
+    m = re.search(r"^## Required caveats[^\n]*$(.*?)^## ", text, re.S | re.M)
+    if not m:
+        return []
+    out = []
+    for b in re.split(r"^- ", m.group(1), flags=re.M)[1:]:
+        quoted = re.findall(r'"([^"]+)"', " ".join(b.split()))
+        if quoted:
+            out.append(max(quoted, key=len))
+    return out
+
+
+def strip_mentions(line: str, html_mode: bool = False) -> str:
+    """Blank out quoted / code / emphasised spans so a mention of a phrase is not a use of it.
+
+    HTML has no quoting-as-mention convention: a double-quoted span there is an attribute value or a
+    script string literal, which is the page speaking in its own voice. So in HTML only backticks and
+    emphasis mark a mention, and a deliberate mention uses the allow marker."""
+    if html_mode:
+        # Backticks in HTML are JavaScript template literals, which is exactly where a page writes
+        # its visible text; asterisks are multiplication. Neither marks a mention here.
+        return line
     out = re.sub(r'"[^"\n]*"', lambda mm: " " * len(mm.group(0)), line)
     out = re.sub(r"`[^`\n]*`", lambda mm: " " * len(mm.group(0)), out)
     out = re.sub(r"\*[^*\n]+\*", lambda mm: " " * len(mm.group(0)), out)
+    return out
+
+
+def missing_caveats(root: Path, required: list[str]) -> list[tuple[Path, str]]:
+    """Required caveats absent from a built page. Whitespace-insensitive, because the generator
+    wraps prose wherever the template happens to break."""
+    out = []
+    for rel in CAVEAT_PAGES:
+        page = root / rel
+        if not page.is_file():
+            continue
+        flat = " ".join(page.read_text(encoding="utf-8", errors="replace").split())
+        for caveat in required:
+            if " ".join(caveat.split()) not in flat:
+                out.append((page, caveat))
     return out
 
 
@@ -62,7 +109,7 @@ def violations_in(path: Path, rules: list[str]) -> list[tuple[int, str, str]]:
     for no, raw in enumerate(path.read_text(encoding="utf-8", errors="replace").splitlines(), 1):
         if ALLOW_MARKER in raw:
             continue
-        line = strip_mentions(raw)
+        line = strip_mentions(raw, path.suffix.lower() == ".html")
         low = line.lower()
         for phrase in rules:
             pl = phrase.lower()
@@ -93,7 +140,19 @@ def main(argv: list[str]) -> int:
         print("claims_lint: no prohibited phrases parsed from the register - refusing to pass", file=sys.stderr)
         return 2
     targets = argv or DEFAULT_TARGETS
+    required = load_required()
+    if not required:
+        print("claims_lint: no required caveats parsed from the register - refusing to pass", file=sys.stderr)
+        return 2
     bad = 0
+    for t in targets:
+        root = Path(t) if Path(t).is_absolute() else REPO / t
+        if not root.is_dir():
+            continue
+        for page, caveat in missing_caveats(root, required):
+            bad += 1
+            shown = page.relative_to(REPO) if page.resolve().is_relative_to(REPO) else page
+            print(f'{shown}: MISSING required caveat: "{caveat[:90]}"')
     for f in iter_files(targets):
         if f.resolve() == REGISTER.resolve():
             continue
@@ -101,7 +160,8 @@ def main(argv: list[str]) -> int:
         for no, phrase, text in violations_in(f, rules):
             bad += 1
             print(f"{shown}:{no}: prohibited phrase \"{phrase}\": {text[:120]}")
-    print(f"claims_lint: {len(rules)} rules, {bad} violation(s)")
+    print(f"claims_lint: {len(rules)} prohibited phrases, {len(required)} required caveats, "
+          f"{bad} violation(s)")
     return 1 if bad else 0
 
 
