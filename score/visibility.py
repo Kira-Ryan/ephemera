@@ -69,21 +69,33 @@ def eval_indices(record_count: int, step_s: int, eval_step_min: float) -> list[i
 
 
 def score_file(eph: ephem.Ephemeris, es: cat.ElementSet, ts, earth_satellite_cls) -> list[dict]:
+    """One row per evaluation epoch, with the difference expressed in two frames.
+
+    The operator's frame is the one the scoreboard reports: an error stated relative to the
+    trajectory being compared against. The public satellite's frame is carried as well, because it
+    is the only frame a browser holding just the element set can rebuild, and rotating a deviation
+    out of the wrong frame puts a satellite thousands of kilometres off its orbit once the two
+    predictions are far apart."""
     sat = earth_satellite_cls(es.line1, es.line2, es.name, ts)
     t = ts.from_datetimes([r.epoch for r in eph.records])
-    xyz = sat.at(t).position.km
+    g = sat.at(t)
+    xyz, vxyz = g.position.km, g.velocity.km_per_s
     rows = []
     for k, rec in enumerate(eph.records):
         p = (float(xyz[0][k]), float(xyz[1][k]), float(xyz[2][k]))
         if any(math.isnan(c) for c in p):
             raise ArithmeticError(f"SGP4 returned NaN for {es.norad} at {rec.epoch.isoformat()}")
+        gv = (float(vxyz[0][k]), float(vxyz[1][k]), float(vxyz[2][k]))
         d = frames.sub(p, rec.pos)
         radial, intrack, cross = frames.ric_components(d, rec.pos, rec.vel)
+        g_radial, g_intrack, g_cross = frames.ric_components(d, p, gv)
         rows.append({"norad": eph.norad, "epoch": rec.epoch.strftime("%Y-%m-%dT%H:%M:%SZ"),
                      "age_h": round((rec.epoch - es.epoch).total_seconds() / 3600, 3),
                      "alt_km": round(frames.norm(rec.pos) - EARTH_RADIUS_KM, 3),
                      "dist_km": round(frames.norm(d), 6), "radial_km": round(radial, 6),
-                     "intrack_km": round(intrack, 6), "cross_km": round(cross, 6)})
+                     "intrack_km": round(intrack, 6), "cross_km": round(cross, 6),
+                     "g_radial_km": round(g_radial, 6), "g_intrack_km": round(g_intrack, 6),
+                     "g_cross_km": round(g_cross, 6)})
     return rows
 
 

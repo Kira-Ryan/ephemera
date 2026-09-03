@@ -181,3 +181,65 @@ def test_at_file_start_picks_the_earliest_epoch_per_satellite():
     st = visibility.at_file_start(rows)
     assert st["satellites"] == 2 and st["median_km"] == 3.0        # 2.0 and 4.0, not the 90 km row
     assert visibility.at_file_start([]) is None
+
+
+def test_pack_reconstruction_puts_the_satellite_back_on_its_orbit(tmp_path):
+    """The globe rebuilds the operator position by rotating the packed deviation through the frame
+    of the PUBLIC satellite, which is the only frame a browser holding just the element set can
+    build. If the pack carried the deviation in the operator's own frame instead, the two frames
+    would disagree once the predictions separate and the satellite would be drawn off its orbit.
+
+    Mutation: change globe_pack to pack radial_km/intrack_km/cross_km and this fails by thousands of
+    kilometres. Measured against the real archive before the fix: 15,616 km.
+    """
+    import math  # noqa: PLC0415
+    import globe_pack  # noqa: PLC0415
+    import frames  # noqa: PLC0415
+    from skyfield.api import EarthSatellite, load  # noqa: PLC0415
+
+    spool = tmp_path / "spool"
+    l1, l2 = tle("25544")
+    files = spool / "cycle_000000000002" / "files"
+    # an operator file 400 km ahead along track: far enough that the two frames visibly disagree
+    def shift(pos, vel):
+        along = frames.unit(vel)
+        return tuple(c + 400.0 * u for c, u in zip(pos, along))
+
+    name = write_meme(files, 25544, "STARLINK-1", l1, l2, hours=3.0, shift=shift)
+    make_cycle(spool, [name], "cycle_000000000002")
+    set_first_seen(spool, "cycle_000000000002", T0)
+    make_snapshot(spool, [gp_row(25544, "STARLINK-1", l1, l2)])
+    run.one_pass(spool, max_cycles=1, workers=1, eval_step_min=60)
+    pack = json.loads((spool / "score" / "globe_000000000002.json").read_text())
+    s = pack["sats"][0]
+
+    # replay exactly what web/globe/index.html does at a sample epoch
+    ts = load.timescale()
+    sat = EarthSatellite(s["l1"], s["l2"], s["name"], ts)
+    base = datetime.strptime(pack["base"], "%Y-%m-%dT%H:%M:%SZ").replace(tzinfo=timezone.utc)
+    for k in range(len(s["ric_m"]) // 3):
+        t = base + timedelta(seconds=s["t0_s"] + k * pack["step_s"])
+        g = sat.at(ts.from_datetime(t))
+        r = tuple(float(x) for x in g.position.km)
+        v = tuple(float(x) for x in g.velocity.km_per_s)
+        R = frames.unit(r)
+        C = frames.unit(frames.cross(r, v))
+        I = frames.cross(C, R)
+        d = [s["ric_m"][3 * k + j] / 1000 for j in range(3)]
+        dv = tuple(R[i] * d[0] + I[i] * d[1] + C[i] * d[2] for i in range(3))
+        recon = tuple(r[i] - dv[i] for i in range(3))
+        truth = shift(r, v)                       # the operator file was generated from this rule
+        assert math.dist(recon, truth) < 1e-3, f"sample {k}: reconstruction is {math.dist(recon, truth):.1f} km out"
+        assert abs(frames.norm(recon) - frames.norm(truth)) < 1e-3
+
+
+def test_pack_refuses_rows_without_the_public_frame(tmp_path):
+    """A pack built from rows scored before the frame fix would draw satellites off their orbits, so
+    it must fail loudly rather than publish."""
+    import globe_pack  # noqa: PLC0415
+    import pytest  # noqa: PLC0415
+    rows = [{"norad": 1, "epoch": "2026-09-02T06:00:00Z", "dist_km": 2.0, "age_h": 3.0, "alt_km": 500.0,
+             "radial_km": 1.0, "intrack_km": 1.0, "cross_km": 1.0}]
+    with pytest.raises(ValueError, match="public-frame decomposition"):
+        globe_pack.build_pack({"eval_step_min": 60.0, "inputs": {}, "as_of": "", "method": "",
+                               "counts": {}, "summary": {"overall": None}}, rows, None)

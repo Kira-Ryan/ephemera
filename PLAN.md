@@ -252,3 +252,20 @@ document's tracking table, not here.
   The globe keeps its caveats at phone width, and its colour ramp no longer collapses under
   red-green colour blindness. Still open: the 5 MB globe pack is committed on every scored cycle
   and belongs in object storage (follow-up (b) above), which is the one review finding not fixed.
+- 2026-09-04 - Globe review. Found and fixed a real plotting defect: the pack carried the deviation
+  decomposed in the OPERATOR's radial/in-track/cross-track frame, while the browser rebuilt it
+  through the PUBLIC satellite's frame. The two agree while the predictions are close and diverge as
+  they separate, so satellites a few thousand km apart were drawn thousands of km off their orbits,
+  out into space. Measured against the archived files: 15,616 km of error on NORAD 65807, whose
+  reconstructed altitude came out at 9,849 km instead of 489 km. Those were the long lines.
+  The rows now carry a second decomposition in the public satellite's frame, which is the only frame
+  a browser holding just the element set can rebuild; reconstruction at a sample epoch is now exact
+  to 0.6 m, and linear interpolation between six-hourly samples lands within about a kilometre for
+  separations under 100 km (measured over 4,768 midpoints). globe_pack refuses rows without it
+  rather than publishing a wrong pack. Test replays the browser's own arithmetic; the mutation that
+  restores the old frame fails it by 23.6 km.
+  Also: the caveat panel covered Cesium's clock and timeline, and Cesium sizes the clock with the
+  viewport so a horizontal dodge was wrong at a different width; the panel now sits above both and a
+  browser test checks all three widths. Lines past 1,000 km are drawn in their own colour, the
+  legend says what a line is, the instant line counts the lost, and a satellite can be found by
+  number or name instead of only by clicking.

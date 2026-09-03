@@ -10,7 +10,8 @@
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/cesium@1.131.0/Build/Cesium/Widgets/widgets.css">
 <style>
   :root { --bg: #090c17; --ink: #eceada; --dim: #b9b7c6; --accent: #ffb347; --line: #3d4a75; --bad: #ff7a7a;
-          --km-1: #7fd4ff; --km-10: #ffe08a; --km-30: #ff8c42; --km-far: #ff4d5e; }
+          --km-1: #7fd4ff; --km-10: #ffe08a; --km-30: #ff8c42; --km-far: #ff4d5e; --km-lost: #c86bff;
+          --deck: 108px; }     /* the band Cesium's timeline and clock occupy at the bottom */
   * { margin: 0; padding: 0; box-sizing: border-box; }
   html, body { height: 100%; background: var(--bg); color: var(--ink); font: 14px/1.5 Georgia, 'Times New Roman', serif; overflow: hidden; }
   #globe { position: absolute; inset: 0; }
@@ -27,20 +28,34 @@
   #right { top: .8rem; right: .8rem; width: 19rem; max-height: calc(100% - 12rem); overflow: auto; }
   #right h2 { font-size: .74rem; color: var(--accent); font-family: ui-monospace, Consolas, monospace; text-transform: uppercase; letter-spacing: .12em; font-weight: 400; margin-bottom: .4rem; }
   #sel { font-size: .8rem; margin-bottom: .8rem; min-height: 3.2rem; color: var(--ink); }
+  .find { display: flex; align-items: center; gap: .5rem; margin-bottom: .55rem; }
+  .find span { font: .72rem ui-monospace, Consolas, monospace; color: var(--dim); text-transform: uppercase;
+               letter-spacing: .08em; }
+  .find input { flex: 1; min-width: 0; background: #0c1120; border: 1px solid var(--line); color: var(--ink);
+                font: .78rem ui-monospace, Consolas, monospace; padding: .3rem .45rem; border-radius: 3px; }
+  .find input:focus { outline: 2px solid var(--accent); outline-offset: 1px; }
   #sel .mono, #worst .mono { font-family: ui-monospace, Consolas, monospace; font-size: .74rem; }
   #worst button { display: block; width: 100%; text-align: left; background: none; border: 0; border-bottom: 1px solid #1a1d33; color: var(--ink); padding: .28rem .1rem; font: inherit; font-size: .76rem; cursor: pointer; }
   #worst button:hover { color: var(--accent); }
-  #foot { left: .8rem; right: .8rem; bottom: 2.4rem; font-size: .74rem; color: var(--dim); line-height: 1.5; max-width: 60rem; }
+  /* Cesium's clock sits bottom left and its timeline spans the bottom. Both are reserved here, so
+     the caveats never cover them: --deck is the height of that band. */
+  #foot { left: .8rem; right: .8rem; bottom: 108px;
+          font-size: .74rem; color: var(--dim); line-height: 1.5; max-width: 62rem; max-height: 38vh; overflow: auto; }
   #foot b { color: var(--ink); font-weight: 600; }
   .cesium-viewer-bottom { display: none; }
-  .cesium-viewer-timelineContainer { bottom: 0; }
-  .cesium-viewer-animationContainer { bottom: 0; }
+  .cesium-viewer-timelineContainer { bottom: 0; left: 0; right: 0; }
+  /* Cesium sizes the clock with the viewport, so the caveats sit ABOVE it rather than beside it:
+     a horizontal dodge would be correct at one window width and wrong at the next. */
+  .cesium-viewer-animationContainer { bottom: 30px; left: .2rem;
+                                      transform: scale(.62); transform-origin: bottom left; }
   /* The caveats are required on every page at every width, so #foot is bounded and scrolled here,
      never hidden. The Cesium container, and html/body overflow, are deliberately untouched. */
   @media (max-width: 800px) {
     #right { display: none; }
     #top { max-width: calc(100% - 1.6rem); }
-    #foot { bottom: .8rem; max-height: 44vh; overflow: auto; font-size: .72rem; }
+    /* the clock is hidden here, so the caveats take the full width above the timeline */
+    .cesium-viewer-animationContainer { display: none; }
+    #foot { left: .6rem; right: .6rem; bottom: 34px; max-height: 42vh; font-size: .72rem; }
   }
 </style>
 </head>
@@ -53,19 +68,27 @@
   <div id="instant"></div>
   <div id="webgl"></div>
   <div class="legend">
-    solid point: operator trajectory, coloured by distance from the ghost
+    solid point: the operator trajectory, coloured by how far the ghost is from it
     <span style="background:var(--km-1)"></span>under 1 km
     <span style="background:var(--km-10)"></span>under 10 km
     <span style="background:var(--km-30)"></span>under 30 km
     <span style="background:var(--km-far)"></span>30 km and beyond
-    <br>ghost: the public catalogue's element set, propagated in your browser
+    <span style="background:var(--km-lost)"></span>beyond 1,000 km, most of an orbit
+    <br>line: drawn between the two whenever they disagree by 10 km or more, so its length is the
+    disagreement. A line crossing the globe is a satellite the public catalogue has lost track of.
+    <br>ghost: the public catalogue's element set, propagated in your browser. The solid point is
+    rebuilt from a deviation sampled every six hours, so it follows the published trajectory to
+    about a kilometre rather than exactly.
     <label><input type="checkbox" id="tethers" checked> tethers from 10 km</label>
+    <label><input type="checkbox" id="onlyfar"> only satellites past 30 km</label>
   </div>
 </div>
 
 <div id="right" class="panel">
   <h2>Selected satellite</h2>
-  <div id="sel">Click a point, or pick one from the list.</div>
+  <label class="find"><span>Find</span>
+    <input id="find" type="search" placeholder="catalogue number or name" autocomplete="off"></label>
+  <div id="sel">Click a point, type a number above, or pick one from the list.</div>
   <h2>Largest deviation in this cycle</h2>
   <div id="worst"></div>
 </div>
@@ -96,7 +119,8 @@
   const PACK_URL = "pack.json";
   // Blue to red, not green to red: the near end separates by hue on the axis red/green colour
   // blindness leaves intact, and the far end separates by lightness. The number is always shown too.
-  const COLOURS = [[1, "#7fd4ff"], [10, "#ffe08a"], [30, "#ff8c42"], [Infinity, "#ff4d5e"]];
+  const COLOURS = [[1, "#7fd4ff"], [10, "#ffe08a"], [30, "#ff8c42"], [1000, "#ff4d5e"], [Infinity, "#c86bff"]];
+  const LOST_KM = 1000;
   const fmt = (n) => n.toLocaleString("en-GB");
   const iso = (d) => d.toISOString().slice(0, 16).replace("T", " ") + " UTC";
 
@@ -132,7 +156,7 @@
 
   function summarise(sats, date) {
     const gmst = satellite.gstime(date), tSec = (date - window.__base) / 1000;
-    let w1 = 0, w10 = 0, b30 = 0, n = 0;
+    let w1 = 0, w10 = 0, b30 = 0, lost = 0, n = 0;
     for (const s of sats) {
       const st = statesAt(s, date, gmst, tSec);
       if (!st) continue;
@@ -140,8 +164,9 @@
       if (st.dist < 1) w1++;
       if (st.dist < 10) w10++;
       if (st.dist >= 30) b30++;
+      if (st.dist >= LOST_KM) lost++;
     }
-    return { n, w1, w10, b30 };
+    return { n, w1, w10, b30, lost };
   }
 
   async function main() {
@@ -174,7 +199,8 @@
 
     const showInstant = (date, sum) => {
       $("instant").textContent = "showing " + iso(date) + ": " + fmt(sum.w1) + " within 1 km, " + fmt(sum.w10)
-        + " within 10 km, " + fmt(sum.b30) + " at 30 km or beyond, of " + fmt(sum.n);
+        + " within 10 km, " + fmt(sum.b30) + " at 30 km or beyond, of " + fmt(sum.n)
+        + (sum.lost ? " (" + fmt(sum.lost) + " of them past 1,000 km)" : "");
     };
     showInstant(base, summarise(sats, base));
 
@@ -219,20 +245,28 @@
 
     const ghosts = viewer.scene.primitives.add(new Cesium.PointPrimitiveCollection());
     const solids = viewer.scene.primitives.add(new Cesium.PointPrimitiveCollection());
+    // Two line collections rather than one, so a line that crosses the globe is not drawn in the
+    // same colour as one a reader can barely see. Which collection a satellite belongs to is decided
+    // once, from its worst separation in this cycle, because a polyline cannot change material.
     const tethers = viewer.scene.primitives.add(new Cesium.PolylineCollection());
+    const tethersLost = viewer.scene.primitives.add(new Cesium.PolylineCollection());
     const ghostColour = Cesium.Color.fromCssColorString("#ffffff").withAlpha(0.35);
-    const tetherMat = Cesium.Material.fromType("Color", { color: Cesium.Color.fromCssColorString("#ff9f43").withAlpha(0.6) });
+    const tetherMat = Cesium.Material.fromType("Color", { color: Cesium.Color.fromCssColorString("#ff8c42").withAlpha(0.55) });
+    const lostMat = Cesium.Material.fromType("Color", { color: Cesium.Color.fromCssColorString("#c86bff").withAlpha(0.5) });
     sats.forEach((s, i) => {
       s.ghost = ghosts.add({ position: Cesium.Cartesian3.ZERO, color: ghostColour, pixelSize: 3, id: { kind: "ghost", i } });
       s.solid = solids.add({ position: Cesium.Cartesian3.ZERO, color: Cesium.Color.WHITE, pixelSize: 5, id: { kind: "op", i } });
-      s.tether = tethers.add({ positions: [Cesium.Cartesian3.ZERO, Cesium.Cartesian3.ZERO], width: 1, material: tetherMat, show: false });
+      const far = s.max >= LOST_KM;
+      s.tether = (far ? tethersLost : tethers).add({ positions: [Cesium.Cartesian3.ZERO, Cesium.Cartesian3.ZERO],
+                                                     width: far ? 1.4 : 1, material: far ? lostMat : tetherMat, show: false });
     });
 
     let selected = null;
     const c3 = (a) => new Cesium.Cartesian3(a[0], a[1], a[2]);
     function update(date) {
-      const gmst = satellite.gstime(date), tSec = (date - base) / 1000, tetherOn = $("tethers").checked;
-      let w1 = 0, w10 = 0, b30 = 0, n = 0;
+      const gmst = satellite.gstime(date), tSec = (date - base) / 1000,
+            tetherOn = $("tethers").checked, onlyFar = $("onlyfar").checked;
+      let w1 = 0, w10 = 0, b30 = 0, lost = 0, n = 0;
       for (const s of sats) {
         const st = statesAt(s, date, gmst, tSec);
         if (!st) { s.ghost.show = s.solid.show = s.tether.show = false; continue; }
@@ -241,15 +275,18 @@
         s.solid.position = c3(st.op);
         s.solid.color = Cesium.Color.fromCssColorString(colourFor(st.dist));
         s.solid.pixelSize = s === selected ? 11 : 5;
-        s.tether.show = tetherOn && st.dist >= 10 || s === selected;
+        const hide = onlyFar && st.dist < 30 && s !== selected;
+        s.ghost.show = s.solid.show = !hide;
+        s.tether.show = !hide && (tetherOn && st.dist >= 10 || s === selected);
         if (s.tether.show) s.tether.positions = [c3(st.ghost), c3(st.op)];
         s.last = st;
         n++;
         if (st.dist < 1) w1++;
         if (st.dist < 10) w10++;
         if (st.dist >= 30) b30++;
+        if (st.dist >= LOST_KM) lost++;
       }
-      showInstant(date, { n, w1, w10, b30 });
+      showInstant(date, { n, w1, w10, b30, lost });
       if (selected) describe(selected, date);
     }
     function describe(s, date) {
@@ -281,6 +318,13 @@
       update(Cesium.JulianDate.toDate(c.currentTime));
     });
     $("tethers").addEventListener("change", () => update(Cesium.JulianDate.toDate(clock.currentTime)));
+    $("onlyfar").addEventListener("change", () => update(Cesium.JulianDate.toDate(clock.currentTime)));
+    $("find").addEventListener("input", (ev) => {
+      const q = ev.target.value.trim().toLowerCase();
+      if (q.length < 2) return;
+      const hit = sats.find((x) => String(x.id) === q) || sats.find((x) => x.name.toLowerCase().includes(q));
+      if (hit) select(hit, true);
+    });
     update(base);
     viewer.camera.flyTo({ destination: Cesium.Cartesian3.fromDegrees(18.4, -33.9, 2.6e7), duration: 0 });
   }
