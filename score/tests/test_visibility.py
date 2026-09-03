@@ -86,10 +86,17 @@ def gp_row(norad: int, name: str, l1: str, l2: str, epoch: str = "2026-09-02T12:
 
 
 def run(spool: Path, cycle: str, *extra) -> tuple[int, dict]:
+    """Runs the CLI with --rows and returns the report with the rows file's content attached."""
     out = spool / "out"
     rc = visibility.main(["--spool", str(spool), "--cycle", cycle, "--out", str(out), "--eval-step-min", "60", "--rows", *extra])
     reports = list(out.glob("visibility_*.json"))
-    return rc, (json.loads(reports[0].read_text()) if reports else {})
+    if not reports:
+        return rc, {}
+    rep = json.loads(reports[0].read_text())
+    assert "rows" not in rep                                            # the summary stays small
+    with gzip.open(out / rep["rows_file"], "rt", encoding="utf-8") as gz:
+        rep["rows"] = json.load(gz)
+    return rc, rep
 
 
 def test_identical_inputs_score_zero_and_report_carries_inputs(tmp_path):
