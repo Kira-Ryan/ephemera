@@ -109,7 +109,8 @@ def test_identical_inputs_score_zero_and_report_carries_inputs(tmp_path):
     snap = make_snapshot(spool, [gp_row(25544, "STARLINK-1", l1, l2), gp_row(100224, "STARLINK-6", m1, m2)])
     rc, rep = run(spool, "cycle_abcdef123456")
     assert rc == 0
-    assert rep["counts"] == {"files": 2, "scored": 2, "no_public_set": 0, "decayed_set": 0, "propagation_failed": 0, "unreadable": 0}
+    assert rep["counts"] == {"files": 2, "scored": 2, "no_public_set": 0, "uncatalogued": 0, "decayed_set": 0,
+                             "propagation_failed": 0, "unreadable": 0}
     assert sorted(rep["satellites"]["scored"]) == [25544, 100224]
     assert len(rep["rows"]) == 2 * 4                                   # 3 h at 60 s step, sampled hourly: t=0,1,2,3
     assert max(r["dist_km"] for r in rep["rows"]) < 1e-6
@@ -159,7 +160,8 @@ def test_missing_decayed_and_malformed_are_counted_not_skipped(tmp_path, caplog)
     make_snapshot(spool, [gp_row(25544, "STARLINK-1", l1, l2), gp_row(40000, "STARLINK-2", d1, d2, decay="2026-08-01")])
     rc, rep = run(spool, "cycle_abcdef123456")
     assert rc == 1                                                      # an unreadable file fails the run
-    assert rep["counts"] == {"files": 3, "scored": 0, "no_public_set": 1, "decayed_set": 1, "propagation_failed": 0, "unreadable": 1}
+    assert rep["counts"] == {"files": 3, "scored": 0, "no_public_set": 1, "uncatalogued": 0, "decayed_set": 1,
+                             "propagation_failed": 0, "unreadable": 1}
     assert rep["satellites"]["no_public_set"] == [41000] and rep["satellites"]["decayed_set"] == [40000]
     assert rep["satellites"]["unreadable"] == [names[0]]
     assert any("unreadable" in m and "covariance" in m for m in caplog.messages)

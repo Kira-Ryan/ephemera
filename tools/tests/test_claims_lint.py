@@ -56,3 +56,62 @@ def test_empty_rule_set_refuses_to_pass(tmp_path, monkeypatch):
     reg.write_text("# Claims register\n\n## Something else\n\ntext\n", encoding="utf-8")
     monkeypatch.setattr(claims_lint, "REGISTER", reg)
     assert claims_lint.main([str(tmp_path)]) == 2
+
+
+def test_html_attributes_and_script_strings_are_not_treated_as_mentions(tmp_path):
+    """In Markdown a double-quoted phrase is a mention. In HTML it is an attribute value or a
+    script literal, which is the page speaking. Mutation: drop the html_mode argument in
+    violations_in and the second and third of these stop being reported."""
+    md = tmp_path / "a.md"
+    md.write_text('The project is not "an independent check of SpaceX\'s manoeuvre count".\n', encoding="utf-8")
+    assert claims_lint.violations_in(md, claims_lint.load_rules()) == []
+
+    page = tmp_path / "b.html"
+    page.write_text(
+        "<p>an independent check of SpaceX's manoeuvre count</p>\n"
+        "<p title=\"an independent check of SpaceX's manoeuvre count\">x</p>\n"
+        "<script>var s = \"an independent check of SpaceX's manoeuvre count\";</script>\n", encoding="utf-8")
+    lines = [no for no, _, _ in claims_lint.violations_in(page, claims_lint.load_rules())]
+    assert lines == [1, 2, 3], f"HTML prose, attribute and script must all be checked, got {lines}"
+
+
+def test_required_caveats_are_parsed_and_asserted_on_built_pages(tmp_path):
+    required = claims_lint.load_required()
+    assert len(required) >= 4
+    assert any(c.startswith("Operator ephemerides are predictions") for c in required)
+
+    (tmp_path / "globe").mkdir()
+    full = " ".join(required)
+    (tmp_path / "index.html").write_text(f"<p>{full}</p>", encoding="utf-8")
+    (tmp_path / "globe" / "index.html").write_text(f"<p>{full}</p>", encoding="utf-8")
+    assert claims_lint.missing_caveats(tmp_path, required) == []
+
+    # whitespace differences are fine; a dropped caveat is not
+    (tmp_path / "index.html").write_text("<p>" + full.replace(required[0], "") + "</p>", encoding="utf-8")
+    missing = claims_lint.missing_caveats(tmp_path, required)
+    assert [c for _, c in missing] == [required[0]]
+
+    # wrapped across lines, as the generator emits it, still counts as present
+    wrapped = full.replace(" ", "\n  ", 3)
+    (tmp_path / "index.html").write_text(f"<p>{wrapped}</p>", encoding="utf-8")
+    assert claims_lint.missing_caveats(tmp_path, required) == []
+
+
+def test_a_directory_missing_a_caveat_fails_the_run(tmp_path, capsys):
+    (tmp_path / "index.html").write_text("<p>nothing required here</p>", encoding="utf-8")
+    rc = claims_lint.main([str(tmp_path)])
+    out = capsys.readouterr().out
+    assert rc == 1 and "MISSING required caveat" in out
+
+
+def test_javascript_template_literals_are_not_treated_as_mentions(tmp_path):
+    """A page that writes its visible text from a template literal must still be checked.
+    Mutation: restore the backtick strip in html_mode and this stops being reported."""
+    page = tmp_path / "x.html"
+    page.write_text("<script>el.innerHTML = `this is covariance realism`;</script>\n", encoding="utf-8")
+    hits = [phrase for _, phrase, _ in claims_lint.violations_in(page, claims_lint.load_rules())]
+    assert any("realism" in h.lower() for h in hits), hits
+    # in Markdown a backticked span is still a mention
+    md = tmp_path / "x.md"
+    md.write_text("The register forbids `covariance realism` for this scoreboard.\n", encoding="utf-8")
+    assert claims_lint.violations_in(md, claims_lint.load_rules()) == []
