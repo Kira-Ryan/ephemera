@@ -39,7 +39,7 @@
   <strong>Ephemera keeps the history.</strong></p>
 
   <h2>The archive record</h2>
-  <p>As of <b>2026-09-03 08:20 UTC</b> the archive holds <b>14</b> cycles.
+  <p>As of <b>2026-09-03 09:37 UTC</b> the archive holds <b>14</b> cycles.
   <b>14</b> are complete with Merkle roots and <b>14</b> are anchored in
   Bitcoin through OpenTimestamps. Raw data kept: <b>314 GB</b>.
   Poller heartbeat coverage: not yet measured (heartbeat history shorter than 24 h). Cadence holds (a manifest served longer than
@@ -59,8 +59,35 @@
   <h2>Daily roots</h2>
   <p class="dim">2026-09-02: <span class="mono">647c6951a21d</span> (block 965241) &nbsp; 2026-09-01: <span class="mono">7ecb7906d01b</span> (block 965103) &nbsp; 2026-08-31: <span class="mono">948ecce3337d</span> (block 964963) &nbsp; 2026-08-30: <span class="mono">1d7acc715f62</span> (block 964927)</p>
 
-  <p class="dim">A daily scoreboard is under construction. It will show how well the public
-  satellite catalogue can actually see the constellation.</p>
+  <h2>Catalogue visibility</h2>
+  <p>How far the public catalogue's prediction sits from the operator's, for every satellite in a
+  cycle. The public element set (Space-Track) is propagated with SGP4 to the operator file's own
+  epochs, every 360 minutes across the file's span, and the distance is
+  taken. <b>Both are predictions.</b> The operator's file includes planned trajectory changes the
+  public set cannot know about, so a large distance is that gap, not an error of the satellite.
+  Public GP data is too noisy to test sub-metre covariance; the self-consistency scoreboard, when it
+  exists, measures prediction-versus-later-prediction.</p>
+  <p>Latest scored cycle <span class="mono">1e726fe006d9</span> (first seen
+  2026-09-03 04:13 UTC): <b>11,091</b> of 11,118 files scored
+  against the snapshot fetched 2026-09-03 04:10 UTC
+  (12811 element sets);
+  27 without a public set, 0 marked decayed,
+  0 propagation failures, 0 unreadable.
+  Mean element age across the comparison: <b>57.9 h</b>. Scored 2026-09-03 09:31 UTC.
+  <a href="globe/" style="color:var(--accent)">See it on the globe</a>: every satellite drawn twice, the operator trajectory and the public catalogue's ghost.</p>
+  <div class="tablewrap"><table>
+    <tr><th>element age</th><th>comparisons</th><th>median km</th><th>90th pct km</th><th>within 10 km</th><th>within 30 km</th></tr>
+    <tr><td>0-6 h</td><td>14</td><td>0.7</td><td>2.3</td><td>100%</td><td>100%</td></tr><tr><td>6-12 h</td><td>1,030</td><td>5.2</td><td>39.2</td><td>65%</td><td>87%</td></tr><tr><td>12-24 h</td><td>11,367</td><td>5.2</td><td>42.4</td><td>72%</td><td>87%</td></tr><tr><td>24-48 h</td><td>41,455</td><td>11.0</td><td>81.2</td><td>48%</td><td>80%</td></tr><tr><td>48-72 h</td><td>43,907</td><td>25.0</td><td>221.4</td><td>35%</td><td>54%</td></tr><tr><td>over 72 h</td><td>45,447</td><td>39.6</td><td>214.0</td><td>29%</td><td>46%</td></tr>
+  </table></div>
+  <p class="dim">Element age is the evaluation epoch minus the public element set's epoch; a negative
+  age means the set was published after that point of the file. Age and time-into-file are correlated
+  within one cycle, so these bins are not yet a clean age effect.</p>
+  <div class="tablewrap"><table>
+    <tr><th>cycle first seen</th><th>cycle</th><th>scored</th><th>public snapshot</th><th>median km, age 0-6 h</th>
+        <th>median km, all</th><th>within 10 km</th><th>within 30 km</th><th>scored at (utc)</th></tr>
+    <tr><td>2026-09-03 04:13</td><td class="mono">1e726fe006d9</td><td>11,091 / 11,118</td><td>2026-09-03 04:10, fetched before the cycle</td><td>0.7</td><td>16.3</td><td>40%</td><td>62%</td><td>2026-09-03 09:31</td></tr>
+  </table></div>
+  <p class="dim">Method: Public element set (Space-Track gp snapshot) propagated with SGP4 (skyfield 1.55, python-sgp4 2.27; TEME to GCRS by Skyfield, taken as J2000) and differenced against the operator-published trajectory (EME2000) at the file&#x27;s own record epochs every 360 min. Distance in km; components in the operator&#x27;s radial/in-track/cross-track frame; altitude is geocentric radius minus 6378.137 km; element age is evaluation epoch minus element-set epoch, signed. Both inputs are predictions; the operator&#x27;s includes planned trajectory changes the public set cannot know about.</p>
 
   <h2>Contact</h2>
   <p class="dim">Kira Ryan.
