@@ -81,6 +81,8 @@ def one_pass(spool: Path, max_cycles: int, workers: int, eval_step_min: float, l
     for first_seen, cdir in ([] if not snaps else todo[:max_cycles]):
         snap, relation = pair_snapshot(snaps, first_seen)
         t0 = time.monotonic()
+        log.info("scoring %s (first seen %s) against %s (%s), %d workers", cdir.name, first_seen.strftime("%Y-%m-%dT%H:%MZ"),
+                 snap.name, relation, workers)
         try:
             catalogue = cat.load(snap)
             report, rows = visibility.build_report(cdir, catalogue, eval_step_min, limit, workers,
