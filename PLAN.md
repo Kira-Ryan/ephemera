@@ -227,7 +227,7 @@ document's tracking table, not here.
   (b) the pack in git: ~5 MB per scored cycle, three a day, is too much history; move packs to
       object storage behind the site (R2 or the S3 bucket with a public prefix) and keep git for
       the summary only;
-  (c) headless Chrome verified the page's own numbers and the point cloud but not the Earth
-      surface tiles (they load on animation frames it skips); confirm in a real browser;
+  (c) closed the same day: a headless capture with the compositor flags shows the Earth surface
+      tiles, lighting and atmosphere under the constellation (globe3.png, 11:37 local);
   (d) the ten older cycles are pending in run.json and drain one per half hour; three cycles were
       already shipped and deleted locally before scoring existed and stay listed as skipped.
