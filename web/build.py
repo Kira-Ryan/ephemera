@@ -15,6 +15,7 @@ from __future__ import annotations
 import argparse
 import html
 import json
+import shutil
 import sys
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
@@ -86,7 +87,28 @@ def load_spool(spool: Path) -> dict:
                 ticks.append(parse_utc(json.loads(line)["utc"]))
             except (ValueError, KeyError):
                 continue
-    return {"cycles": cycles, "dailies": dailies, "ticks": ticks}
+    return {"cycles": cycles, "dailies": dailies, "ticks": ticks, "scores": load_scores(spool)}
+
+
+def load_scores(spool: Path) -> list[dict]:
+    """One entry per scored cycle from <spool>/score/visibility_<sha12>.json, newest first. Only
+    what the page shows is carried: the inputs, the counts, the overall and per-age-bin figures,
+    and whether a globe pack exists for the cycle."""
+    out = []
+    for rp in sorted((spool / "score").glob("visibility_*.json")):
+        r = json.loads(rp.read_text(encoding="utf-8"))
+        sha12 = rp.stem.removeprefix("visibility_")
+        pack = spool / "score" / f"globe_{sha12}.json"
+        out.append({"cycle": r["inputs"]["cycle"], "first_seen_utc": r["inputs"].get("first_seen_utc"),
+                    "as_of": r["as_of"], "method": r["method"], "eval_step_min": r["eval_step_min"],
+                    "snapshot": r["inputs"]["catalogue_snapshot"],
+                    "snapshot_fetched_utc": r["inputs"]["catalogue_fetched_utc"],
+                    "snapshot_relation": r["inputs"].get("snapshot_relation"),
+                    "catalogue_sets": r["inputs"].get("catalogue_sets"),
+                    "counts": r["counts"], "overall": r["summary"]["overall"], "by_age": r["summary"]["by_age"],
+                    "pack": str(pack) if pack.exists() else None})
+    out.sort(key=lambda x: x["first_seen_utc"] or "", reverse=True)
+    return out
 
 
 def coverage_24h(ticks: list[datetime], now: datetime) -> float | None:
@@ -133,6 +155,7 @@ def build_ledger(spool: Path, now: datetime) -> dict:
             "cadence_holds": cadence_holds(data["cycles"]),
         },
         "coverage_24h": coverage_24h(data["ticks"], now),
+        "visibility": {"reports": data["scores"], "latest": data["scores"][0]["cycle"] if data["scores"] else None},
         "cycles": data["cycles"],
         "daily_roots": data["dailies"],
     }
@@ -140,6 +163,84 @@ def build_ledger(spool: Path, now: datetime) -> dict:
 
 def esc(x) -> str:
     return html.escape(str(x))
+
+
+def _utc_min(s: str | None) -> str:
+    return (s or "?")[:16].replace("T", " ")
+
+
+def render_visibility(vis: dict) -> str:
+    """The catalogue-visibility section: the latest scored cycle by element-age bin, then one row
+    per scored cycle. Every figure sits next to its as-of time, its inputs and the method; the
+    caveat that both sides are predictions is on the same screen as the numbers."""
+    reports = vis["reports"]
+    if not reports:
+        return ('<h2>Catalogue visibility</h2>\n  <p class="dim">No cycle has been scored yet. Scoring starts once '
+                'the public-catalogue feed has a snapshot to pair with an archived cycle.</p>')
+    latest = reports[0]
+
+    def pct(x: float) -> str:
+        return f"{100 * x:.0f}%"
+
+    age_rows = "".join(
+        f'<tr><td>{esc(b["bin"])}</td><td>{b["n"]:,}</td><td>{b["median_km"]:.1f}</td><td>{b["p90_km"]:.1f}</td>'
+        f'<td>{pct(b["within_km"]["10"])}</td><td>{pct(b["within_km"]["30"])}</td></tr>' for b in latest["by_age"])
+    cyc_rows = []
+    for r in reports:
+        o, c = r["overall"], r["counts"]
+        if r["snapshot_relation"] == "before_cycle":
+            rel = "fetched before the cycle"
+        elif r["snapshot_relation"] == "after_cycle":
+            rel = "fetched after the cycle (the cycle predates the catalogue feed)"
+        else:
+            rel = "pairing not recorded"
+        fresh = next((b for b in r["by_age"] if b["bin"] == "0-6 h"), None)
+        fresh_cell = f"{fresh['median_km']:.1f}" if fresh else "none in bin"
+        if o is None:
+            cyc_rows.append(f'<tr class="gap"><td>{esc(_utc_min(r["first_seen_utc"]))}</td><td class="mono">{esc(r["cycle"][6:])}</td>'
+                            f'<td>{c["scored"]:,} / {c["files"]:,}</td><td colspan="5"><b>NOTHING SCORED: '
+                            f'{c["unreadable"]:,} unreadable, {c["no_public_set"]:,} without a public set</b></td>'
+                            f'<td>{esc(_utc_min(r["as_of"]))}</td></tr>')
+            continue
+        cyc_rows.append(
+            f'<tr><td>{esc(_utc_min(r["first_seen_utc"]))}</td><td class="mono">{esc(r["cycle"][6:])}</td>'
+            f'<td>{c["scored"]:,} / {c["files"]:,}</td>'
+            f'<td>{esc(_utc_min(r["snapshot_fetched_utc"]))}, {esc(rel)}</td>'
+            f'<td>{fresh_cell}</td><td>{o["median_km"]:.1f}</td><td>{pct(o["within_km"]["10"])}</td>'
+            f'<td>{pct(o["within_km"]["30"])}</td><td>{esc(_utc_min(r["as_of"]))}</td></tr>')
+    o, c = latest["overall"], latest["counts"]
+    globe = ('<a href="globe/" style="color:var(--accent)">See it on the globe</a>: every satellite drawn twice, '
+             "the operator trajectory and the public catalogue's ghost." if latest["pack"] else "")
+    mean_age = f'{o["mean_age_h"]:.1f} h' if o else "no comparisons"
+    return f"""<h2>Catalogue visibility</h2>
+  <p>How far the public catalogue's prediction sits from the operator's, for every satellite in a
+  cycle. The public element set (Space-Track) is propagated with SGP4 to the operator file's own
+  epochs, every {latest["eval_step_min"]:g} minutes across the file's span, and the distance is
+  taken. <b>Both are predictions.</b> The operator's file includes planned trajectory changes the
+  public set cannot know about, so a large distance is that gap, not an error of the satellite.
+  Public GP data is too noisy to test sub-metre covariance; the self-consistency scoreboard, when it
+  exists, measures prediction-versus-later-prediction.</p>
+  <p>Latest scored cycle <span class="mono">{esc(latest["cycle"][6:])}</span> (first seen
+  {esc(_utc_min(latest["first_seen_utc"]))} UTC): <b>{c["scored"]:,}</b> of {c["files"]:,} files scored
+  against the snapshot fetched {esc(_utc_min(latest["snapshot_fetched_utc"]))} UTC
+  ({esc(latest["catalogue_sets"] if latest["catalogue_sets"] is not None else "?")} element sets);
+  {c["no_public_set"]:,} without a public set, {c["decayed_set"]:,} marked decayed,
+  {c["propagation_failed"]:,} propagation failures, {c["unreadable"]:,} unreadable.
+  Mean element age across the comparison: <b>{mean_age}</b>. Scored {esc(_utc_min(latest["as_of"]))} UTC.
+  {globe}</p>
+  <div class="tablewrap"><table>
+    <tr><th>element age</th><th>comparisons</th><th>median km</th><th>90th pct km</th><th>within 10 km</th><th>within 30 km</th></tr>
+    {age_rows}
+  </table></div>
+  <p class="dim">Element age is the evaluation epoch minus the public element set's epoch; a negative
+  age means the set was published after that point of the file. Age and time-into-file are correlated
+  within one cycle, so these bins are not yet a clean age effect.</p>
+  <div class="tablewrap"><table>
+    <tr><th>cycle first seen</th><th>cycle</th><th>scored</th><th>public snapshot</th><th>median km, age 0-6 h</th>
+        <th>median km, all</th><th>within 10 km</th><th>within 30 km</th><th>scored at (utc)</th></tr>
+    {"".join(cyc_rows)}
+  </table></div>
+  <p class="dim">Method: {esc(latest["method"])}</p>"""
 
 
 def render(ledger: dict) -> str:
@@ -180,6 +281,7 @@ def render(ledger: dict) -> str:
         "not yet measured (heartbeat history shorter than 24 h)"
     t = ledger["totals"]
     gen = ledger["generated_utc"][:16].replace("T", " ")
+    vis = render_visibility(ledger["visibility"])
 
     return f"""<!doctype html>
 <html lang="en">
@@ -242,8 +344,7 @@ def render(ledger: dict) -> str:
   <h2>Daily roots</h2>
   <p class="dim">{droots}</p>
 
-  <p class="dim">A daily scoreboard is under construction. It will show how well the public
-  satellite catalogue can actually see the constellation.</p>
+  {vis}
 
   <h2>Contact</h2>
   <p class="dim">Kira Ryan.
@@ -271,6 +372,12 @@ def main(argv: list[str] | None = None) -> int:
     args.out.mkdir(parents=True, exist_ok=True)
     (args.out / "ledger.json").write_text(json.dumps(ledger, indent=1), encoding="utf-8")
     (args.out / "index.html").write_text(render(ledger), encoding="utf-8")
+    globe_out = args.out / "globe"
+    globe_out.mkdir(exist_ok=True)
+    shutil.copyfile(REPO / "web" / "globe" / "index.html", globe_out / "index.html")
+    latest_pack = next((r["pack"] for r in ledger["visibility"]["reports"] if r["pack"]), None)
+    if latest_pack:
+        shutil.copyfile(latest_pack, globe_out / "pack.json")
     t = ledger["totals"]
     print(f"built: {t['cycles']} cycles ({t['complete']} complete, {t['attested']} attested), "
           f"coverage={ledger['coverage_24h']}, holds={t['cadence_holds']} -> {args.out}")

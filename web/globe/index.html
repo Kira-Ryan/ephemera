@@ -1,0 +1,267 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Ephemera globe</title>
+<meta name="description" content="Every Starlink satellite drawn twice: where the operator says it is going, and where the public catalogue puts it.">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/cesium@1.131.0/Build/Cesium/Widgets/widgets.css">
+<style>
+  :root { --bg: #0c0f1d; --ink: #e8e6df; --dim: #9a97a8; --accent: #ffb347; --line: #2a1f5e; --bad: #ff6b6b; }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body { height: 100%; background: var(--bg); color: var(--ink); font: 14px/1.5 Georgia, 'Times New Roman', serif; overflow: hidden; }
+  #globe { position: absolute; inset: 0; }
+  .panel { position: absolute; background: rgba(12, 15, 29, .86); border: 1px solid var(--line); border-radius: 4px; padding: .8rem .95rem; backdrop-filter: blur(3px); }
+  #top { top: .8rem; left: .8rem; max-width: 26rem; }
+  #top h1 { font-family: ui-monospace, 'Cascadia Code', Consolas, monospace; font-size: .9rem; font-weight: 400; letter-spacing: .45em; color: var(--accent); text-transform: uppercase; margin-bottom: .45rem; }
+  #top h1 a { color: var(--dim); letter-spacing: .1em; font-size: .7rem; text-decoration: none; margin-left: .6rem; }
+  #status { font-family: ui-monospace, Consolas, monospace; font-size: .78rem; color: var(--ink); line-height: 1.45; }
+  #instant { font-family: ui-monospace, Consolas, monospace; font-size: .78rem; color: var(--dim); margin-top: .35rem; }
+  #webgl { font-family: ui-monospace, Consolas, monospace; font-size: .74rem; color: var(--bad); margin-top: .35rem; }
+  .legend { margin-top: .55rem; font-size: .76rem; color: var(--dim); font-family: ui-monospace, Consolas, monospace; }
+  .legend span { display: inline-block; width: .7rem; height: .7rem; border-radius: 50%; vertical-align: middle; margin: 0 .25rem 0 .5rem; }
+  .legend label { margin-left: .6rem; cursor: pointer; }
+  #right { top: .8rem; right: .8rem; width: 19rem; max-height: calc(100% - 12rem); overflow: auto; }
+  #right h2 { font-size: .74rem; color: var(--accent); font-family: ui-monospace, Consolas, monospace; text-transform: uppercase; letter-spacing: .12em; font-weight: 400; margin-bottom: .4rem; }
+  #sel { font-size: .8rem; margin-bottom: .8rem; min-height: 3.2rem; color: var(--ink); }
+  #sel .mono, #worst .mono { font-family: ui-monospace, Consolas, monospace; font-size: .74rem; }
+  #worst button { display: block; width: 100%; text-align: left; background: none; border: 0; border-bottom: 1px solid #1a1d33; color: var(--ink); padding: .28rem .1rem; font: inherit; font-size: .76rem; cursor: pointer; }
+  #worst button:hover { color: var(--accent); }
+  #foot { left: .8rem; right: .8rem; bottom: 2.4rem; font-size: .74rem; color: var(--dim); line-height: 1.5; max-width: 60rem; }
+  #foot b { color: var(--ink); font-weight: 600; }
+  .cesium-viewer-bottom { display: none; }
+  .cesium-viewer-timelineContainer { bottom: 0; }
+  .cesium-viewer-animationContainer { bottom: 0; }
+  @media (max-width: 800px) { #right { display: none; } #foot { display: none; } #top { max-width: calc(100% - 1.6rem); } }
+</style>
+</head>
+<body>
+<div id="globe"></div>
+
+<div id="top" class="panel">
+  <h1>Ephemera globe <a href="../">scoreboard and archive record</a></h1>
+  <div id="status">Loading the latest globe pack.</div>
+  <div id="instant"></div>
+  <div id="webgl"></div>
+  <div class="legend">
+    solid point: operator trajectory, coloured by distance from the ghost
+    <span style="background:#7bd88f"></span>under 1 km
+    <span style="background:#ffd166"></span>under 10 km
+    <span style="background:#ff9f43"></span>under 30 km
+    <span style="background:#ff5c5c"></span>30 km and beyond
+    <br>ghost: the public catalogue's element set, propagated in your browser
+    <label><input type="checkbox" id="tethers" checked> tethers from 10 km</label>
+  </div>
+</div>
+
+<div id="right" class="panel">
+  <h2>Selected satellite</h2>
+  <div id="sel">Click a point, or pick one from the list.</div>
+  <h2>Largest deviation in this cycle</h2>
+  <div id="worst"></div>
+</div>
+
+<div id="foot" class="panel">
+  <b>Operator ephemerides are predictions, not observations.</b> Both positions shown are predictions.
+  The ghost is the public catalogue's element set (Space-Track) propagated with SGP4 in your browser.
+  The solid point is the operator-published trajectory, rebuilt from the scored deviation at six-hour
+  epochs, so it is a reconstruction, not the file itself. The operator's file includes planned
+  trajectory changes the public set cannot know about; a large distance is that gap, not an error of
+  the satellite. Inputs are archived by this project and witnessed by OpenTimestamps and the Wayback
+  Machine; they are not re-fetchable from the source after one cycle. <span id="provenance"></span>
+</div>
+
+<script>window.CESIUM_BASE_URL = "https://cdn.jsdelivr.net/npm/cesium@1.131.0/Build/Cesium/";</script>
+<script src="https://cdn.jsdelivr.net/npm/cesium@1.131.0/Build/Cesium/Cesium.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/satellite.js@5.0.0/dist/satellite.min.js"></script>
+<script>
+(function () {
+  "use strict";
+  const $ = (id) => document.getElementById(id);
+  const PACK_URL = "pack.json";
+  const COLOURS = [[1, "#7bd88f"], [10, "#ffd166"], [30, "#ff9f43"], [Infinity, "#ff5c5c"]];
+  const fmt = (n) => n.toLocaleString("en-GB");
+  const iso = (d) => d.toISOString().slice(0, 16).replace("T", " ") + " UTC";
+
+  function unit(a) { const n = Math.hypot(a[0], a[1], a[2]); return [a[0] / n, a[1] / n, a[2] / n]; }
+  function cross(a, b) { return [a[1] * b[2] - a[2] * b[1], a[2] * b[0] - a[0] * b[2], a[0] * b[1] - a[1] * b[0]]; }
+
+  // Deviation (public minus operator, km, in the radial/in-track/cross-track frame) at t seconds after
+  // the pack base: linear between the scorer's evaluation epochs, held flat outside the satellite's span.
+  function deviation(s, t) {
+    const u = Math.min(Math.max((t - s.t0_s) / s.step, 0), s.n - 1);
+    const k = Math.floor(u), k2 = Math.min(k + 1, s.n - 1), f = u - k, m = s.ric_m;
+    return [(m[3 * k] * (1 - f) + m[3 * k2] * f) / 1000,
+            (m[3 * k + 1] * (1 - f) + m[3 * k2 + 1] * f) / 1000,
+            (m[3 * k + 2] * (1 - f) + m[3 * k2 + 2] * f) / 1000];
+  }
+
+  // Both positions at one instant in the Earth-fixed frame (metres) plus the distance in km.
+  function statesAt(s, date, gmst, tSec) {
+    const pv = satellite.propagate(s.rec, date);
+    if (!pv || !pv.position || !isFinite(pv.position.x)) return null;
+    const r = [pv.position.x, pv.position.y, pv.position.z], v = [pv.velocity.x, pv.velocity.y, pv.velocity.z];
+    const R = unit(r), C = unit(cross(r, v)), I = cross(C, R);
+    const d = deviation(s, tSec);
+    const dv = [R[0] * d[0] + I[0] * d[1] + C[0] * d[2], R[1] * d[0] + I[1] * d[1] + C[1] * d[2], R[2] * d[0] + I[2] * d[1] + C[2] * d[2]];
+    const op = [r[0] - dv[0], r[1] - dv[1], r[2] - dv[2]];
+    const g = satellite.eciToEcf({ x: r[0], y: r[1], z: r[2] }, gmst);
+    const o = satellite.eciToEcf({ x: op[0], y: op[1], z: op[2] }, gmst);
+    return { ghost: [g.x * 1000, g.y * 1000, g.z * 1000], op: [o.x * 1000, o.y * 1000, o.z * 1000],
+             dist: Math.hypot(d[0], d[1], d[2]), ric: d };
+  }
+
+  function colourFor(km) { for (const [lim, c] of COLOURS) if (km < lim) return c; return COLOURS[COLOURS.length - 1][1]; }
+
+  function summarise(sats, date) {
+    const gmst = satellite.gstime(date), tSec = (date - window.__base) / 1000;
+    let w1 = 0, w10 = 0, b30 = 0, n = 0;
+    for (const s of sats) {
+      const st = statesAt(s, date, gmst, tSec);
+      if (!st) continue;
+      n++;
+      if (st.dist < 1) w1++;
+      if (st.dist < 10) w10++;
+      if (st.dist >= 30) b30++;
+    }
+    return { n, w1, w10, b30 };
+  }
+
+  async function main() {
+    let pack;
+    try {
+      const r = await fetch(PACK_URL, { cache: "no-cache" });
+      if (!r.ok) throw new Error("HTTP " + r.status);
+      pack = await r.json();
+    } catch (e) {
+      $("status").textContent = "No globe pack is published yet (" + e.message + "). The scoreboard page lists what has been scored.";
+      return;
+    }
+    const base = new Date(pack.base);
+    window.__base = base;
+    const sats = [];
+    let bad = 0;
+    for (const s of pack.sats) {
+      const rec = satellite.twoline2satrec(s.l1, s.l2);
+      if (rec.error) { bad++; continue; }
+      sats.push({ id: s.id, name: s.name, setEpoch: new Date(s.set_epoch), alt: s.alt_km, max: s.max_km,
+                  ric_m: s.ric_m, n: s.ric_m.length / 3, t0_s: s.t0_s, step: pack.step_s, rec });
+    }
+    const spanS = Math.max(...sats.map((s) => s.t0_s + (s.n - 1) * s.step));
+    const end = new Date(base.getTime() + spanS * 1000);
+    const cycle = (pack.inputs.cycle || "").replace("cycle_", "");
+    $("status").textContent = fmt(sats.length) + " satellites | cycle " + cycle + " | public set snapshot fetched "
+      + iso(new Date(pack.inputs.catalogue_fetched_utc)) + (bad ? " | " + bad + " element sets could not be parsed" : "");
+    $("provenance").textContent = "Pack built " + iso(new Date(pack.as_of)) + " from cycle " + cycle + " (root "
+      + String(pack.inputs.merkle_root || "").slice(0, 12) + ") and snapshot " + pack.inputs.catalogue_snapshot + ".";
+
+    const showInstant = (date, sum) => {
+      $("instant").textContent = "showing " + iso(date) + ": " + fmt(sum.w1) + " within 1 km, " + fmt(sum.w10)
+        + " within 10 km, " + fmt(sum.b30) + " at 30 km or beyond, of " + fmt(sum.n);
+    };
+    showInstant(base, summarise(sats, base));
+
+    const worst = sats.slice().sort((a, b) => b.max - a.max).slice(0, 15);
+    let select = () => {};
+    $("worst").innerHTML = worst.map((s, i) => '<button data-i="' + i + '"><span class="mono">' + s.id + "</span> "
+      + s.name + ' <span class="mono">' + s.max.toFixed(1) + " km at most</span></button>").join("");
+    $("worst").addEventListener("click", (ev) => {
+      const b = ev.target.closest("button");
+      if (b) select(worst[Number(b.dataset.i)], true);
+    });
+
+    let viewer;
+    try {
+      Cesium.Ion.defaultAccessToken = "";
+      viewer = new Cesium.Viewer("globe", {
+        baseLayer: Cesium.ImageryLayer.fromProviderAsync(
+          Cesium.TileMapServiceImageryProvider.fromUrl(Cesium.buildModuleUrl("Assets/Textures/NaturalEarthII"))),
+        baseLayerPicker: false, geocoder: false, homeButton: false, sceneModePicker: false, navigationHelpButton: false,
+        infoBox: false, selectionIndicator: false, fullscreenButton: false, timeline: true, animation: true, shouldAnimate: true,
+      });
+    } catch (e) {
+      $("webgl").textContent = "3D view unavailable in this browser (" + e.message + "). The figures above were still computed from the pack.";
+      return;
+    }
+    viewer.scene.globe.enableLighting = true;
+    const clock = viewer.clock;
+    clock.startTime = Cesium.JulianDate.fromDate(base);
+    clock.stopTime = Cesium.JulianDate.fromDate(end);
+    clock.currentTime = Cesium.JulianDate.fromDate(base);
+    clock.clockRange = Cesium.ClockRange.LOOP_STOP;
+    clock.multiplier = 120;
+    viewer.timeline.zoomTo(clock.startTime, clock.stopTime);
+
+    const ghosts = viewer.scene.primitives.add(new Cesium.PointPrimitiveCollection());
+    const solids = viewer.scene.primitives.add(new Cesium.PointPrimitiveCollection());
+    const tethers = viewer.scene.primitives.add(new Cesium.PolylineCollection());
+    const ghostColour = Cesium.Color.fromCssColorString("#ffffff").withAlpha(0.35);
+    const tetherMat = Cesium.Material.fromType("Color", { color: Cesium.Color.fromCssColorString("#ff9f43").withAlpha(0.6) });
+    sats.forEach((s, i) => {
+      s.ghost = ghosts.add({ position: Cesium.Cartesian3.ZERO, color: ghostColour, pixelSize: 3, id: { kind: "ghost", i } });
+      s.solid = solids.add({ position: Cesium.Cartesian3.ZERO, color: Cesium.Color.WHITE, pixelSize: 5, id: { kind: "op", i } });
+      s.tether = tethers.add({ positions: [Cesium.Cartesian3.ZERO, Cesium.Cartesian3.ZERO], width: 1, material: tetherMat, show: false });
+    });
+
+    let selected = null;
+    const c3 = (a) => new Cesium.Cartesian3(a[0], a[1], a[2]);
+    function update(date) {
+      const gmst = satellite.gstime(date), tSec = (date - base) / 1000, tetherOn = $("tethers").checked;
+      let w1 = 0, w10 = 0, b30 = 0, n = 0;
+      for (const s of sats) {
+        const st = statesAt(s, date, gmst, tSec);
+        if (!st) { s.ghost.show = s.solid.show = s.tether.show = false; continue; }
+        s.ghost.show = s.solid.show = true;
+        s.ghost.position = c3(st.ghost);
+        s.solid.position = c3(st.op);
+        s.solid.color = Cesium.Color.fromCssColorString(colourFor(st.dist));
+        s.solid.pixelSize = s === selected ? 11 : 5;
+        s.tether.show = tetherOn && st.dist >= 10 || s === selected;
+        if (s.tether.show) s.tether.positions = [c3(st.ghost), c3(st.op)];
+        s.last = st;
+        n++;
+        if (st.dist < 1) w1++;
+        if (st.dist < 10) w10++;
+        if (st.dist >= 30) b30++;
+      }
+      showInstant(date, { n, w1, w10, b30 });
+      if (selected) describe(selected, date);
+    }
+    function describe(s, date) {
+      const st = s.last, age = (date - s.setEpoch) / 3.6e6;
+      $("sel").innerHTML = "<b>" + s.name + "</b> <span class=\"mono\">NORAD " + s.id + "</span><br>"
+        + (st ? "distance between the two predictions now: <b>" + st.dist.toFixed(2) + " km</b><br>"
+            + "<span class=\"mono\">radial " + st.ric[0].toFixed(2) + " km, in-track " + st.ric[1].toFixed(2) + " km, cross-track " + st.ric[2].toFixed(2) + " km</span><br>" : "")
+        + "element set epoch " + iso(s.setEpoch) + " (age " + age.toFixed(1) + " h at this instant)<br>"
+        + "altitude at the file's start " + s.alt.toFixed(0) + " km; largest scored distance " + s.max.toFixed(1) + " km";
+    }
+    select = (s, fly) => {
+      selected = s;
+      update(Cesium.JulianDate.toDate(clock.currentTime));
+      if (fly && s.last) {
+        viewer.camera.flyTo({ destination: Cesium.Cartesian3.multiplyByScalar(Cesium.Cartesian3.normalize(c3(s.last.op), new Cesium.Cartesian3()), 1.6e7, new Cesium.Cartesian3()), duration: 1.2 });
+      }
+    };
+    const handler = new Cesium.ScreenSpaceEventHandler(viewer.scene.canvas);
+    handler.setInputAction((m) => {
+      const p = viewer.scene.pick(m.position);
+      if (Cesium.defined(p) && p.id && typeof p.id.i === "number") select(sats[p.id.i], false);
+    }, Cesium.ScreenSpaceEventType.LEFT_CLICK);
+
+    let lastReal = 0;
+    clock.onTick.addEventListener((c) => {
+      const now = performance.now();
+      if (now - lastReal < 400) return;
+      lastReal = now;
+      update(Cesium.JulianDate.toDate(c.currentTime));
+    });
+    $("tethers").addEventListener("change", () => update(Cesium.JulianDate.toDate(clock.currentTime)));
+    update(base);
+    viewer.camera.flyTo({ destination: Cesium.Cartesian3.fromDegrees(18.4, -33.9, 2.6e7), duration: 0 });
+  }
+
+  main().catch((e) => { $("status").textContent = "The globe failed to start: " + e.message; console.error(e); });
+})();
+</script>
+</body>
+</html>
