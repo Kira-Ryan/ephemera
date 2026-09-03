@@ -1,36 +1,59 @@
 {
  "schema": 1,
- "generated_utc": "2026-09-02T20:20:00Z",
+ "generated_utc": "2026-09-03T00:20:00Z",
  "poller": "home (Cape Town, residential; single poller until poller A exists)",
  "method": "built from each cycle's cycle.json and witness.json in the poller's spool; coverage is the fraction of the last 24 h's minutes with a watcher heartbeat under 10 minutes old (D18); a cadence hold is a manifest first-seen gap over 9 h",
  "totals": {
-  "cycles": 12,
-  "complete": 11,
-  "attested": 11,
-  "bytes_raw": 246977788383,
+  "cycles": 13,
+  "complete": 13,
+  "attested": 12,
+  "bytes_raw": 291245361995,
   "cadence_holds": 1
  },
  "coverage_24h": null,
  "cycles": [
   {
-   "cycle": "cycle_3572d8775913",
-   "manifest_sha256": "3572d8775913286bf6f21d0de63aef7addfb6dc6bd4cadab49e6f034534376f2",
-   "first_seen_utc": "2026-09-02T20:15:47Z",
-   "status": "in-progress",
-   "files_listed": 11118,
-   "files_recorded": 0,
+   "cycle": "cycle_b37c74c03907",
+   "manifest_sha256": "b37c74c03907abd738ada840211368ee85a6789ccdb7179c9fb509446dc4784e",
+   "first_seen_utc": "2026-09-02T22:54:48Z",
+   "status": "complete",
+   "files_listed": 10682,
+   "files_recorded": 10682,
    "files_failed": 0,
-   "bytes_raw": 0,
-   "wall_seconds": null,
-   "merkle_root": null,
+   "bytes_raw": 21721236891,
+   "wall_seconds": 3458.4,
+   "merkle_root": "3b31bf7689b619c4939738b64693c86fb8bb052912a716707e14fd5359d42aa4",
    "ots": {
-    "stamped": false,
+    "stamped": true,
     "attested_block": null
    },
    "wayback": {
-    "manifest_verified": false,
-    "samples_verified": 0,
-    "samples_total": 0,
+    "manifest_verified": true,
+    "samples_verified": 10,
+    "samples_total": 10,
+    "losses": 0,
+    "skipped": null
+   }
+  },
+  {
+   "cycle": "cycle_3572d8775913",
+   "manifest_sha256": "3572d8775913286bf6f21d0de63aef7addfb6dc6bd4cadab49e6f034534376f2",
+   "first_seen_utc": "2026-09-02T20:15:47Z",
+   "status": "complete",
+   "files_listed": 11118,
+   "files_recorded": 11118,
+   "files_failed": 0,
+   "bytes_raw": 22546336721,
+   "wall_seconds": 3945.8,
+   "merkle_root": "e84216948e7bb8083b315cac8bda72a5eb8cec67660608899bf71665b251841e",
+   "ots": {
+    "stamped": true,
+    "attested_block": 965229
+   },
+   "wayback": {
+    "manifest_verified": true,
+    "samples_verified": 10,
+    "samples_total": 10,
     "losses": 0,
     "skipped": null
    }
@@ -290,6 +313,13 @@
   }
  ],
  "daily_roots": [
+  {
+   "date": "2026-09-02",
+   "merkle_root": "647c6951a21de79e322460440f2ad019a39530835ba38982099c46fd20462060",
+   "cycles": 4,
+   "gapped_excluded": 0,
+   "attested_block": null
+  },
   {
    "date": "2026-09-01",
    "merkle_root": "7ecb7906d01b0604f27f319d580404532a37545b4afbf8bf8e0c53ab5273092e",
