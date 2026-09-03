@@ -214,26 +214,38 @@ def test_globe_keeps_its_caveats_at_every_width_in_a_real_browser(tmp_path):
     probe = out / "globe" / "probe.html"
     probe.write_text(src.replace("</body>", """<script>
       addEventListener('load', () => setTimeout(() => {
-        const f = document.getElementById('foot');
-        const vis = getComputedStyle(f).display !== 'none' && f.getBoundingClientRect().height > 0;
-        document.body.insertAdjacentHTML('afterbegin',
-          '<div id=probe>' + innerWidth + '|' + (vis ? 'CAVEATS-VISIBLE' : 'CAVEATS-HIDDEN') + '</div>');
-      }, 400));
+        const box = (sel) => { const e = document.querySelector(sel); if (!e) return null;
+          const r = e.getBoundingClientRect();
+          return getComputedStyle(e).display === 'none' || r.height === 0 ? null : r; };
+        const f = box('#foot');
+        const hit = (b) => !!f && !!b && !(f.right <= b.left || f.left >= b.right
+                                          || f.bottom <= b.top || f.top >= b.bottom);
+        document.body.insertAdjacentHTML('afterbegin', '<div id=probe>' + innerWidth
+          + '|' + (f ? 'CAVEATS-VISIBLE' : 'CAVEATS-HIDDEN')
+          + '|' + (hit(box('.cesium-viewer-timelineContainer')) ? 'TIMELINE-COVERED' : 'TIMELINE-CLEAR')
+          + '|' + (hit(box('.cesium-viewer-animationContainer')) ? 'CLOCK-COVERED' : 'CLOCK-CLEAR')
+          + '</div>');
+      }, 3000));
     </script></body>"""), encoding="utf-8")
     srv = _serve(out)
     try:
         url = f"http://127.0.0.1:{srv.server_address[1]}/globe/probe.html"
         seen = {}
-        for width in (400, 1280):
-            r = subprocess.run([CHROME, "--headless=new", "--disable-gpu", "--force-device-scale-factor=1",
-                                f"--window-size={width},900", "--virtual-time-budget=20000", "--dump-dom", url],
-                               capture_output=True, timeout=120)
-            seen[width] = "CAVEATS-VISIBLE" in " ".join(r.stdout.decode("utf-8", "replace").split())
+        for width in (400, 900, 1560):
+            r = subprocess.run([CHROME, "--headless=new", "--use-angle=swiftshader",
+                                "--enable-unsafe-swiftshader", "--force-device-scale-factor=1",
+                                f"--window-size={width},900", "--virtual-time-budget=40000", "--dump-dom", url],
+                               capture_output=True, timeout=180)
+            seen[width] = " ".join(r.stdout.decode("utf-8", "replace").split())
     finally:
         srv.shutdown()
         probe.unlink(missing_ok=True)
-    assert seen[400], "the required caveats are hidden at phone width"
-    assert seen[1280], "the required caveats are hidden at desktop width"
+    for width, dom in seen.items():
+        assert "CAVEATS-VISIBLE" in dom, f"the required caveats are hidden at {width}px"
+        # Cesium sizes its clock with the viewport, so a panel that clears it at one width can cover
+        # it at another. Both widgets are checked at every width.
+        assert "TIMELINE-CLEAR" in dom, f"the caveats cover the timeline at {width}px"
+        assert "CLOCK-CLEAR" in dom, f"the caveats cover the clock at {width}px"
 
 
 def test_globe_computes_from_the_pack_in_a_real_browser(tmp_path):
