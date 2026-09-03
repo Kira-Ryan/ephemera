@@ -1,10 +1,10 @@
 {
  "schema": 1,
- "generated_utc": "2026-09-03T09:37:41Z",
+ "generated_utc": "2026-09-03T12:20:00Z",
  "poller": "home (Cape Town, residential; single poller until poller A exists)",
  "method": "built from each cycle's cycle.json and witness.json in the poller's spool; coverage is the fraction of the last 24 h's minutes with a watcher heartbeat under 10 minutes old (D18); a cadence hold is a manifest first-seen gap over 9 h",
  "totals": {
-  "cycles": 14,
+  "cycles": 15,
   "complete": 14,
   "attested": 14,
   "bytes_raw": 313791829188,
@@ -117,11 +117,607 @@
      }
     ],
     "pack": "Z:\\ephemera\\spool\\score\\globe_1e726fe006d9.json"
+   },
+   {
+    "cycle": "cycle_b37c74c03907",
+    "first_seen_utc": "2026-09-02T22:54:48Z",
+    "as_of": "2026-09-03T09:46:22Z",
+    "method": "Public element set (Space-Track gp snapshot) propagated with SGP4 (skyfield 1.55, python-sgp4 2.27; TEME to GCRS by Skyfield, taken as J2000) and differenced against the operator-published trajectory (EME2000) at the file's own record epochs every 360 min. Distance in km; components in the operator's radial/in-track/cross-track frame; altitude is geocentric radius minus 6378.137 km; element age is evaluation epoch minus element-set epoch, signed. Both inputs are predictions; the operator's includes planned trajectory changes the public set cannot know about.",
+    "eval_step_min": 360.0,
+    "snapshot": "20260902T221013Z_d1d19ce6a963",
+    "snapshot_fetched_utc": "2026-09-02T22:10:13Z",
+    "snapshot_relation": "before_cycle",
+    "catalogue_sets": 12811,
+    "counts": {
+     "files": 10682,
+     "scored": 10655,
+     "no_public_set": 27,
+     "decayed_set": 0,
+     "propagation_failed": 0,
+     "unreadable": 0
+    },
+    "overall": {
+     "n": 138028,
+     "median_km": 14.311,
+     "p90_km": 132.597,
+     "mean_age_h": 52.85,
+     "within_km": {
+      "1": 0.0688,
+      "10": 0.4276,
+      "30": 0.6443
+     }
+    },
+    "by_age": [
+     {
+      "bin": "set newer than epoch",
+      "n": 1,
+      "median_km": 0.676,
+      "p90_km": 0.676,
+      "mean_age_h": -0.63,
+      "within_km": {
+       "1": 1.0,
+       "10": 1.0,
+       "30": 1.0
+      }
+     },
+     {
+      "bin": "0-6 h",
+      "n": 343,
+      "median_km": 2.043,
+      "p90_km": 13.845,
+      "mean_age_h": 4.85,
+      "within_km": {
+       "1": 0.2945,
+       "10": 0.8222,
+       "30": 0.9767
+      }
+     },
+     {
+      "bin": "6-12 h",
+      "n": 3933,
+      "median_km": 2.296,
+      "p90_km": 15.832,
+      "mean_age_h": 8.75,
+      "within_km": {
+       "1": 0.2723,
+       "10": 0.8434,
+       "30": 0.9535
+      }
+     },
+     {
+      "bin": "12-24 h",
+      "n": 14748,
+      "median_km": 4.488,
+      "p90_km": 28.862,
+      "mean_age_h": 18.27,
+      "within_km": {
+       "1": 0.1555,
+       "10": 0.7676,
+       "30": 0.902
+      }
+     },
+     {
+      "bin": "24-48 h",
+      "n": 41675,
+      "median_km": 11.028,
+      "p90_km": 77.274,
+      "mean_age_h": 35.97,
+      "within_km": {
+       "1": 0.0791,
+       "10": 0.4761,
+       "30": 0.8063
+      }
+     },
+     {
+      "bin": "48-72 h",
+      "n": 42271,
+      "median_km": 26.494,
+      "p90_km": 240.825,
+      "mean_age_h": 59.8,
+      "within_km": {
+       "1": 0.044,
+       "10": 0.3421,
+       "30": 0.5292
+      }
+     },
+     {
+      "bin": "over 72 h",
+      "n": 35057,
+      "median_km": 45.238,
+      "p90_km": 213.101,
+      "mean_age_h": 84.52,
+      "within_km": {
+       "1": 0.0249,
+       "10": 0.2796,
+       "30": 0.4442
+      }
+     }
+    ],
+    "pack": "Z:\\ephemera\\spool\\score\\globe_b37c74c03907.json"
+   },
+   {
+    "cycle": "cycle_3572d8775913",
+    "first_seen_utc": "2026-09-02T20:15:47Z",
+    "as_of": "2026-09-03T10:16:35Z",
+    "method": "Public element set (Space-Track gp snapshot) propagated with SGP4 (skyfield 1.55, python-sgp4 2.27; TEME to GCRS by Skyfield, taken as J2000) and differenced against the operator-published trajectory (EME2000) at the file's own record epochs every 360 min. Distance in km; components in the operator's radial/in-track/cross-track frame; altitude is geocentric radius minus 6378.137 km; element age is evaluation epoch minus element-set epoch, signed. Both inputs are predictions; the operator's includes planned trajectory changes the public set cannot know about.",
+    "eval_step_min": 360.0,
+    "snapshot": "20260902T200733Z_0821a18806eb",
+    "snapshot_fetched_utc": "2026-09-02T20:07:33Z",
+    "snapshot_relation": "before_cycle",
+    "catalogue_sets": 12811,
+    "counts": {
+     "files": 11118,
+     "scored": 11091,
+     "no_public_set": 27,
+     "decayed_set": 0,
+     "propagation_failed": 0,
+     "unreadable": 0
+    },
+    "overall": {
+     "n": 143219,
+     "median_km": 12.053,
+     "p90_km": 115.06,
+     "mean_age_h": 49.97,
+     "within_km": {
+      "1": 0.0761,
+      "10": 0.4606,
+      "30": 0.6778
+     }
+    },
+    "by_age": [
+     {
+      "bin": "0-6 h",
+      "n": 2744,
+      "median_km": 1.755,
+      "p90_km": 12.869,
+      "mean_age_h": 4.38,
+      "within_km": {
+       "1": 0.3178,
+       "10": 0.8819,
+       "30": 0.9778
+      }
+     },
+     {
+      "bin": "6-12 h",
+      "n": 5315,
+      "median_km": 2.372,
+      "p90_km": 17.089,
+      "mean_age_h": 9.64,
+      "within_km": {
+       "1": 0.2504,
+       "10": 0.8478,
+       "30": 0.9458
+      }
+     },
+     {
+      "bin": "12-24 h",
+      "n": 17094,
+      "median_km": 4.527,
+      "p90_km": 25.592,
+      "mean_age_h": 18.67,
+      "within_km": {
+       "1": 0.1477,
+       "10": 0.7713,
+       "30": 0.9086
+      }
+     },
+     {
+      "bin": "24-48 h",
+      "n": 43796,
+      "median_km": 10.575,
+      "p90_km": 74.325,
+      "mean_age_h": 36.23,
+      "within_km": {
+       "1": 0.0788,
+       "10": 0.4866,
+       "30": 0.8077
+      }
+     },
+     {
+      "bin": "48-72 h",
+      "n": 43721,
+      "median_km": 25.111,
+      "p90_km": 228.63,
+      "mean_age_h": 60.12,
+      "within_km": {
+       "1": 0.044,
+       "10": 0.3482,
+       "30": 0.5394
+      }
+     },
+     {
+      "bin": "over 72 h",
+      "n": 30549,
+      "median_km": 33.178,
+      "p90_km": 165.224,
+      "mean_age_h": 83.78,
+      "within_km": {
+       "1": 0.026,
+       "10": 0.3054,
+       "30": 0.487
+      }
+     }
+    ],
+    "pack": "Z:\\ephemera\\spool\\score\\globe_3572d8775913.json"
+   },
+   {
+    "cycle": "cycle_f5112bb77a2a",
+    "first_seen_utc": "2026-09-02T12:08:13Z",
+    "as_of": "2026-09-03T10:48:21Z",
+    "method": "Public element set (Space-Track gp snapshot) propagated with SGP4 (skyfield 1.55, python-sgp4 2.27; TEME to GCRS by Skyfield, taken as J2000) and differenced against the operator-published trajectory (EME2000) at the file's own record epochs every 360 min. Distance in km; components in the operator's radial/in-track/cross-track frame; altitude is geocentric radius minus 6378.137 km; element age is evaluation epoch minus element-set epoch, signed. Both inputs are predictions; the operator's includes planned trajectory changes the public set cannot know about.",
+    "eval_step_min": 360.0,
+    "snapshot": "20260902T200733Z_0821a18806eb",
+    "snapshot_fetched_utc": "2026-09-02T20:07:33Z",
+    "snapshot_relation": "after_cycle",
+    "catalogue_sets": 12811,
+    "counts": {
+     "files": 11092,
+     "scored": 11091,
+     "no_public_set": 0,
+     "decayed_set": 1,
+     "propagation_failed": 0,
+     "unreadable": 0
+    },
+    "overall": {
+     "n": 143226,
+     "median_km": 8.854,
+     "p90_km": 87.515,
+     "mean_age_h": 41.89,
+     "within_km": {
+      "1": 0.1123,
+      "10": 0.525,
+      "30": 0.7318
+     }
+    },
+    "by_age": [
+     {
+      "bin": "set newer than epoch",
+      "n": 3846,
+      "median_km": 1.12,
+      "p90_km": 11.631,
+      "mean_age_h": -2.95,
+      "within_km": {
+       "1": 0.4644,
+       "10": 0.8937,
+       "30": 0.9345
+      }
+     },
+     {
+      "bin": "0-6 h",
+      "n": 6151,
+      "median_km": 1.061,
+      "p90_km": 5.609,
+      "mean_age_h": 3.11,
+      "within_km": {
+       "1": 0.4749,
+       "10": 0.9402,
+       "30": 0.9777
+      }
+     },
+     {
+      "bin": "6-12 h",
+      "n": 8405,
+      "median_km": 2.006,
+      "p90_km": 9.973,
+      "mean_age_h": 9.07,
+      "within_km": {
+       "1": 0.2833,
+       "10": 0.9002,
+       "30": 0.9719
+      }
+     },
+     {
+      "bin": "12-24 h",
+      "n": 20983,
+      "median_km": 4.245,
+      "p90_km": 19.385,
+      "mean_age_h": 18.15,
+      "within_km": {
+       "1": 0.1536,
+       "10": 0.7937,
+       "30": 0.924
+      }
+     },
+     {
+      "bin": "24-48 h",
+      "n": 44076,
+      "median_km": 10.556,
+      "p90_km": 70.543,
+      "mean_age_h": 35.98,
+      "within_km": {
+       "1": 0.0786,
+       "10": 0.4866,
+       "30": 0.8133
+      }
+     },
+     {
+      "bin": "48-72 h",
+      "n": 43546,
+      "median_km": 25.351,
+      "p90_km": 218.172,
+      "mean_age_h": 59.97,
+      "within_km": {
+       "1": 0.0414,
+       "10": 0.3454,
+       "30": 0.5402
+      }
+     },
+     {
+      "bin": "over 72 h",
+      "n": 16219,
+      "median_km": 27.85,
+      "p90_km": 134.419,
+      "mean_age_h": 82.5,
+      "within_km": {
+       "1": 0.031,
+       "10": 0.3248,
+       "30": 0.5101
+      }
+     }
+    ],
+    "pack": "Z:\\ephemera\\spool\\score\\globe_f5112bb77a2a.json"
+   },
+   {
+    "cycle": "cycle_0a85a65d5dbe",
+    "first_seen_utc": "2026-09-02T04:12:50Z",
+    "as_of": "2026-09-03T11:19:07Z",
+    "method": "Public element set (Space-Track gp snapshot) propagated with SGP4 (skyfield 1.55, python-sgp4 2.27; TEME to GCRS by Skyfield, taken as J2000) and differenced against the operator-published trajectory (EME2000) at the file's own record epochs every 360 min. Distance in km; components in the operator's radial/in-track/cross-track frame; altitude is geocentric radius minus 6378.137 km; element age is evaluation epoch minus element-set epoch, signed. Both inputs are predictions; the operator's includes planned trajectory changes the public set cannot know about.",
+    "eval_step_min": 360.0,
+    "snapshot": "20260902T200733Z_0821a18806eb",
+    "snapshot_fetched_utc": "2026-09-02T20:07:33Z",
+    "snapshot_relation": "after_cycle",
+    "catalogue_sets": 12811,
+    "counts": {
+     "files": 11093,
+     "scored": 11091,
+     "no_public_set": 0,
+     "decayed_set": 2,
+     "propagation_failed": 0,
+     "unreadable": 0
+    },
+    "overall": {
+     "n": 143231,
+     "median_km": 6.397,
+     "p90_km": 67.422,
+     "mean_age_h": 34.0,
+     "within_km": {
+      "1": 0.1489,
+      "10": 0.5902,
+      "30": 0.7822
+     }
+    },
+    "by_age": [
+     {
+      "bin": "set newer than epoch",
+      "n": 12206,
+      "median_km": 1.175,
+      "p90_km": 10.374,
+      "mean_age_h": -5.99,
+      "within_km": {
+       "1": 0.4425,
+       "10": 0.8987,
+       "30": 0.9348
+      }
+     },
+     {
+      "bin": "0-6 h",
+      "n": 8981,
+      "median_km": 1.017,
+      "p90_km": 4.943,
+      "mean_age_h": 2.9,
+      "within_km": {
+       "1": 0.4939,
+       "10": 0.9467,
+       "30": 0.9806
+      }
+     },
+     {
+      "bin": "6-12 h",
+      "n": 10417,
+      "median_km": 1.969,
+      "p90_km": 8.505,
+      "mean_age_h": 8.88,
+      "within_km": {
+       "1": 0.2912,
+       "10": 0.9142,
+       "30": 0.9764
+      }
+     },
+     {
+      "bin": "12-24 h",
+      "n": 22023,
+      "median_km": 4.065,
+      "p90_km": 20.351,
+      "mean_age_h": 17.85,
+      "within_km": {
+       "1": 0.1518,
+       "10": 0.7997,
+       "30": 0.9204
+      }
+     },
+     {
+      "bin": "24-48 h",
+      "n": 43935,
+      "median_km": 10.345,
+      "p90_km": 74.696,
+      "mean_age_h": 35.82,
+      "within_km": {
+       "1": 0.0752,
+       "10": 0.4915,
+       "30": 0.8152
+      }
+     },
+     {
+      "bin": "48-72 h",
+      "n": 38389,
+      "median_km": 22.502,
+      "p90_km": 106.911,
+      "mean_age_h": 58.71,
+      "within_km": {
+       "1": 0.0421,
+       "10": 0.363,
+       "30": 0.5683
+      }
+     },
+     {
+      "bin": "over 72 h",
+      "n": 7280,
+      "median_km": 27.153,
+      "p90_km": 208.364,
+      "mean_age_h": 82.95,
+      "within_km": {
+       "1": 0.0264,
+       "10": 0.3298,
+       "30": 0.513
+      }
+     }
+    ],
+    "pack": "Z:\\ephemera\\spool\\score\\globe_0a85a65d5dbe.json"
+   },
+   {
+    "cycle": "cycle_51d5c047650a",
+    "first_seen_utc": "2026-09-01T23:24:02Z",
+    "as_of": "2026-09-03T11:46:45Z",
+    "method": "Public element set (Space-Track gp snapshot) propagated with SGP4 (skyfield 1.55, python-sgp4 2.27; TEME to GCRS by Skyfield, taken as J2000) and differenced against the operator-published trajectory (EME2000) at the file's own record epochs every 360 min. Distance in km; components in the operator's radial/in-track/cross-track frame; altitude is geocentric radius minus 6378.137 km; element age is evaluation epoch minus element-set epoch, signed. Both inputs are predictions; the operator's includes planned trajectory changes the public set cannot know about.",
+    "eval_step_min": 360.0,
+    "snapshot": "20260902T200733Z_0821a18806eb",
+    "snapshot_fetched_utc": "2026-09-02T20:07:33Z",
+    "snapshot_relation": "after_cycle",
+    "catalogue_sets": 12811,
+    "counts": {
+     "files": 10902,
+     "scored": 10901,
+     "no_public_set": 0,
+     "decayed_set": 1,
+     "propagation_failed": 0,
+     "unreadable": 0
+    },
+    "overall": {
+     "n": 141000,
+     "median_km": 5.42,
+     "p90_km": 59.917,
+     "mean_age_h": 29.14,
+     "within_km": {
+      "1": 0.1697,
+      "10": 0.6186,
+      "30": 0.8035
+     }
+    },
+    "by_age": [
+     {
+      "bin": "set newer than epoch",
+      "n": 19124,
+      "median_km": 1.213,
+      "p90_km": 12.113,
+      "mean_age_h": -7.77,
+      "within_km": {
+       "1": 0.4311,
+       "10": 0.889,
+       "30": 0.9329
+      }
+     },
+     {
+      "bin": "0-6 h",
+      "n": 10094,
+      "median_km": 1.068,
+      "p90_km": 4.797,
+      "mean_age_h": 2.94,
+      "within_km": {
+       "1": 0.4734,
+       "10": 0.9524,
+       "30": 0.9855
+      }
+     },
+     {
+      "bin": "6-12 h",
+      "n": 10791,
+      "median_km": 1.972,
+      "p90_km": 8.664,
+      "mean_age_h": 8.91,
+      "within_km": {
+       "1": 0.2831,
+       "10": 0.9143,
+       "30": 0.9764
+      }
+     },
+     {
+      "bin": "12-24 h",
+      "n": 21688,
+      "median_km": 4.2,
+      "p90_km": 19.561,
+      "mean_age_h": 17.91,
+      "within_km": {
+       "1": 0.1478,
+       "10": 0.7984,
+       "30": 0.9229
+      }
+     },
+     {
+      "bin": "24-48 h",
+      "n": 43131,
+      "median_km": 10.697,
+      "p90_km": 74.789,
+      "mean_age_h": 35.89,
+      "within_km": {
+       "1": 0.0742,
+       "10": 0.4819,
+       "30": 0.8111
+      }
+     },
+     {
+      "bin": "48-72 h",
+      "n": 32640,
+      "median_km": 23.152,
+      "p90_km": 94.114,
+      "mean_age_h": 57.85,
+      "within_km": {
+       "1": 0.0418,
+       "10": 0.3574,
+       "30": 0.5655
+      }
+     },
+     {
+      "bin": "over 72 h",
+      "n": 3532,
+      "median_km": 47.645,
+      "p90_km": 1336.431,
+      "mean_age_h": 87.0,
+      "within_km": {
+       "1": 0.0218,
+       "10": 0.2763,
+       "30": 0.4289
+      }
+     }
+    ],
+    "pack": "Z:\\ephemera\\spool\\score\\globe_51d5c047650a.json"
    }
   ],
   "latest": "cycle_1e726fe006d9"
  },
  "cycles": [
+  {
+   "cycle": "cycle_a39dfdfee0fd",
+   "manifest_sha256": "a39dfdfee0fd8f1a8a068e22d8428966a87b19c19d98721ba012192a60911d5e",
+   "first_seen_utc": "2026-09-03T12:09:25Z",
+   "status": "in-progress",
+   "files_listed": 11117,
+   "files_recorded": 0,
+   "files_failed": 0,
+   "bytes_raw": 0,
+   "wall_seconds": null,
+   "merkle_root": null,
+   "ots": {
+    "stamped": false,
+    "attested_block": null
+   },
+   "wayback": {
+    "manifest_verified": false,
+    "samples_verified": 0,
+    "samples_total": 0,
+    "losses": 0,
+    "skipped": null
+   }
+  },
   {
    "cycle": "cycle_1e726fe006d9",
    "manifest_sha256": "1e726fe006d962503ff68efb4d918f52cccf94c21ec4451fb64219a99ad6a264",
