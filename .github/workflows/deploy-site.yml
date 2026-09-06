@@ -44,7 +44,7 @@ jobs:
         run: |
           pin=$(grep -E '^blake3==' requirements.txt)
           test -n "$pin" || { echo "requirements.txt does not pin blake3"; exit 1; }
-          python -m pip install --quiet --require-hashes=false "$pin"
+          python -m pip install --quiet "$pin"
       - name: Deploy web/dist via the Pages direct-upload API
         if: steps.gate.outputs.go == 'true'
         env:
