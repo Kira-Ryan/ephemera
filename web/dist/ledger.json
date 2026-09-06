@@ -1,10 +1,10 @@
 {
  "schema": 2,
- "generated_utc": "2026-09-06T20:20:00Z",
+ "generated_utc": "2026-09-06T21:07:43Z",
  "poller": "home (Cape Town, residential; single poller until poller A exists)",
  "method": "built from each cycle's cycle.json, witness.json and ship.json in the poller's spool; coverage is the fraction of the last 24 h's minutes with a watcher heartbeat under 10 minutes old (D18); a cadence hold is a manifest first-seen gap over 9 h; source bytes are the responses as served, stored bytes are the gzipped archive objects the shipper recorded",
  "totals": {
-  "cycles": 24,
+  "cycles": 25,
   "complete": 24,
   "attested": 24,
   "witness_defects": 7,
@@ -4141,6 +4141,41 @@
   }
  ],
  "cycles": [
+  {
+   "cycle": "cycle_e6c17386d359",
+   "manifest_sha256": "e6c17386d359afc062e39b57115af832b3e1cf7c84943af09fc37ce7fae8467c",
+   "first_seen_utc": "2026-09-06T20:29:06Z",
+   "status": "in-progress",
+   "files_listed": 11136,
+   "files_recorded": 0,
+   "files_failed": 0,
+   "bytes_raw": 0,
+   "wall_seconds": null,
+   "merkle_root": null,
+   "ots": {
+    "stamped": false,
+    "attested_block": null
+   },
+   "wayback": {
+    "attempted": false,
+    "manifest_verified": false,
+    "manifest_captured": false,
+    "manifest_error": null,
+    "samples_verified": 0,
+    "samples_total": 0,
+    "losses": 0,
+    "skipped": null,
+    "manifest_copy_url": null,
+    "manifest_copy_sha256": null,
+    "samples": []
+   },
+   "storage": {
+    "bytes_stored": 0,
+    "storage_class": null,
+    "local_files": true,
+    "deleted_locally_utc": null
+   }
+  },
   {
    "cycle": "cycle_d475086e7ca5",
    "manifest_sha256": "d475086e7ca567d2875a495ecb22352cb702f8b6aad7502416eb849b592696f2",
