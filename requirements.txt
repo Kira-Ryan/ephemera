@@ -1,15 +1,29 @@
-# Runtime for archive/ (poller and watcher). Pinned to what the tests ran against on 30 Aug 2026.
+# Everything needed to run the pollers, the scoring, the site build and the test gate on a clean
+# machine. Pinned to what the suite was last run against, 6 Sep 2026.
+
+# --- archive/ : the poller, watcher and witness ---
 requests==2.33.0
 # urllib3 2.x enforces Content-Length (a truncated 200 raises IncompleteRead and becomes a gap);
 # requests alone allows 1.26, which does not.
 urllib3>=2,<3
 
-# Tests
-pytest==8.4.2
+# --- archive/ship.py and infra/s3_bucket.py : cold storage ---
+boto3==1.43.81
+# imported directly by infra/s3_bucket.py for ClientError, so it is named rather than left to
+# arrive as a transitive dependency of boto3
+botocore==1.43.81
 
-# Site deploys only (infra/cf_site.py deploy): the Pages asset hash is blake3.
-blake3==1.0.7
-\n
-# Site build only (web/brand.py): the favicon, apple icon and social card are rasterised from the
-# same geometry as the SVG mark, so a site build on a clean machine needs Pillow.
+# --- score/ : SGP4 propagation against the operator ephemerides ---
+skyfield==1.55
+sgp4==2.27
+
+# --- web/brand.py : the favicon, apple icon and social card are rasterised from the same geometry
+#     as the SVG mark, so a site build on a clean machine needs Pillow ---
 pillow==12.3.0
+
+# --- infra/cf_site.py deploy : the Cloudflare Pages asset hash is blake3 ---
+blake3==1.0.9
+
+# --- the test gate (make test) ---
+pytest==8.4.2
+moto==5.2.3

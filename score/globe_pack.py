@@ -21,6 +21,7 @@ from __future__ import annotations
 import argparse
 import gzip
 import json
+import re
 import sys
 from datetime import datetime, timezone
 from pathlib import Path
@@ -29,6 +30,15 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 import catalogue as cat  # noqa: E402
 
 SCHEMA = 1
+# Catalogue object names are written into the page by the globe. Real ones look like
+# "STARLINK-34600"; anything outside this set is replaced rather than carried, so a hostile or
+# merely broken feed value cannot become markup. The page escapes them as well.
+NAME_SAFE = re.compile(r"[^A-Za-z0-9 ._/()+-]")
+NAME_MAX = 64
+
+
+def safe_name(name: str) -> str:
+    return NAME_SAFE.sub("?", (name or "")[:NAME_MAX])
 
 
 def parse_utc(s: str) -> datetime:
@@ -57,7 +67,7 @@ def build_pack(report: dict, rows: list[dict], catalogue: cat.Catalogue) -> dict
             if abs(parse_utc(r["epoch"]).timestamp() - expect) > 1.0:
                 raise ValueError(f"{norad}: rows are not evenly spaced at {step_s} s (row {k})")
         sats.append({
-            "id": norad, "name": es.name, "l1": es.line1, "l2": es.line2,
+            "id": norad, "name": safe_name(es.name), "l1": es.line1, "l2": es.line2,
             "set_epoch": es.epoch.strftime("%Y-%m-%dT%H:%M:%SZ"),
             "t0_s": int(round((t0 - base).total_seconds())),
             "alt_km": round(rs[0]["alt_km"], 1),

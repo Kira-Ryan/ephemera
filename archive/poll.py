@@ -148,6 +148,21 @@ def write_bytes_atomic(path: Path, data: bytes) -> None:
     os.replace(tmp, path)
 
 
+def stored_matches(dest: Path, cached: dict) -> bool:
+    """Does the gzip on disk still hold the bytes the record says it does?
+
+    Only the recorded digest counts. A gzip that opens is not evidence: the failure this guards
+    against is a file whose contents changed, not one that stopped being a gzip."""
+    want = cached.get("sha256")
+    if not want:
+        return False
+    try:
+        raw = gzip.decompress(dest.read_bytes())
+    except (OSError, EOFError):
+        return False
+    return len(raw) == cached.get("bytes") and sha256_bytes(raw) == want
+
+
 def fetch_one(session: requests.Session, base: str, name: str, dest: Path,
               etag_cache: dict, cache_lock: threading.Lock, stop: threading.Event) -> dict:
     """Download one file, gzip it to dest, return its record. Raises on final failure."""
@@ -169,9 +184,17 @@ def fetch_one(session: requests.Session, base: str, name: str, dest: Path,
         try:
             r = session.get(url, headers=headers, timeout=TIMEOUT_S)
             if r.status_code == 304:
-                if headers and cached and dest.exists():
+                if not (headers and cached and dest.exists()):
+                    raise RuntimeError("304 Not Modified to a request that sent no validator")
+                # The server says the remote bytes are unchanged. That says nothing about the bytes
+                # on this disk, and the stored copy is what gets archived, so it is read back and
+                # checked here rather than trusted for existing. A file that no longer matches its
+                # record is re-fetched without the validator, loudly.
+                if stored_matches(dest, cached):
                     return {**cached, "name": name, "status": "unchanged-304", "attempts": attempt}
-                raise RuntimeError("304 Not Modified to a request that sent no validator")
+                log.error("%s: the stored copy no longer matches its record - re-fetching", name)
+                headers, cached = {}, {}
+                continue
             r.raise_for_status()
             raw = r.content
             if len(raw) < 1000 or not raw.startswith(b"created:"):

@@ -477,3 +477,33 @@ def test_merkle_construction_is_the_documented_one():
     assert poll.merkle_root([a, b]) == h(a, b)
     assert poll.merkle_root([a, b, c]) == h(h(a, b), h(c, c))  # odd trailing node paired with itself
     assert poll.merkle_root([]) is None
+
+
+def test_a_304_does_not_trust_a_corrupted_local_file(tmp_path):
+    """A resumed pull answers 304 for files it already has. The stored gzip was accepted because it
+    existed, without ever being read, so local corruption became archive content and the shipper
+    then verified only the upload's own size.
+
+    Mutation: return the cached record on 304 without re-reading the file and this goes red."""
+    site, names = build_site(tmp_path)
+    feed = Feed(site, names)
+    spool = tmp_path / "spool"
+    try:
+        rc, rec, cyc = run(feed, spool)
+        assert rc == 0
+        victim = rec["files"][0]
+        gz = cyc / "files" / (victim["name"] + ".gz")
+        gz.write_bytes(gzip.compress(b"created: not the bytes that were fetched\n" + b"q" * 3000))
+
+        rc2 = poll.main(["--base", feed.base, "--spool", str(spool), "--workers", "4",
+                         "--contact", CONTACT, "--min-free-gb", "0"])
+        assert rc2 == 0
+        again = json.loads((cyc / "cycle.json").read_text())
+        restored = gzip.decompress(gz.read_bytes())
+        assert hashlib.sha256(restored).hexdigest() == victim["sha256"], \
+            "the corrupted file was left in place and reported as unchanged"
+        entry = next(f for f in again["files"] if f["name"] == victim["name"])
+        assert entry["sha256"] == victim["sha256"]
+        assert entry.get("status") != "unchanged-304", "corruption was reported as unchanged"
+    finally:
+        feed.close()

@@ -269,3 +269,18 @@ document's tracking table, not here.
   browser test checks all three widths. Lines past 1,000 km are drawn in their own colour, the
   legend says what a line is, the instant line counts the lost, and a satellite can be found by
   number or name instead of only by clicking.
+
+- 2026-09-06 - Worked the thirteen-item audit end to end; record in AUDIT-2026-09-06.md. Every item
+  was reproduced against the real code before it was touched, and every fix carries a test that
+  goes red when the fix is removed. Two critical ones were in the shipper: a healed cycle left an
+  incomplete tar in cold storage while its records were re-synced to say complete, and the
+  shipment state was written only after the tar and the local files had been deleted. The tar is
+  now bound to the record by a fingerprint, re-shipped when the record changes, and the state is
+  durable before anything is destroyed; twenty-three cycles already in Deep Archive adopt the
+  fingerprint without re-uploading, checked against their own timestamps, so no bytes are re-sent.
+  Also: a 304 no longer trusts a local file it has not read, the shipper packs from the record and
+  verifies every file, the verifier binds names and the manifest digest and refuses to pass an
+  empty witness, the scorer verifies the provenance it publishes, a failed pack no longer marks a
+  cycle done, the deploy runs an account guard it cannot bypass, the automated publish commits only
+  web/dist, catalogue names cannot become markup, and requirements.txt is complete with a test that
+  walks the repo's imports. Suite 165 -> 178.

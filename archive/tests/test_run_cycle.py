@@ -184,3 +184,23 @@ def test_missing_contact_is_refused(feed, tmp_path, monkeypatch):
     monkeypatch.delenv("EPHEMERA_CONTACT", raising=False)
     rc = run_cycle.main(["--base", feed.base, "--spool", str(tmp_path / "spool"), "--once"])
     assert rc == 5 and feed.requests == []
+
+
+def test_a_directory_whose_full_digest_differs_is_not_treated_as_this_cycle(tmp_path):
+    """A cycle directory is named from the first 48 bits of its manifest digest. The watcher decided
+    "already complete, nothing to do" from that prefix alone, without confirming the full digest, so
+    a directory that merely shares a prefix would suppress a real pull.
+
+    Mutation: return the status without comparing manifest_sha256 and this goes red."""
+    spool = tmp_path / "spool"
+    sha = "a" * 64
+    d = spool / f"cycle_{sha[:12]}"
+    d.mkdir(parents=True)
+    (d / "cycle.json").write_text(json.dumps({
+        "cycle": d.name, "status": "complete",
+        "manifest_sha256": "a" * 12 + "b" * 52}))          # same 48-bit prefix, different manifest
+    assert run_cycle.cycle_status(spool, sha) != "complete", \
+        "a different manifest with a matching prefix was taken for this cycle"
+
+    (d / "cycle.json").write_text(json.dumps({"cycle": d.name, "status": "complete", "manifest_sha256": sha}))
+    assert run_cycle.cycle_status(spool, sha) == "complete"

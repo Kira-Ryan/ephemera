@@ -874,7 +874,10 @@ def render_contact() -> str:
 def render(ledger: dict) -> str:
     gen = _utc_min(ledger["generated_utc"])
     reports = ledger["visibility"]["reports"]
-    start = reports[0]["at_file_start"] if reports and reports[0]["at_file_start"] else None
+    # The same report the stat band and the finding section use. Attributing the headline to
+    # whichever report happens to be newest printed one cycle's figures under another's name.
+    head = headline_report(reports)
+    start = head["at_file_start"] if head else None
     desc = ("An archive of the public Starlink ephemerides, hashed and anchored in Bitcoin, with a daily "
             "measure of how well the public satellite catalogue can see the constellation.")
     return f"""<!doctype html>
@@ -918,7 +921,7 @@ def render(ledger: dict) -> str:
   CelesTrak SupGP without covariance.</p>
 
   {stat_band(ledger)}
-  <p class="fine">{"Headline figures from cycle " + esc(reports[0]["cycle"][6:]) + ", scored " + esc(_utc_min(reports[0]["as_of"])) + " UTC, measured at the first instant of each operator file. " if start else ""}Archive figures as of {esc(gen)} UTC.</p>
+  <p class="fine">{"Headline figures from cycle " + esc(head["cycle"][6:]) + ", scored " + esc(_utc_min(head["as_of"])) + " UTC, measured at the first instant of each operator file. " if head and start else ""}Archive figures as of {esc(gen)} UTC.</p>
 
   {render_visibility(ledger)}
 
@@ -960,9 +963,16 @@ def main(argv: list[str] | None = None) -> int:
     globe_out.mkdir(exist_ok=True)
     shutil.copyfile(REPO / "web" / "globe" / "index.html", globe_out / "index.html")
     shutil.copyfile(args.out / "icon.svg", globe_out / "icon.svg")
-    latest_pack = next((r["pack"] for r in ledger["visibility"]["reports"] if r["pack"]), None)
-    if latest_pack:
-        shutil.copyfile(latest_pack, globe_out / "pack.json")
+    # The globe shows the cycle the page describes, not whichever pack is newest, or the text and
+    # the picture are about different cycles. When there is nothing to publish the previous pack is
+    # removed rather than left serving figures the page no longer stands behind.
+    head = headline_report(ledger["visibility"]["reports"])
+    pack = head["pack"] if head else None
+    published = globe_out / "pack.json"
+    if pack:
+        shutil.copyfile(pack, published)
+    elif published.exists():
+        published.unlink()
     t = ledger["totals"]
     print(f"built: {t['cycles']} cycles ({t['complete']} complete, {t['attested']} attested, "
           f"{t['witness_defects']} witness defects), coverage={ledger['coverage_24h']}, "
