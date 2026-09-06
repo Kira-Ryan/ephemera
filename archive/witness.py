@@ -158,15 +158,37 @@ def capture(session: requests.Session, wayback: str, url: str, expected_sha: str
     return entry
 
 
+def proof_matches(target_dir: Path) -> bool:
+    """Is root.txt.ots a proof of the root.txt beside it? A proof commits the SHA-256 of the file
+    it stamps, so a proof for some earlier root does not contain this file's digest."""
+    proof = target_dir / "root.txt.ots"
+    root_txt = target_dir / "root.txt"
+    if not proof.exists() or not root_txt.exists():
+        return False
+    return hashlib.sha256(root_txt.read_bytes()).digest() in proof.read_bytes()
+
+
 def ots_step(target_dir: Path, ots: dict, runner: OtsRunner | None, args) -> bool:
     """One tick of the stamping lifecycle for any directory holding a root.txt: stamp it if there
     is no proof yet, otherwise retry the upgrade (at most every --upgrade-every seconds) until the
-    proof carries a Bitcoin block height. Used for cycle roots and daily roots alike."""
+    proof carries a Bitcoin block height. Used for cycle roots and daily roots alike.
+
+    A proof that no longer matches root.txt is set aside and the root is stamped again. Stamping
+    only when no proof file existed meant a root that changed after stamping kept a proof, and an
+    attestation, of something else."""
     try:
         if runner is None:
             ots.setdefault("error", "no OTS runner available on this host")
             return False
-        if not (target_dir / "root.txt.ots").exists():
+        proof = target_dir / "root.txt.ots"
+        if proof.exists() and not proof_matches(target_dir):
+            aside = target_dir / f"root.txt.ots.stale-{poll.utc_now().replace(':', '')}"
+            proof.rename(aside)
+            log.error("%s: root.txt.ots did not prove the current root.txt; kept as %s and stamping again",
+                      target_dir.name, aside.name)
+            for key in ("stamped_utc", "attested", "last_upgrade_attempt_utc"):
+                ots.pop(key, None)
+        if not proof.exists():
             runner.stamp(target_dir)
             ots.update({"stamped_utc": poll.utc_now(), "runner": runner.mode, "error": None})
             log.info("%s: stamped root.txt", target_dir.name)
@@ -243,6 +265,15 @@ def witness_cycle(cycle_dir: Path, session: requests.Session, runner: OtsRunner 
         "schema": SCHEMA, "cycle": cycle_dir.name, "merkle_root": root,
         "sample_rule": "index_k = int(sha256(root_hex + ':' + str(k)), 16) mod n_files, distinct, sorted",
         "ots": {}, "wayback": {}}
+    if w.get("merkle_root") != root:
+        # The record was re-rooted after this witness record was written. The samples were chosen
+        # by the old root and the published rule names the root, so they are chosen again; the
+        # manifest capture is keyed by the manifest, which did not change, and is kept.
+        log.error("%s: the record's root changed from %s... to %s...; re-choosing the witnessed samples",
+                  cycle_dir.name, str(w.get("merkle_root"))[:12], root[:12])
+        w["merkle_root"] = root
+        w["wayback"].pop("samples", None)
+        w["wayback"].pop("skipped", None)
     ok = True
 
     ok = ots_step(cycle_dir, w["ots"], runner, args) and ok

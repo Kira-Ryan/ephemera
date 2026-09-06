@@ -387,3 +387,45 @@ def test_impossible_capture_gives_up_after_the_cap_and_goes_quiet(tmp_path):
 def test_missing_contact_is_refused(tmp_path, monkeypatch):
     monkeypatch.delenv("EPHEMERA_CONTACT", raising=False)
     assert witness.main(["--spool", str(tmp_path / "spool"), "--once"]) == 5
+
+
+# --------------------------------------------------------------- audit follow-on, 6 Sep 2026
+
+
+def test_a_cycle_whose_root_changed_after_stamping_is_stamped_again(tmp_path, stub_runner):
+    """The witness stamped only when no proof file existed, so a root that changed after stamping
+    kept the old proof, the old attestation and the samples chosen by the old root. The verifier
+    now fails that state; this is the half that repairs it.
+
+    Mutation: stamp only when root.txt.ots is absent and this goes red."""
+    feed, spool, rec, cycle, origin = build_cycle(tmp_path)
+    wb = FakeWayback(origin)
+    try:
+        set_current(spool, rec["manifest_sha256"])
+        assert wmain(feed, spool, wb) == 0
+        assert wmain(feed, spool, wb) == 0                      # attested by the stub on the upgrade
+        w = json.loads((cycle / "witness.json").read_text())
+        assert w["ots"]["attested"] and w["merkle_root"] == rec["merkle_root"]
+        old_proof = (cycle / "root.txt.ots").read_bytes()
+
+        new_root = "ab" * 32
+        r = json.loads((cycle / "cycle.json").read_text())
+        r["merkle_root"] = new_root
+        (cycle / "cycle.json").write_text(json.dumps(r))
+        (cycle / "root.txt").write_bytes((new_root + "\n").encode())
+
+        assert wmain(feed, spool, wb) == 0
+        w = json.loads((cycle / "witness.json").read_text())
+        proof = (cycle / "root.txt.ots").read_bytes()
+        assert proof != old_proof, "the old proof was kept for a root it does not prove"
+        assert hashlib.sha256((new_root + "\n").encode()).digest() in proof
+        assert w["merkle_root"] == new_root, "witness.json still names the old root"
+        assert not w["ots"].get("attested"), "an attestation of the old root was carried over"
+        assert stub_runner.stamps.count(cycle.name) == 2
+        kept = list(cycle.glob("root.txt.ots.stale-*"))
+        assert len(kept) == 1 and kept[0].read_bytes() == old_proof, "the superseded proof was not kept"
+        # the samples are chosen by the root, so they are chosen again
+        assert sorted(map(int, w["wayback"]["samples"])) == witness.sample_indices(new_root, 3, 3)
+    finally:
+        feed.close()
+        wb.close()
