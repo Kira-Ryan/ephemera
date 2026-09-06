@@ -146,3 +146,20 @@ def test_the_workflow_pins_its_dependency_and_installs_it_away_from_the_secrets(
     assert "grep -E '^blake3==' requirements.txt" in wf, "the pin is not taken from requirements.txt"
     secret_step = wf[deploy:]
     assert "pip install" not in secret_step, "a pip install still runs in the secret-bearing step"
+
+
+def test_the_workflow_install_command_actually_runs():
+    """Checking the step's wording is not checking the step. The first version of this workflow
+    shipped `--require-hashes=false`, which pip rejects, and every deploy failed until a human
+    read the log. The install line is lifted out of the YAML and run here with --dry-run, so a
+    flag pip does not accept fails this test rather than the next deploy."""
+    import re
+    wf = (REPO / ".github" / "workflows" / "deploy-site.yml").read_text(encoding="utf-8")
+    m = re.search(r'python -m pip install ([^"\n]*)"\$pin"', wf)
+    assert m, "the install line is not in the shape this test knows how to run"
+    flags = m.group(1).split()
+    pin = next(l.strip() for l in (REPO / "requirements.txt").read_text(encoding="utf-8").splitlines()
+               if l.startswith("blake3=="))
+    r = subprocess.run([sys.executable, "-m", "pip", "install", *flags, "--dry-run", pin],
+                       capture_output=True, text=True, timeout=300)
+    assert r.returncode == 0, (r.stdout + r.stderr)[-600:]
