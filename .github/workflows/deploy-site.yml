@@ -1,12 +1,21 @@
 # Push-to-deploy for the static site (D19): any push to main that touches web/dist/ redeploys the
 # Cloudflare Pages project through infra/cf_site.py's direct-upload client (the same path the
-# guarded local scripts use; wrangler is deliberately not used). Until the two repository secrets
-# exist the job no-ops with a notice instead of failing.
+# guarded local scripts use; wrangler is deliberately not used).
+#
+# The account guard is not optional here. infra/cf_site.py calls infra/guard_cf.enforce() before
+# its first write, which confirms the token can see the ephemera.space zone and that the zone
+# belongs to the account this run is using. A token for any other account is refused before
+# anything is written. Setting the optional EPHEMERA_CF_ACCOUNT_IDS secret adds the allowlist rule
+# the developer machine uses as well.
+#
+# Until the two required secrets exist the job no-ops with a notice instead of failing.
 name: deploy-site
 on:
   push:
     branches: [main]
-    paths: ["web/dist/**", "infra/cf_site.py", ".github/workflows/deploy-site.yml"]
+    paths: ["web/dist/**", "infra/cf_site.py", "infra/guard_cf.py", ".github/workflows/deploy-site.yml"]
+permissions:
+  contents: read
 jobs:
   deploy:
     runs-on: ubuntu-latest
@@ -28,11 +37,18 @@ jobs:
         if: steps.gate.outputs.go == 'true'
         with:
           python-version: "3.12"
+      # Installed in its own step, before any secret is in the environment, and pinned to the
+      # version requirements.txt names rather than whatever is newest that morning.
+      - name: Install the deploy dependency
+        if: steps.gate.outputs.go == 'true'
+        run: |
+          pin=$(grep -E '^blake3==' requirements.txt)
+          test -n "$pin" || { echo "requirements.txt does not pin blake3"; exit 1; }
+          python -m pip install --quiet --require-hashes=false "$pin"
       - name: Deploy web/dist via the Pages direct-upload API
         if: steps.gate.outputs.go == 'true'
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-        run: |
-          pip install -q blake3
-          python infra/cf_site.py deploy
+          EPHEMERA_CF_ACCOUNT_IDS: ${{ secrets.EPHEMERA_CF_ACCOUNT_IDS }}
+        run: python infra/cf_site.py deploy

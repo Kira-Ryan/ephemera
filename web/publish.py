@@ -44,13 +44,17 @@ def main(argv: list[str] | None = None) -> int:
         log.error("claims lint FAILED on the built page - refusing to publish:\n%s", lint.stdout[-800:])
         return 1
 
-    git("add", "web/dist")
+    git("add", "--", "web/dist")
     if not git("diff", "--cached", "--quiet", "--", "web/dist").returncode:
         log.info("no change in web/dist - nothing to publish")
         return 0
-    c = git("commit", "-m", "ledger build\n\nAutomated site build from the spool "
-                            "(web/publish.py; the committed dist is the publication of record).\n\n"
-                            "Co-Authored-By: Claude Fable 5 <noreply@anthropic.com>")
+    # The pathspec is the point. This runs unattended every four hours on a machine where other
+    # work is in progress, and a bare `git commit` takes the whole index with it: unfinished code,
+    # or worse, something staged by accident. Only web/dist is ever published from here.
+    c = git("commit", "--only", "-m", "ledger build\n\nAutomated site build from the spool "
+                                      "(web/publish.py; the committed dist is the publication of record).\n\n"
+                                      "Co-Authored-By: Claude Fable 5 <noreply@anthropic.com>",
+            "--", "web/dist")
     if c.returncode != 0:
         log.error("commit failed: %s", (c.stderr or c.stdout)[-400:])
         return 1

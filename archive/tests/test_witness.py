@@ -98,7 +98,11 @@ class StubOts:
     def stamp(self, cycle_dir: Path):
         if cycle_dir.name in self.fail_for:
             raise RuntimeError("stub: stamping refused for this cycle")
-        (cycle_dir / "root.txt.ots").write_bytes(b"\x00OpenTimestamps stub")
+        # A real proof carries the SHA-256 of the file it stamps, and the verifier binds the proof
+        # to the root through exactly that. A stub that omitted it would let a check that matters
+        # pass on nothing, so it is included here.
+        digest = hashlib.sha256((cycle_dir / "root.txt").read_bytes()).digest()
+        (cycle_dir / "root.txt.ots").write_bytes(b"\x00OpenTimestamps stub\x01\x08" + digest)
         self.stamps.append(cycle_dir.name)
 
     def upgrade(self, cycle_dir: Path):

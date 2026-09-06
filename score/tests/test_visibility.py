@@ -63,10 +63,30 @@ def write_meme(files: Path, norad: int, name: str, line1: str, line2: str, hours
 
 
 def make_cycle(spool: Path, names: list[str], cycle: str = "cycle_abcdef123456") -> Path:
+    """A cycle directory whose record is real: the file digests are the digests of the files that
+    were written, the Merkle root is built over them with the archive's own construction, and the
+    manifest digest is the digest of the manifest. The scorer verifies all three before scoring, so
+    a fixture that fakes them would be exercising a path production never takes."""
+    sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "archive"))
+    import poll  # noqa: PLC0415
+
     d = spool / cycle
     d.mkdir(parents=True, exist_ok=True)
-    (d / "MANIFEST.txt").write_text("\n".join(names) + "\n")
-    (d / "cycle.json").write_text(json.dumps({"status": "complete", "merkle_root": "ab" * 32, "manifest_sha256": "cd" * 32}))
+    manifest = ("\n".join(names) + "\n").encode()
+    (d / "MANIFEST.txt").write_bytes(manifest)
+    files = []
+    for n in names:
+        gz = d / "files" / (n + ".gz")
+        if not gz.exists():
+            continue
+        raw = gzip.decompress(gz.read_bytes())
+        files.append({"name": n, "sha256": hashlib.sha256(raw).hexdigest(), "bytes": len(raw)})
+    (d / "cycle.json").write_text(json.dumps({
+        "cycle": cycle, "status": "complete", "files": files, "files_listed": len(names),
+        "files_recorded": len(files), "files_failed": 0,
+        "files_not_attempted": len(names) - len(files),
+        "merkle_root": poll.merkle_root([f["sha256"] for f in files]),
+        "manifest_sha256": hashlib.sha256(manifest).hexdigest()}))
     return d
 
 
@@ -89,7 +109,7 @@ def run(spool: Path, cycle: str, *extra) -> tuple[int, dict]:
     """Runs the CLI with --rows and returns the report with the rows file's content attached."""
     out = spool / "out"
     rc = visibility.main(["--spool", str(spool), "--cycle", cycle, "--out", str(out), "--eval-step-min", "60", "--rows", *extra])
-    reports = list(out.glob("visibility_*.json"))
+    reports = [f for f in out.glob("*visibility_*.json") if not f.name.endswith("_rows.json.gz")]
     if not reports:
         return rc, {}
     rep = json.loads(reports[0].read_text())
@@ -110,13 +130,14 @@ def test_identical_inputs_score_zero_and_report_carries_inputs(tmp_path):
     rc, rep = run(spool, "cycle_abcdef123456")
     assert rc == 0
     assert rep["counts"] == {"files": 2, "scored": 2, "no_public_set": 0, "uncatalogued": 0, "decayed_set": 0,
-                             "propagation_failed": 0, "unreadable": 0}
+                             "propagation_failed": 0, "unreadable": 0, "corrupt": 0}
     assert sorted(rep["satellites"]["scored"]) == [25544, 100224]
     assert len(rep["rows"]) == 2 * 4                                   # 3 h at 60 s step, sampled hourly: t=0,1,2,3
     assert max(r["dist_km"] for r in rep["rows"]) < 1e-6
     ages = {r["age_h"] for r in rep["rows"]}
     assert min(ages) < 0 < max(ages)                                    # element epoch 12:00 sits inside the 09:10-12:10 span
-    assert rep["inputs"]["cycle"] == "cycle_abcdef123456" and rep["inputs"]["merkle_root"] == "ab" * 32
+    root = json.loads((spool / "cycle_abcdef123456" / "cycle.json").read_text())["merkle_root"]
+    assert rep["inputs"]["cycle"] == "cycle_abcdef123456" and rep["inputs"]["merkle_root"] == root
     assert rep["inputs"]["catalogue_snapshot"] == snap.name and rep["inputs"]["catalogue_sha256"] == json.loads((snap / "record.json").read_text())["sha256"]
     assert rep["as_of"].endswith("Z") and "SGP4" in rep["method"] and "planned trajectory changes" in rep["method"]
     ov = rep["summary"]["overall"]
@@ -161,7 +182,7 @@ def test_missing_decayed_and_malformed_are_counted_not_skipped(tmp_path, caplog)
     rc, rep = run(spool, "cycle_abcdef123456")
     assert rc == 1                                                      # an unreadable file fails the run
     assert rep["counts"] == {"files": 3, "scored": 0, "no_public_set": 1, "uncatalogued": 0, "decayed_set": 1,
-                             "propagation_failed": 0, "unreadable": 1}
+                             "propagation_failed": 0, "unreadable": 1, "corrupt": 0}
     assert rep["satellites"]["no_public_set"] == [41000] and rep["satellites"]["decayed_set"] == [40000]
     assert rep["satellites"]["unreadable"] == [names[0]]
     assert any("unreadable" in m and "covariance" in m for m in caplog.messages)
@@ -177,6 +198,10 @@ def test_limit_scores_only_the_first_manifest_entries(tmp_path):
     make_snapshot(spool, [gp_row(25544, "STARLINK-1", l1, l2), gp_row(26000, "STARLINK-2", *tle("26000"))])
     rc, rep = run(spool, "cycle_abcdef123456", "--limit", "1")
     assert rc == 0 and rep["counts"]["files"] == 1 and rep["counts"]["scored"] == 1 and rep["inputs"]["limit"] == 1
+    # a development run must not take the published name: the site build reads visibility_*.json
+    out = spool / "out"
+    assert not (out / "visibility_abcdef123456.json").exists()
+    assert (out / "partial_visibility_abcdef123456.json").exists()
 
 
 def test_parser_reads_real_layout_and_refuses_bad_shapes(tmp_path):

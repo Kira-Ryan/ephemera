@@ -357,3 +357,93 @@ def test_daily_root_exclusion_reason_is_derived_from_the_cycle(tmp_path):
     assert build.main(["--spool", str(spool), "--out", str(out)]) == 0
     flat = " ".join((out / "index.html").read_text(encoding="utf-8").split())
     assert "incomplete pull, no root" in flat
+
+
+# --------------------------------------------------------------- audit, 6 Sep 2026
+
+
+def test_the_headline_is_attributed_to_the_cycle_it_came_from(tmp_path):
+    """The headline is taken from the newest comparable report, but the line under it named the
+    newest report of any kind. With a hindsight-paired cycle on top, the page printed one cycle's
+    figures under another cycle's name.
+
+    Mutation: attribute to reports[0] and this goes red."""
+    spool = make_spool(tmp_path, NOW)
+    add_catalogue(spool)
+    add_score(spool, cycle="cycle_cccccccccccc", relation="after_cycle", first_seen="2026-09-01T04:00:00Z")
+    add_score(spool, cycle="cycle_aaaaaaaaaaaa", relation="before_cycle", first_seen="2026-08-31T06:00:00Z")
+    out = tmp_path / "dist"
+    assert build.main(["--spool", str(spool), "--out", str(out)]) == 0
+    flat = " ".join((out / "index.html").read_text(encoding="utf-8").split())
+    assert "Headline figures from cycle aaaaaaaaaaaa" in flat
+    assert "Headline figures from cycle cccccccccccc" not in flat
+
+
+def test_the_published_globe_pack_is_the_cycle_the_page_describes(tmp_path):
+    """The page linked the globe from the headline report while the build published whichever pack
+    was newest, so the globe could be showing a different cycle from the one the text describes."""
+    spool = make_spool(tmp_path, NOW)
+    add_catalogue(spool)
+    add_score(spool, cycle="cycle_cccccccccccc", relation="after_cycle", first_seen="2026-09-01T04:00:00Z")
+    add_score(spool, cycle="cycle_aaaaaaaaaaaa", relation="before_cycle", first_seen="2026-08-31T06:00:00Z")
+    out = tmp_path / "dist"
+    assert build.main(["--spool", str(spool), "--out", str(out)]) == 0
+    pack = json.loads((out / "globe" / "pack.json").read_text(encoding="utf-8"))
+    assert pack["inputs"]["cycle"] == "cycle_aaaaaaaaaaaa", "the globe shows a different cycle from the page"
+
+
+def test_a_rebuild_with_nothing_to_publish_removes_a_stale_pack(tmp_path):
+    """A build with no scored cycle left the previous pack in place, so the globe went on serving
+    figures the page no longer mentions and no longer stands behind."""
+    spool = make_spool(tmp_path, NOW)
+    add_catalogue(spool)
+    add_score(spool)
+    out = tmp_path / "dist"
+    assert build.main(["--spool", str(spool), "--out", str(out)]) == 0
+    assert (out / "globe" / "pack.json").exists()
+
+    for f in (spool / "score").glob("*.json"):
+        f.unlink()
+    assert build.main(["--spool", str(spool), "--out", str(out)]) == 0
+    assert not (out / "globe" / "pack.json").exists(), "a stale globe pack survived a rebuild"
+
+
+def test_a_name_from_the_pack_cannot_run_script_in_the_page(tmp_path):
+    """The page escapes what the pack gives it, whatever the pack builder already did.
+
+    Mutation: drop esc() at either innerHTML sink and this goes red."""
+    if CHROME is None:
+        pytest.skip("no Chrome/Chromium installed")
+    spool = make_spool(tmp_path, NOW)
+    add_catalogue(spool)
+    add_score(spool)
+    packs = list((spool / "score").glob("globe_*.json"))
+    pack = json.loads(packs[0].read_text())
+    pack["sats"][0]["name"] = '<img src=x onerror="window.__pwned=1">'
+    packs[0].write_text(json.dumps(pack))
+    out = tmp_path / "dist"
+    assert build.main(["--spool", str(spool), "--out", str(out)]) == 0
+
+    src = (out / "globe" / "index.html").read_text(encoding="utf-8")
+    probe = out / "globe" / "probe.html"
+    probe.write_text(src.replace("</body>", """<script>
+      addEventListener('load', () => setTimeout(() => {
+        const imgs = document.querySelectorAll('#worst img, #sel img').length;
+        document.body.insertAdjacentHTML('afterbegin',
+          '<div id=probe>' + (window.__pwned ? 'PWNED' : 'clean') + '|imgs=' + imgs + '</div>');
+      }, 1500));
+    </script></body>"""), encoding="utf-8")
+    srv = _serve(out)
+    try:
+        r = subprocess.run([CHROME, "--headless=new", "--disable-gpu", "--virtual-time-budget=25000",
+                            "--dump-dom", f"http://127.0.0.1:{srv.server_address[1]}/globe/probe.html"],
+                           capture_output=True, timeout=120)
+        dom = " ".join(r.stdout.decode("utf-8", "replace").split())
+    finally:
+        srv.shutdown()
+        probe.unlink(missing_ok=True)
+    # Read the probe's own verdict, not the whole document: the probe's source contains the word
+    # it reports with, so searching the dump would always match.
+    verdict = re.search(r'<div id="?probe"?>(.*?)</div>', dom)
+    assert verdict, dom[-400:]
+    assert verdict.group(1) == "clean|imgs=0", f"a catalogue name reached the DOM as markup: {verdict.group(1)}"

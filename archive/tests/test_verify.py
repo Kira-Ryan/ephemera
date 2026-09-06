@@ -103,3 +103,56 @@ def test_wayback_recheck_passes_then_catches_drift(cycle, monkeypatch):
         assert verify.main([str(cyc), "--wayback"]) == 1
     finally:
         wb.close()
+
+
+# --------------------------------------------------------------- audit, 6 Sep 2026
+
+
+def test_names_are_bound_to_the_cycle_not_just_content(cycle):
+    """The Merkle root commits ordered content hashes and nothing else, and the counts check only
+    compared MANIFEST.txt's line count. So a manifest naming one file and a record naming another
+    passed every check: the archive would say it holds A while holding B.
+
+    Mutation: drop the manifest-digest and name checks and this goes red."""
+    _, spool, rec, cyc = cycle
+    names = (cyc / "MANIFEST.txt").read_text().split()
+    swapped = ["MEME_999_STARLINK-999_1_Operational_1_UNCLASSIFIED.txt"] + names[1:]
+    (cyc / "MANIFEST.txt").write_text("\n".join(swapped) + "\n")
+    assert verify.main([str(cyc)]) == 1, "a manifest that names different files passed"
+
+
+def test_the_manifest_digest_that_names_the_cycle_is_checked(cycle):
+    """A cycle's identity is the SHA-256 of its manifest (D10), and the directory is named from the
+    first 48 bits of it. Neither the digest nor the name was ever recomputed.
+
+    Mutation: drop check_identity() and this goes red."""
+    _, spool, rec, cyc = cycle
+    r = json.loads((cyc / "cycle.json").read_text())
+    r["manifest_sha256"] = "de" * 32
+    (cyc / "cycle.json").write_text(json.dumps(r))
+    assert verify.main([str(cyc)]) == 1, "a record claiming the wrong manifest digest passed"
+
+
+def test_wayback_check_fails_when_there_is_nothing_to_check(cycle, monkeypatch):
+    """--wayback passed when zero samples were fetched, so a cycle with no independent copy at all
+    reported a clean Wayback verification. It also never looked at the captured manifest, which is
+    the one copy that proves which files the cycle claimed.
+
+    Mutation: report(bad == 0, ...) without requiring a fetch and this goes red."""
+    _, spool, rec, cyc = cycle
+    (cyc / "witness.json").write_text(json.dumps({"ots": {}, "wayback": {"samples": {}}}))
+    assert verify.main([str(cyc), "--wayback"]) == 1, "an empty witness passed the Wayback check"
+
+
+def test_opentimestamps_state_is_bound_to_the_current_root(cycle):
+    """The verifier echoed witness.json's attested block without checking that the proof on disk is
+    a proof of the root the record now claims. A re-rooted cycle kept its old attestation and the
+    verifier repeated it as though it still applied.
+
+    Mutation: print the attestation without comparing root.txt and this goes red."""
+    _, spool, rec, cyc = cycle
+    (cyc / "witness.json").write_text(json.dumps({
+        "root": "cc" * 32,
+        "ots": {"stamped_utc": "2026-09-01T00:00:00Z", "attested": {"block_height": 964904}},
+        "wayback": {}}))
+    assert verify.main([str(cyc)]) == 1, "an attestation for a different root was reported as this cycle's"

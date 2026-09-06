@@ -59,7 +59,7 @@ def candidates(spool: Path, out_dir: Path) -> tuple[list[tuple[datetime, Path]],
             no_root.append(cdir.name)
             continue
         if (out_dir / f"visibility_{cdir.name.removeprefix('cycle_')}.json").exists():
-            continue
+            continue        # a partial_ report is development output and never counts as done
         if not (cdir / "files").exists() or not any((cdir / "files").iterdir()):
             no_files.append(cdir.name)
             continue
@@ -87,13 +87,24 @@ def one_pass(spool: Path, max_cycles: int, workers: int, eval_step_min: float, l
             catalogue = cat.load(snap)
             report, rows = visibility.build_report(cdir, catalogue, eval_step_min, limit, workers,
                                                    {"snapshot_relation": relation})
+            # The report file is what candidates() reads as "this cycle is done", so it is written
+            # last. Building the pack first means a pack failure leaves the cycle pending and it is
+            # retried, rather than being marked complete with no pack and never looked at again.
+            # The pack is built before the report is written, because the report file is what
+            # candidates() reads as "this cycle is done": a pack failure must leave the cycle
+            # pending and retried, not marked complete with no pack and never looked at again.
+            pack = globe_pack.build_pack(report, rows, catalogue) if rows else None
             out = visibility.write_outputs(report, rows, out_dir, keep_rows=True)
             visibility.log_summary(report, rows, out)
-            pack = globe_pack.build_pack(report, rows, catalogue)
             pack_path = out_dir / f"globe_{cdir.name.removeprefix('cycle_')}.json"
-            pack_path.write_text(json.dumps(pack, separators=(",", ":")), encoding="utf-8")
-            log.info("%s: pack %s (%d satellites, %.1f MB) in %.0f s", cdir.name, pack_path.name, len(pack["sats"]),
-                     pack_path.stat().st_size / 1e6, time.monotonic() - t0)
+            if pack is None:
+                # Nothing scored. The report still gets written, because a cycle that produced no
+                # comparison is a result the page has to be able to show, not a silence.
+                log.error("%s: nothing could be scored, so no globe pack was built", cdir.name)
+            else:
+                pack_path.write_text(json.dumps(pack, separators=(",", ":")), encoding="utf-8")
+                log.info("%s: pack %s (%d satellites, %.1f MB) in %.0f s", cdir.name, pack_path.name,
+                         len(pack["sats"]), pack_path.stat().st_size / 1e6, time.monotonic() - t0)
             result["scored"].append({"cycle": cdir.name, "snapshot": snap.name, "relation": relation,
                                      "counts": report["counts"], "seconds": round(time.monotonic() - t0)})
             result["pending"].remove(cdir.name)
