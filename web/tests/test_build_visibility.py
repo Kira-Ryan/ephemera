@@ -20,7 +20,7 @@ import pytest
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import build  # noqa: E402
-from test_build import CHROME, REPO, make_spool  # noqa: E402
+from test_build import CHROME, REPO, make_spool, serve as _serve  # noqa: E402
 
 NOW = datetime(2026, 9, 1, 12, 0, tzinfo=timezone.utc)
 TLE1 = "1 25544U 98067A   26245.50000000  .00016717  00000-0  10270-3 0  9005"
@@ -89,46 +89,79 @@ def build_site(tmp_path: Path, with_score: bool = True, **kw):
             (out / "index.html").read_text(encoding="utf-8"), out)
 
 
+def page_at(out: Path, name: str) -> str:
+    """The built page under name/ (finding, scored, archive, check)."""
+    return (out / name / "index.html").read_text(encoding="utf-8")
+
+
+def text(doc: str) -> str:
+    """What the page says: tags dropped, whitespace flattened, for assertions on visible wording."""
+    return " ".join(re.sub(r"<[^>]+>", " ", doc).split())
+
+
 def test_headline_is_the_comparable_figure_and_carries_its_provenance(tmp_path):
     ledger, page, out = build_site(tmp_path)
     flat = " ".join(page.split())
+    finding = " ".join(page_at(out, "finding").split())
     assert ledger["visibility"]["latest"] == "cycle_cccccccccccc"
     # the hero is the at-file-start cut, not the incomparable overall median
     assert "puts <b>81%</b> of the scored Starlink satellites within 10 km" in flat
     assert "At the first instant of each operator file" in flat
     assert "The middle satellite is <b>3.0 km</b> away, with the public information a median of 13 hours old" in flat
     assert "Where the public information is two to three days old" in flat and "<b>25 km</b> apart" in flat
-    assert "within 10 km at file start" in flat and "median miss at file start" in flat
-    assert "3.0 km" in page
-    # provenance and truth health
-    assert "scored 2026-09-01 11:30 UTC against the public catalogue snapshot fetched 2026-09-01 03:00 UTC" in flat
-    assert "8,897 of 8,900 operator files scored" in flat
-    assert "27 have no entry in the public catalogue, of which 27 are new satellites" in flat
-    assert "mean of <b>15.1 h</b> old when the snapshot was taken" in flat
-    assert "element age is 51.2 h: the difference is the file's own prediction horizon" in flat
-    assert "Space-Track: 1 snapshots held" in flat
-    # the lost category is its own statement and is never called a manoeuvre
-    assert '<b class="warnk">41</b> satellites (0.5%)' in flat
-    assert "does not label any separation as a manoeuvre" in flat
-    # the age curve is drawn from the same numbers as the table
-    assert 'class="curve"' in page and "<polyline" in page
-    assert "<td>0-6 h</td>" in page and "<td>48-72 h</td>" in page
+    # the two pull figures are the same cut, say so, and name the cycle they came from
+    assert ("<b>81%</b><span>of the scored Starlink satellites within 10 km of the operator's trajectory, at file "
+            "start</span><small>cycle cccccccccccc, scored 2026-09-01 11:30 UTC</small>") in flat
+    assert "<b>3.0 km</b><span>median separation between the two predictions, at file start</span>" in flat
+    assert "Headline figures from cycle cccccccccccc" in text(page)
+    # provenance and truth health, on the front page and again on the finding page
+    for doc in (flat, finding):
+        assert "scored 2026-09-01 11:30 UTC against the public catalogue snapshot fetched 2026-09-01 03:00 UTC" in doc
+        assert "Feed health for this cycle." in doc
+        assert "8,897 of 8,900 operator files scored" in doc
+        assert "27 have no entry in the public catalogue, of which 27 are new satellites" in doc
+        assert "mean of <b>15.1 h</b> old when the snapshot was taken" in doc
+        assert "element age is 51.2 h: the difference is the file's own prediction horizon" in doc
+        assert "Space-Track: 1 snapshots held" in doc
+        # the lost category is its own statement and is never called a manoeuvre
+        assert '<b class="warnk">41</b> satellites (0.5%)' in doc
+        assert "does not label any separation as a manoeuvre" in doc
+        # the age curve is drawn from the same numbers as the table
+        assert re.search(r'<figure class="[^"]*\bcurve\b', doc) and "<polyline" in doc
+    # the table itself is on the finding page; the front page never grows one
+    assert "<td>0-6 h</td>" in finding and "<td>48-72 h</td>" in finding
+    assert "<table" not in page
     assert 'href="globe/"' in page and "See it on the globe" in page
+    assert 'href="../globe/"' in finding and "See it on the globe" in finding
 
 
 def test_hindsight_pairing_is_marked_not_comparable(tmp_path):
-    _, page, _ = build_site(tmp_path, relation="after_cycle")
+    _, page, out = build_site(tmp_path, relation="after_cycle")
     flat = " ".join(page.split())
-    assert "scored with hindsight" in flat and 'class="warnk"' in page
-    assert "already know what the satellite did during the file" in flat
-    assert "1 of 1 scored cycles are in that state" in flat
+    finding = " ".join(page_at(out, "finding").split())
+    scored = page_at(out, "scored")
+    # the front page and the finding say why there is no headline, and show none of its figures
+    for doc in (flat, finding):
+        assert "No comparable cycle yet: 1 scored with hindsight, listed on the scored page." in doc
+        assert "81%" not in doc and "3.0 km" not in doc
+    # the scored page carries the row, amber, with the reason it is not comparable
+    assert 'class="hind" id="s-cccccccccccc"' in scored and '<td class="warnk">scored with hindsight</td>' in scored
+    assert "already know what the satellite did during the file" in " ".join(scored.split())
+    assert "1 of 1 scored cycles are in that state" in " ".join(scored.split())
 
 
 def test_report_without_the_headline_is_called_out_not_crashed(tmp_path):
-    _, page, _ = build_site(tmp_path, headline=False)
+    _, page, out = build_site(tmp_path, headline=False)
     flat = " ".join(page.split())
-    assert "scored before the comparable headline existed" in flat
-    assert "81%" not in flat                      # no headline claimed from a report that lacks one
+    finding = " ".join(page_at(out, "finding").split())
+    scored = " ".join(page_at(out, "scored").split())
+    for doc in (flat, finding):
+        assert "No comparable cycle yet: 1 scored before the comparable headline existed, listed on the scored page." in doc
+        assert "scored with hindsight" not in doc     # it was not, and the page must not say it was
+        assert "81%" not in doc                       # no headline claimed from a report that lacks one
+    assert 'class="warn" id="s-cccccccccccc"' in scored
+    assert "scored before the comparable headline existed; rerun score/resummarise.py to fill it in" in scored
+    assert "81%" not in scored
 
 
 def test_no_scores_says_so(tmp_path):
@@ -151,10 +184,18 @@ def test_brand_assets_are_built_and_linked(tmp_path):
 
 def test_witness_defects_are_visible_and_named(tmp_path):
     """A cycle whose own pull succeeded but whose independent copy failed must not render as ok."""
-    ledger, page, _ = build_site(tmp_path)
+    ledger, page, out = build_site(tmp_path)
+    archive = page_at(out, "archive")
     assert ledger["totals"]["witness_defects"] >= 1
-    assert 'class="warn"' in page
-    assert "Amber marks a cycle whose own pull succeeded but whose independent copy did not" in " ".join(page.split())
+    # the front page counts it in amber, and the cycle's block on the strip is amber and names the defect
+    assert ('<b class="warnk">1</b><span>cycles whose independent copy has a defect, printed on their rows</span>'
+            in " ".join(page.split()))
+    assert re.search(r'<a href="archive/#c-cccccccccccc"><rect class="warn"[^>]*><title>cccccccccccc first seen '
+                     r'2026-09-01 04:00 UTC, 8,900 files, 1 of 10 sample captures were lost</title>', page)
+    # the archive row is marked, prints the loss, and the caption says what amber means
+    assert 'class="warn" id="c-cccccccccccc"' in archive
+    assert "manifest ok, 9/10 samples verified, 1 lost" in archive
+    assert "Amber marks a cycle whose own pull succeeded but whose independent copy did not" in " ".join(archive.split())
 
 
 def test_storage_says_where_the_bytes_actually_are(tmp_path):
@@ -167,16 +208,35 @@ def test_storage_says_where_the_bytes_actually_are(tmp_path):
 
 
 def test_sections_are_present_and_linkable(tmp_path):
-    _, page, _ = build_site(tmp_path)
+    """The single page's sections are pages now: the front page keeps their ids as landing stubs
+    (D20), the tab bar links every page and marks the current one, and every table row has a
+    permanent id that the links between pages land on."""
+    _, page, out = build_site(tmp_path)
+    site = {name: page_at(out, name) for name in ("finding", "scored", "archive", "check")}
     for anchor in ("finding", "archive", "check", "data", "next", "who"):
         assert f'id="{anchor}"' in page, anchor
-        assert f'href="#{anchor}"' in page, anchor
-    flat = " ".join(page.split())
-    assert "Fetch an independent copy and hash it" in flat and "ots verify root.txt.ots" in flat
-    assert "What you cannot do from this page alone is rebuild the Merkle root" in flat
-    assert "web.archive.org/web/20260831060000id_" in page          # a link a stranger can actually open
-    assert "Code is MIT" in flat and "Ryan, K. (2026)" in flat
-    assert "A second poller on a different machine" in flat
+    for tab in ("finding/", "scored/", "archive/", "check/", "globe/"):
+        assert f'<a href="{tab}"' in page, tab
+    assert '<a href="./" aria-current="page">' in page
+    for name, doc in site.items():
+        assert f'<a href="../{name}/" aria-current="page">' in doc, name
+        assert 'id="who"' in doc and f'<link rel="canonical" href="https://ephemera.space/{name}/">' in doc, name
+    assert 'href="check/#data"' in page and 'id="data"' in site["check"]
+    # row ids are the permanent addresses, and the links between pages land on them
+    for sha in ("aaaaaaaaaaaa", "bbbbbbbbbbbb", "cccccccccccc", "eeeeeeeeeeee"):
+        assert f'id="c-{sha}"' in site["archive"], sha
+        assert f'href="archive/#c-{sha}"' in page, sha                 # the strip on the front page
+    assert 'id="s-cccccccccccc"' in site["scored"]
+    assert 'href="../scored/#s-cccccccccccc"' in site["archive"] and 'href="../archive/#c-cccccccccccc"' in site["scored"]
+    assert 'href="../archive/#c-aaaaaaaaaaaa"' in site["check"]
+    flat, check = " ".join(page.split()), " ".join(site["check"].split())
+    assert "ots verify root.txt.ots" in flat and "ots verify root.txt.ots" in check
+    assert "Fetch an independent copy and hash it" in check
+    assert "What you cannot do from this page alone is rebuild the Merkle root" in check
+    for doc in (page, site["check"], site["archive"]):
+        assert "web.archive.org/web/20260831060000id_" in doc          # a link a stranger can actually open
+    assert "Code is MIT" in flat and "Code is MIT" in check
+    assert "Ryan, K. (2026)" in flat and "A second poller on a different machine" in flat
     assert "mailto:KiraRyan27@gmail.com" in page and "linkedin.com/in/kira-ryan" in page
 
 
@@ -193,16 +253,6 @@ def test_built_site_passes_the_claims_lint(tmp_path):
     r = subprocess.run([sys.executable, str(REPO / "tools" / "claims_lint.py"), str(out)],
                        capture_output=True, text=True, cwd=REPO)
     assert r.returncode == 0, r.stdout
-
-
-def _serve(out: Path):
-    import http.server
-    import socketserver
-    import threading
-    handler = lambda *a, **k: http.server.SimpleHTTPRequestHandler(*a, directory=str(out), **k)  # noqa: E731
-    srv = socketserver.TCPServer(("127.0.0.1", 0), handler)
-    threading.Thread(target=srv.serve_forever, daemon=True).start()
-    return srv
 
 
 def test_globe_keeps_its_caveats_at_every_width_in_a_real_browser(tmp_path):
@@ -284,9 +334,21 @@ def test_headline_never_comes_from_a_hindsight_pairing(tmp_path):
     # the newest report is the hindsight one; the headline must come from the older comparable one
     assert ledger["visibility"]["reports"][0]["snapshot_relation"] == "after_cycle"
     assert build.headline_report(ledger["visibility"]["reports"])["cycle"] == "cycle_aaaaaaaaaaaa"
-    flat = " ".join(page.split())
-    assert "cycle aaaaaaaaaaaa" in flat.replace("<span class=\"mono\">", "cycle ").replace("</span>", "")
-    assert "scored with hindsight" in flat
+    front = text(page)
+    assert "cycle aaaaaaaaaaaa, scored 2026-09-01 11:30 UTC" in front
+    assert "cycle cccccccccccc, scored" not in front
+    # the front page and the finding still disclose that a newer scored cycle exists and why it is
+    # not the headline, so neither reads as if cycle a were the newest scored one
+    disclosure = "1 newer scored cycle is not comparable (1 scored with hindsight), listed on the scored page."
+    assert disclosure in front
+    assert disclosure in text(page_at(out, "finding"))
+    # the hindsight cycle stays on the record: on the scored page, marked, and hollow on the history figure
+    scored = page_at(out, "scored")
+    assert "cccccccccccc 8,897 scored with hindsight" in text(scored)
+    assert "aaaaaaaaaaaa 8,897 scored live" in text(scored)
+    assert re.search(r'<a href="#s-cccccccccccc"><circle class="hind"', scored)
+    assert re.search(r'<a href="#s-aaaaaaaaaaaa"><circle class="live"', scored)
+    assert "<b>2</b> scored, 1 live, 1 with hindsight" in " ".join(scored.split())
 
 
 def test_a_cycle_with_no_scored_rows_renders_instead_of_crashing(tmp_path):
@@ -302,9 +364,13 @@ def test_a_cycle_with_no_scored_rows_renders_instead_of_crashing(tmp_path):
     rp.write_text(json.dumps(r))
     out = tmp_path / "dist"
     assert build.main(["--spool", str(spool), "--out", str(out)]) == 0
-    flat = " ".join((out / "index.html").read_text(encoding="utf-8").split())
-    assert "No comparison was made for this cycle" in flat
-    assert "NOTHING SCORED" in flat
+    front = " ".join((out / "index.html").read_text(encoding="utf-8").split())
+    scored = " ".join(page_at(out, "scored").split())
+    assert "No comparable cycle yet: 1 with nothing scored, listed on the scored page." in front
+    assert "scored with hindsight" not in front          # it was not: nothing was scored at all
+    assert 'class="gap" id="s-cccccccccccc"' in scored
+    assert "NOTHING SCORED: 0 unreadable, 0 no longer matching the record" in scored
+    assert "1 with nothing scored" in scored
 
 
 def test_pending_witnessing_is_not_painted_as_an_independent_copy(tmp_path):
@@ -355,8 +421,9 @@ def test_daily_root_exclusion_reason_is_derived_from_the_cycle(tmp_path):
         "cycles": [], "gapped_cycles_excluded": 1, "ots": {}}))
     out = tmp_path / "dist"
     assert build.main(["--spool", str(spool), "--out", str(out)]) == 0
-    flat = " ".join((out / "index.html").read_text(encoding="utf-8").split())
-    assert "incomplete pull, no root" in flat
+    archive = " ".join(page_at(out, "archive").split())
+    assert "excluded bbbbbbbbbbbb (incomplete pull, no root)" in archive
+    assert "bbbbbbbbbbbb (still pulling" not in archive
 
 
 # --------------------------------------------------------------- audit, 6 Sep 2026
@@ -374,9 +441,11 @@ def test_the_headline_is_attributed_to_the_cycle_it_came_from(tmp_path):
     add_score(spool, cycle="cycle_aaaaaaaaaaaa", relation="before_cycle", first_seen="2026-08-31T06:00:00Z")
     out = tmp_path / "dist"
     assert build.main(["--spool", str(spool), "--out", str(out)]) == 0
-    flat = " ".join((out / "index.html").read_text(encoding="utf-8").split())
-    assert "Headline figures from cycle aaaaaaaaaaaa" in flat
-    assert "Headline figures from cycle cccccccccccc" not in flat
+    front = text((out / "index.html").read_text(encoding="utf-8"))
+    assert "Headline figures from cycle aaaaaaaaaaaa" in front
+    assert "Headline figures from cycle cccccccccccc" not in front
+    # and the pull figures beside it name the same cycle
+    assert "cycle aaaaaaaaaaaa, scored 2026-09-01 11:30 UTC" in front and "cycle cccccccccccc, scored" not in front
 
 
 def test_the_published_globe_pack_is_the_cycle_the_page_describes(tmp_path):

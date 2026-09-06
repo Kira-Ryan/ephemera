@@ -6,6 +6,7 @@ is not a picture."""
 from __future__ import annotations
 
 import json
+import re
 import shutil
 import subprocess
 import sys
@@ -80,17 +81,34 @@ def make_spool(tmp_path: Path, now: datetime) -> Path:
     return spool
 
 
+# The pages web/pages.py renders, by path under the site root. The globe is built beside them.
+PAGES = ("index.html", "finding/index.html", "scored/index.html", "archive/index.html", "check/index.html", "404.html")
+
+
 @pytest.fixture
-def built(tmp_path):
+def built(tmp_path, monkeypatch):
+    """The whole site as build.main() writes it, at a pinned build time: the ledger, every page's
+    HTML keyed by its path (the globe included), and the output directory."""
     now = datetime(2026, 9, 1, 12, 0, tzinfo=timezone.utc)
     spool = make_spool(tmp_path, now)
     out = tmp_path / "dist"
-    ledger = build.build_ledger(spool, now)
-    out.mkdir()
-    (out / "ledger.json").write_text(json.dumps(ledger, indent=1), encoding="utf-8")
-    page = build.render(ledger)
-    (out / "index.html").write_text(page, encoding="utf-8")
-    return ledger, page, out
+    monkeypatch.setattr(build, "utc_now", lambda: now)
+    assert build.main(["--spool", str(spool), "--out", str(out)]) == 0
+    ledger = json.loads((out / "ledger.json").read_text(encoding="utf-8"))
+    site = {rel: (out / rel).read_text(encoding="utf-8") for rel in PAGES + ("globe/index.html",)}
+    return ledger, site, out
+
+
+def serve(out: Path):
+    """A throwaway HTTP server on a free port with the built site as its root, for the browser
+    tests. Shut it down with srv.shutdown()."""
+    import http.server
+    import socketserver
+    import threading
+    handler = lambda *a, **k: http.server.SimpleHTTPRequestHandler(*a, directory=str(out), **k)  # noqa: E731
+    srv = socketserver.TCPServer(("127.0.0.1", 0), handler)
+    threading.Thread(target=srv.serve_forever, daemon=True).start()
+    return srv
 
 
 def test_ledger_counts_and_coverage(built):
@@ -104,27 +122,35 @@ def test_ledger_counts_and_coverage(built):
 
 
 def test_page_prints_the_uncomfortable_truths(built):
-    """Mutation: drop the gap row styling/text, the loss count, or the cadence-hold figure -> red."""
-    _, page, _ = built
-    assert "INCOMPLETE: 50 of 9,100 missing, recorded" in page
+    """Mutation: drop the gap row styling/text, the loss count, or the cadence-hold figure -> red.
+    The per-cycle rows live on the archive page; the front page carries the figures and the strip,
+    whose blocks link to those rows."""
+    _, site, _ = built
+    page, archive = site["index.html"], site["archive/index.html"]
+    assert "INCOMPLETE: 50 of 9,100 missing, recorded" in archive
     # a pull still running is not a gap: neutral wording, no red row, stamp follows the pull
-    assert "pulling now: 3,100 of 9,200 so far" in page
-    assert page.count('class="gap"') == 1 and "follows the pull" in page
+    assert "pulling now: 3,100 of 9,200 so far" in archive
+    assert archive.count('class="gap"') == 1 and "follows the pull" in archive
     # the owner's standing voice rule for outward text: no em or en dashes, no smart quotes,
-    # no middle-dot separators
-    for ch in ("—", "–", "‘", "’", "“", "”", "·"):
-        assert ch not in page, f"typographic character {ch!r} crept into the page"
-    assert "mailto:KiraRyan27@gmail.com" in page and "linkedin.com/in/kira-ryan" in page
-    assert 'class="gap"' in page
-    assert "1 lost" in page                              # the given-up witness sample
-    assert 'class="warn"' in page                        # and its row is marked, not silent
+    # no middle-dot separators, on every page
+    for rel, doc in site.items():
+        for ch in ("—", "–", "‘", "’", "“", "”", "·"):
+            assert ch not in doc, f"typographic character {ch!r} crept into {rel}"
+    for rel in PAGES:
+        assert "mailto:KiraRyan27@gmail.com" in site[rel] and "linkedin.com/in/kira-ryan" in site[rel], rel
+    assert 'class="gap" id="c-bbbbbbbbbbbb"' in archive
+    assert 'href="archive/#c-bbbbbbbbbbbb"><rect class="miss"' in page   # the front page's strip paints it red
+    assert "1 lost" in archive                           # the given-up witness sample
+    assert 'class="warn" id="c-cccccccccccc"' in archive  # and its row is marked, not silent
+    assert 'href="archive/#c-cccccccccccc"><rect class="warn"' in page   # as is its block on the strip
     assert ">1</b>" in page and "cadence holds" in page.lower()
     assert "block 964904" in page and "stamp" in page.lower()
     flat = " ".join(page.split())                       # the template wraps lines mid-phrase
     assert "Operator ephemerides are predictions, not observations." in flat
     assert "not re-fetchable from the source after one cycle" in flat
     assert "As of <b>2026-09-01 12:00" in page          # every figure carries its as-of time
-    assert "built 2026-09-01 12:00 UTC" in page
+    for rel in PAGES:
+        assert "built 2026-09-01 12:00 UTC" in site[rel], rel
 
 
 def test_coverage_short_history_says_not_measured(tmp_path):
@@ -144,14 +170,37 @@ def test_built_page_passes_the_claims_lint(built):
     assert r.returncode == 0, r.stdout
 
 
+SITE_PATHS = ("", "finding/", "scored/", "archive/", "check/", "404.html", "globe/")
+
+
 def test_page_renders_in_a_real_browser(built, tmp_path):
+    """Every page is served over HTTP and loaded in headless Chrome. Each must render the mark and
+    the wordmark, carry the first caveat, and raise no error in the console: Chrome writes console
+    messages to stderr as CONSOLE lines, and an uncaught exception arrives there as one."""
     if CHROME is None:
         pytest.skip("no Chrome/Chromium installed")
     _, _, out = built
-    r = subprocess.run([CHROME, "--headless", "--disable-gpu", "--dump-dom",
-                        (out / "index.html").resolve().as_uri()],
-                       capture_output=True, timeout=60)
-    dom = " ".join(r.stdout.decode("utf-8", "replace").split())  # Chrome emits UTF-8; never let
-    assert "INCOMPLETE: 50 of 9,100 missing, recorded" in dom    # the locale codec near it
-    assert "Operator ephemerides are predictions, not observations." in dom
-    assert "ledger.json" in dom
+    srv = serve(out)
+    try:
+        base = f"http://127.0.0.1:{srv.server_address[1]}/"
+        doms, consoles = {}, {}
+        for path in SITE_PATHS:
+            r = subprocess.run([CHROME, "--headless=new", "--disable-gpu", "--enable-logging=stderr", "--v=0",
+                                "--dump-dom", base + path], capture_output=True, timeout=90)
+            doms[path] = " ".join(r.stdout.decode("utf-8", "replace").split())  # Chrome emits UTF-8; never let
+            consoles[path] = [line for line in r.stderr.decode("utf-8", "replace").splitlines()  # the locale
+                              if "CONSOLE" in line]                                                # codec near it
+    finally:
+        srv.shutdown()
+    for path, dom in doms.items():
+        assert '<svg class="mark"' in dom and (">Ephemera</a>" in dom or ">Ephemera</span>" in dom), path
+        assert "Operator ephemerides are predictions, not observations." in dom, path
+        errors = [line for line in consoles[path] if re.search(r"Uncaught|\bError\b|\berror\b", line)]
+        assert not errors, f"/{path} raised in the console: {errors}"
+    assert "INCOMPLETE: 50 of 9,100 missing, recorded" in doms["archive/"]
+    for path in SITE_PATHS[:-1]:
+        assert "ledger.json" in doms[path], path
+    # the tab bar knows which page it is on, the globe included
+    assert '<a href="./" aria-current="page">' in doms[""]
+    assert '<a href="../archive/" aria-current="page">' in doms["archive/"]
+    assert '<a href="../globe/" aria-current="page"' in doms["globe/"]

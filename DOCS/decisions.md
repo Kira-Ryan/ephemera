@@ -201,3 +201,20 @@ the ledger never need a restore, and are re-synced whenever their bytes change. 
 deleted only after a verified upload and `--keep-days` (3); the shipper never edits the poller's
 cycle.json - its state lives in `ship.json`. Single copy of record for now (P4); the witnessed
 roots mean a lost object can be detected but not faked.
+
+## D20 — Site page map and permanent URLs (2026-09-06, proposed)
+
+The site is six static pages built by `web/build.py` from the spool, plus a branded `404.html`:
+`/` (front page, fixed size for the life of the project), `/finding/` (the full finding for the
+headline cycle), `/scored/` (every scored cycle, one row per cycle), `/archive/` (every archived
+cycle and the daily roots), `/check/` (the verification procedure, data, licence and citation) and
+`/globe/`. Anything that gains a row per cycle lives on `/scored/` or `/archive/`, never on the
+front page. Those two pages hold the current UTC year in one section per month; when a second year
+exists, earlier years move to `/scored/<year>/` and `/archive/<year>/` in the same template, and
+the landing page keeps the current year. A row's id is `s-<sha12>` on `/scored/` and `c-<sha12>`
+on `/archive/`, and a row's URL never moves once published; a year move is a redirect stub, not a
+broken link. The fragment ids the front page already carries (`#finding`, `#archive`, `#check`,
+`#data`, `#next`, `#who`) stay as landing stubs because they are indexed. `ledger.json` stays a
+single file until it passes 2 MB, at which point it splits per month under the same paths; that
+split gets its own entry. Rationale: "tabs" in the owner's words, implemented as pages so every
+table row is linkable and indexable and the front page has a fixed height forever.
