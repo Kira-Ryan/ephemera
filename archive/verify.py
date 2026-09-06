@@ -5,17 +5,25 @@ from the one documented paragraph (D09) instead of importing the poller's functi
 root is agreement between two independent codings, not one function agreeing with itself.
 
 Checks, in order:
-  1. every stored files/<name>.gz decompresses to bytes whose SHA-256 and length match the record
+  1. the cycle's identity: MANIFEST.txt hashes to the manifest digest the record claims, and the
+     directory is named from that digest (D10). Without this the rest verifies an unnamed pile of
+     bytes rather than this cycle;
+  2. the names: every file the record holds is named by the manifest, in the manifest's order.
+     The Merkle root commits ordered content hashes and nothing else, so a manifest naming one file
+     beside a record naming another used to satisfy every other check here;
+  3. every stored files/<name>.gz decompresses to bytes whose SHA-256 and length match the record
      (--sample N spot-checks N evenly spaced files instead of all of them);
-  2. the recorded per-file hashes, in record order, rebuild the recorded Merkle root;
-  3. root.txt is exactly the root + one LF (65 bytes, D12) when the record has a root, and is
+  4. the recorded per-file hashes, in record order, rebuild the recorded Merkle root;
+  5. root.txt is exactly the root + one LF (65 bytes, D12) when the record has a root, and is
      absent when it does not;
-  4. the record's counts are internally consistent and match MANIFEST.txt's line count;
-  5. with --wayback: every verified sample in witness.json is fetched back from the Wayback
-     Machine and re-hashed (gunzipping when the copy is the origin's transfer encoding, P2b);
-  6. the OpenTimestamps state is reported with instructions for checking it independently
-     (`ots verify` needs a Bitcoin node; without one, compare the proof's block merkle root
-     against any block explorer).
+  6. the record's counts are internally consistent and match MANIFEST.txt's line count;
+  7. the OpenTimestamps proof is bound to THIS root: witness.json records the root it stamped, and
+     the proof file contains the SHA-256 of root.txt. An attestation for some earlier root is not
+     evidence about this one, and used to be reported as though it were;
+  8. with --wayback: the captured manifest is re-fetched and must hash to the cycle's own identity,
+     and every verified sample is re-fetched and re-hashed (gunzipping when the copy is the
+     origin's transfer encoding, P2b). A witness with nothing to fetch fails rather than passing
+     silently.
 
 Exit 0 when every performed check passes (a gapped cycle with a consistent record and no root is
 a pass - the gap is recorded truth); exit 1 on any mismatch.
@@ -50,6 +58,69 @@ def merkle_from_the_documented_paragraph(hex_leaves: list[str]) -> str | None:
             nodes = nodes + [nodes[-1]]
         nodes = [hashlib.sha256(nodes[i] + nodes[i + 1]).digest() for i in range(0, len(nodes), 2)]
     return nodes[0].hex()
+
+
+def check_identity(cycle: Path, rec: dict) -> None:
+    """The cycle is its manifest: the digest names it, and the directory is named from the digest."""
+    manifest = cycle / "MANIFEST.txt"
+    claimed = rec.get("manifest_sha256")
+    if not manifest.exists() or not claimed:
+        report(False, "MANIFEST.txt and a recorded manifest_sha256 are both present")
+        return
+    got = hashlib.sha256(manifest.read_bytes()).hexdigest()
+    report(got == claimed, f"MANIFEST.txt hashes to the manifest digest the record claims "
+                           f"({got[:12]}... == {claimed[:12]}...)")
+    expected_dir = f"cycle_{claimed[:12]}"
+    report(cycle.resolve().name == expected_dir,
+           f"the directory is named from that digest (D10: {cycle.resolve().name} == {expected_dir})")
+
+
+def check_names(cycle: Path, rec: dict) -> None:
+    """The record's files are named by the manifest, in the manifest's order.
+
+    The Merkle root binds content and order, not names. Without this check a manifest listing one
+    set of files and a record listing another passes everything else, and the archive's claim about
+    WHAT it holds is unverified."""
+    manifest = [ln.strip() for ln in (cycle / "MANIFEST.txt").read_bytes().decode("utf-8-sig").splitlines()
+                if ln.strip(" \t\r")]
+    recorded = [f["name"] for f in rec.get("files") or []]
+    listed = set(manifest)
+    unknown = [n for n in recorded if n not in listed]
+    report(not unknown, f"every recorded file is named by the manifest "
+                        f"({len(recorded)} recorded, {len(unknown)} not in the manifest"
+                        + (f", first {unknown[0]}" if unknown else "") + ")")
+    order = [n for n in manifest if n in set(recorded)]
+    report(order == recorded, "the record's files are in the manifest's order (the order the root commits)")
+
+
+def check_ots(cycle: Path, rec: dict, witness: dict) -> None:
+    """A proof that is present must be a proof of THIS root.
+
+    Witnessing follows the pull, so a cycle that has not been stamped yet is pending, not wrong,
+    and says so. What must never pass is a proof or an attestation that belongs to some other root
+    being reported as though it applied to this one."""
+    ots = cycle / "root.txt.ots"
+    root_txt = cycle / "root.txt"
+    if not rec.get("merkle_root"):
+        report(not ots.exists(), "a cycle with no root has no OpenTimestamps proof either")
+        return
+    claimed = witness.get("merkle_root")
+    attested = (witness.get("ots") or {}).get("attested")
+    if not ots.exists() and not claimed and not attested:
+        print("note  OpenTimestamps: not stamped yet (witnessing follows the pull)")
+        return
+    if claimed is not None or attested:
+        report(claimed == rec["merkle_root"],
+               f"witness.json stamped this cycle's root ({str(claimed)[:12]}... == {rec['merkle_root'][:12]}...)")
+    if not ots.exists():
+        report(not attested, "an attestation is claimed but root.txt.ots is missing")
+        return
+    if not root_txt.exists():
+        report(False, "root.txt is present for a cycle that has a proof")
+        return
+    digest = hashlib.sha256(root_txt.read_bytes()).digest()
+    report(digest in ots.read_bytes(),
+           "root.txt.ots is a proof of these exact root.txt bytes (its SHA-256 appears in the proof)")
 
 
 def check_files(cycle: Path, rec: dict, sample: int) -> None:
@@ -103,7 +174,23 @@ def check_wayback(rec: dict, witness: dict) -> None:
     import requests  # only needed for the online check
 
     by_name = {f["name"]: f for f in rec["files"]}
-    samples = (witness.get("wayback") or {}).get("samples") or {}
+    wb = witness.get("wayback") or {}
+    samples = wb.get("samples") or {}
+
+    # The manifest copy is the one that matters most: it is the independent evidence of which files
+    # the cycle claimed, and nothing here used to look at it.
+    man = wb.get("manifest") or {}
+    if man.get("id_url") and rec.get("manifest_sha256"):
+        body = requests.get(man["id_url"], timeout=120).content
+        try:
+            got = hashlib.sha256(gzip.decompress(body)).hexdigest()
+        except (OSError, gzip.BadGzipFile):
+            got = hashlib.sha256(body).hexdigest()
+        report(got == rec["manifest_sha256"],
+               "the archived manifest copy hashes to this cycle's identity")
+    else:
+        report(False, "witness.json records an archived manifest copy to re-fetch")
+
     checked = bad = 0
     for s in samples.values():
         if not s.get("verified"):
@@ -117,7 +204,11 @@ def check_wayback(rec: dict, witness: dict) -> None:
         if got != by_name[s["name"]]["sha256"]:
             print(f"      {s['name']}: Wayback copy no longer matches the record")
             bad += 1
-    report(bad == 0, f"Wayback id_ copies re-hash to the recorded SHA-256s ({checked} fetched, {bad} bad)")
+    # Nothing fetched is not a pass. A cycle whose witnessing never completed has no independent
+    # copy, and reporting that as a clean verification is the opposite of what this tool is for.
+    report(checked > 0 and bad == 0,
+           f"Wayback id_ copies re-hash to the recorded SHA-256s ({checked} fetched, {bad} bad)"
+           + ("" if checked else " - nothing was fetched, so nothing was verified"))
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -129,15 +220,19 @@ def main(argv: list[str] | None = None) -> int:
 
     rec = json.loads((args.cycle / "cycle.json").read_text())
     print(f"cycle {rec['cycle']}  status={rec['status']}  files={rec['files_recorded']}/{rec['files_listed']}")
+    w_path = args.cycle / "witness.json"
+    witness = json.loads(w_path.read_text()) if w_path.exists() else {}
+
+    check_identity(args.cycle, rec)
+    check_names(args.cycle, rec)
     check_files(args.cycle, rec, args.sample)
     check_root(args.cycle, rec)
     check_counts(args.cycle, rec)
-
-    w_path = args.cycle / "witness.json"
-    witness = json.loads(w_path.read_text()) if w_path.exists() else {}
+    check_ots(args.cycle, rec, witness)
     if args.wayback:
         check_wayback(rec, witness)
     att = (witness.get("ots") or {}).get("attested")
+    # Reported, not trusted: check_ots() above is what decides whether it applies to this root.
     if att:
         print(f"note  OpenTimestamps: attested at Bitcoin block {att['block_height']}. Independent check: "
               f"`ots verify root.txt.ots` against a Bitcoin node, or compare the proof's block merkle "

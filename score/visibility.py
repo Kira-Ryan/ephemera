@@ -27,6 +27,7 @@ from __future__ import annotations
 
 import argparse
 import gzip
+import hashlib
 import json
 import logging
 import math
@@ -99,17 +100,60 @@ def score_file(eph: ephem.Ephemeris, es: cat.ElementSet, ts, earth_satellite_cls
     return rows
 
 
+def verify_cycle_inputs(cycle_dir: Path, rec: dict) -> None:
+    """Confirm the two provenance figures every report publishes, before scoring anything.
+
+    The report names the cycle's Merkle root and the manifest digest that gives the cycle its
+    identity (D10). Both were copied out of the record and published without ever being computed,
+    so an edited record changed the numbers while the report went on claiming the same hashes.
+    Cheap: one pass over the recorded digests and one over the manifest."""
+    manifest = cycle_dir / "MANIFEST.txt"
+    if manifest.exists() and rec.get("manifest_sha256"):
+        got = hashlib.sha256(manifest.read_bytes()).hexdigest()
+        if got != rec["manifest_sha256"]:
+            raise ValueError(f"{cycle_dir.name}: MANIFEST.txt hashes to {got[:12]}..., but the record and the "
+                             f"cycle's own name say {rec['manifest_sha256'][:12]}...")
+    root = rec.get("merkle_root")
+    if root:
+        rebuilt = merkle_root([f["sha256"] for f in rec.get("files") or []])
+        if rebuilt != root:
+            raise ValueError(f"{cycle_dir.name}: the recorded file digests rebuild {str(rebuilt)[:12]}..., "
+                             f"not the recorded Merkle root {root[:12]}...")
+
+
+def merkle_root(hex_leaves: list[str]) -> str | None:
+    """D09, the same construction the archive uses: leaves are the recorded digests in record order,
+    adjacent pairs are hashed as SHA-256(left || right), an odd trailing node is paired with itself."""
+    nodes = [bytes.fromhex(h) for h in hex_leaves]
+    if not nodes:
+        return None
+    while len(nodes) > 1:
+        if len(nodes) % 2 == 1:
+            nodes = nodes + [nodes[-1]]
+        nodes = [hashlib.sha256(nodes[i] + nodes[i + 1]).digest() for i in range(0, len(nodes), 2)]
+    return nodes[0].hex()
+
+
 def score_one(task: tuple) -> tuple:
     """One file, in whatever process this runs in: ('scored', norad, rows) | ('unreadable', name, msg)
-    | ('propagation_failed', norad, msg)."""
-    path, name, es_fields, eval_step_min = task
+    | ('corrupt', name, msg) | ('propagation_failed', norad, msg)."""
+    path, name, es_fields, eval_step_min, expect = task
     es = cat.ElementSet(*es_fields)
     try:
-        lines = ephem.read_lines(Path(path))
+        raw = ephem.read_raw(Path(path))
+    except (OSError, EOFError) as e:
+        return ("unreadable", name, str(e))
+    # The bytes about to be scored are the bytes the report's Merkle root commits to. Checking them
+    # here is what makes that claim true rather than decorative, and it costs a hash of data already
+    # in memory.
+    if expect and (len(raw) != expect["bytes"] or hashlib.sha256(raw).hexdigest() != expect["sha256"]):
+        return ("corrupt", name, "stored bytes do not match the cycle record")
+    try:
+        lines = raw.decode("ascii").splitlines()
         n = ephem.record_count(lines)
         step = int(lines[1].rsplit("step_size:", 1)[1])
         eph = ephem.read(Path(path), eval_indices(n, step, eval_step_min))
-    except (ValueError, OSError, IndexError) as e:
+    except (ValueError, OSError, IndexError, UnicodeDecodeError) as e:
         return ("unreadable", name, str(e))
     try:
         from skyfield.api import EarthSatellite  # noqa: PLC0415
@@ -198,13 +242,16 @@ def summarise(rows: list[dict], fetched_utc: str | None = None) -> dict:
 
 
 def score_cycle(cycle_dir: Path, catalogue: cat.Catalogue, eval_step_min: float, limit: int = 0,
-                workers: int = 1) -> tuple[dict, list[dict], dict]:
+                workers: int = 1, rec: dict | None = None) -> tuple[dict, list[dict], dict]:
+    rec = rec if rec is not None else json.loads((cycle_dir / "cycle.json").read_text())
     names = (cycle_dir / "MANIFEST.txt").read_text().split()
     if limit:
         names = names[:limit]
     counts = {"files": len(names), "scored": 0, "no_public_set": 0, "uncatalogued": 0, "decayed_set": 0,
-              "propagation_failed": 0, "unreadable": 0}
-    satellites = {"scored": [], "no_public_set": [], "decayed_set": [], "propagation_failed": [], "unreadable": []}
+              "propagation_failed": 0, "unreadable": 0, "corrupt": 0}
+    satellites = {"scored": [], "no_public_set": [], "decayed_set": [], "propagation_failed": [],
+                  "unreadable": [], "corrupt": []}
+    recorded = {f["name"]: f for f in (rec.get("files") or [])}
     rows: list[dict] = []
     tasks = []
     for name in names:
@@ -229,7 +276,8 @@ def score_cycle(cycle_dir: Path, catalogue: cat.Catalogue, eval_step_min: float,
             counts["decayed_set"] += 1
             satellites["decayed_set"].append(norad)
             continue
-        tasks.append((str(path), name, (es.norad, es.name, es.epoch, es.line1, es.line2, es.decay_date), eval_step_min))
+        tasks.append((str(path), name, (es.norad, es.name, es.epoch, es.line1, es.line2, es.decay_date),
+                      eval_step_min, recorded.get(name)))
     if workers > 1 and len(tasks) > 1:
         with ProcessPoolExecutor(max_workers=workers) as pool:
             results = list(pool.map(score_one, tasks, chunksize=32))
@@ -250,7 +298,8 @@ def build_report(cycle_dir: Path, catalogue: cat.Catalogue, eval_step_min: float
     import sgp4  # noqa: PLC0415
     import skyfield  # noqa: PLC0415
     rec = json.loads((cycle_dir / "cycle.json").read_text())
-    counts, rows, satellites = score_cycle(cycle_dir, catalogue, eval_step_min, limit, workers)
+    verify_cycle_inputs(cycle_dir, rec)
+    counts, rows, satellites = score_cycle(cycle_dir, catalogue, eval_step_min, limit, workers, rec)
     report = {
         "schema": SCHEMA, "kind": "catalogue_visibility_v0",
         "as_of": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
@@ -275,23 +324,33 @@ def build_report(cycle_dir: Path, catalogue: cat.Catalogue, eval_step_min: float
     return report, rows
 
 
+def output_name(report: dict) -> str:
+    """The report's filename. A `--limit` run scores a handful of files for development, so it must
+    never take the published name: the site build reads `visibility_*.json` and would publish a
+    partial score as the cycle's figures, and the driver would treat the cycle as done."""
+    sha12 = report["inputs"]["cycle"].removeprefix("cycle_")
+    prefix = "partial_visibility" if report["inputs"].get("limit") else "visibility"
+    return f"{prefix}_{sha12}"
+
+
 def write_outputs(report: dict, rows: list[dict], out_dir: Path, keep_rows: bool) -> Path:
     out_dir.mkdir(parents=True, exist_ok=True)
-    sha12 = report["inputs"]["cycle"].removeprefix("cycle_")
-    out = out_dir / f"visibility_{sha12}.json"
+    sha12 = output_name(report)
+    out = out_dir / f"{sha12}.json"
     if keep_rows:
-        with gzip.open(out_dir / f"visibility_{sha12}_rows.json.gz", "wt", encoding="utf-8") as gz:
+        with gzip.open(out_dir / f"{sha12}_rows.json.gz", "wt", encoding="utf-8") as gz:
             json.dump(rows, gz)
-        report = {**report, "rows_file": f"visibility_{sha12}_rows.json.gz"}
+        report = {**report, "rows_file": f"{sha12}_rows.json.gz"}
     out.write_text(json.dumps(report, indent=1), encoding="utf-8")
     return out
 
 
 def log_summary(report: dict, rows: list[dict], out: Path) -> None:
     c = report["counts"]
-    log.info("%s vs %s: %d files, %d scored (%d rows), %d without a public set, %d decayed sets, %d propagation failures, %d unreadable -> %s",
+    log.info("%s vs %s: %d files, %d scored (%d rows), %d without a public set, %d decayed sets, "
+             "%d propagation failures, %d unreadable, %d corrupt -> %s",
              report["inputs"]["cycle"], report["inputs"]["catalogue_snapshot"], c["files"], c["scored"], len(rows),
-             c["no_public_set"], c["decayed_set"], c["propagation_failed"], c["unreadable"], out)
+             c["no_public_set"], c["decayed_set"], c["propagation_failed"], c["unreadable"], c.get("corrupt", 0), out)
     if report["summary"]["overall"]:
         for b in report["summary"]["by_age"]:
             log.info("  age %-22s n=%-6d median %8.3f km  p90 %9.3f km  within 1/10/30 km: %s", b["bin"], b["n"], b["median_km"], b["p90_km"],
@@ -320,7 +379,7 @@ def main(argv: list[str] | None = None) -> int:
     report, rows = build_report(cycle_dir, catalogue, args.eval_step_min, args.limit, args.workers)
     out = write_outputs(report, rows, args.out, args.rows)
     log_summary(report, rows, out)
-    return 1 if report["counts"]["unreadable"] else 0
+    return 1 if report["counts"]["unreadable"] or report["counts"]["corrupt"] else 0
 
 
 if __name__ == "__main__":

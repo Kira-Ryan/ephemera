@@ -74,9 +74,14 @@ def _utc(s: str) -> datetime:
     return datetime.strptime(s, "%Y-%m-%d %H:%M:%S").replace(tzinfo=timezone.utc)
 
 
+def read_raw(path: Path) -> bytes:
+    """The file's own bytes, decompressed. These are the bytes the poller hashed, so these are the
+    bytes to check a record against."""
+    return gzip.open(path, "rb").read() if path.suffix == ".gz" else path.read_bytes()
+
+
 def read_lines(path: Path) -> list[str]:
-    raw = gzip.open(path, "rb").read() if path.suffix == ".gz" else path.read_bytes()
-    return raw.decode("ascii").splitlines()
+    return read_raw(path).decode("ascii").splitlines()
 
 
 def record_count(lines: list[str]) -> int:

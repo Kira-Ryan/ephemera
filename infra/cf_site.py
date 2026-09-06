@@ -1,7 +1,10 @@
 #!/usr/bin/env python3
-"""Cloudflare plumbing for the static site (D19). Stdlib only; called ONLY from scripts that
-sourced infra/guard_cf.sh, which exports CLOUDFLARE_API_TOKEN and CLOUDFLARE_ACCOUNT_ID after
-verifying them against the personal allowlist.
+"""Cloudflare plumbing for the static site (D19). Stdlib only.
+
+Every entry point runs infra/guard_cf.enforce() before its first write. The shell guard covers the
+developer machine, where the ambient Cloudflare login belongs to an employer identity; the Python
+guard covers everywhere else, including the deploy workflow on a GitHub runner, which has no
+personal.env to source and so previously ran no guard at all.
 
   python infra/cf_site.py project   ensure the Pages project exists
   python infra/cf_site.py domain    attach ephemera.space to it and ensure the apex DNS record
@@ -39,32 +42,34 @@ def ok(r: dict) -> bool:
     return bool(r.get("success"))
 
 
-ACCT = os.environ["CLOUDFLARE_ACCOUNT_ID"]
+def acct() -> str:
+    """Read after the guard has run, never at import: the guard is what decides this is allowed."""
+    return os.environ["CLOUDFLARE_ACCOUNT_ID"]
 
 
 def ensure_project() -> None:
-    r = call("GET", f"/accounts/{ACCT}/pages/projects/{PROJECT}")
+    r = call("GET", f"/accounts/{acct()}/pages/projects/{PROJECT}")
     if ok(r):
         print(f"project {PROJECT}: exists ({r['result'].get('subdomain', '')})")
         return
-    r = call("POST", f"/accounts/{ACCT}/pages/projects", {"name": PROJECT, "production_branch": BRANCH})
+    r = call("POST", f"/accounts/{acct()}/pages/projects", {"name": PROJECT, "production_branch": BRANCH})
     if not ok(r):
         sys.exit(f"project create failed: {r.get('errors')}")
     print(f"project {PROJECT}: created ({r['result'].get('subdomain', '')})")
 
 
 def ensure_domain() -> None:
-    r = call("GET", f"/accounts/{ACCT}/pages/projects/{PROJECT}/domains")
+    r = call("GET", f"/accounts/{acct()}/pages/projects/{PROJECT}/domains")
     names = [d["name"] for d in (r.get("result") or [])] if ok(r) else []
     if DOMAIN in names:
         print(f"domain {DOMAIN}: already attached")
     else:
-        r = call("POST", f"/accounts/{ACCT}/pages/projects/{PROJECT}/domains", {"name": DOMAIN})
+        r = call("POST", f"/accounts/{acct()}/pages/projects/{PROJECT}/domains", {"name": DOMAIN})
         if not ok(r):
             sys.exit(f"domain attach failed: {r.get('errors')}")
         print(f"domain {DOMAIN}: attached")
 
-    r = call("GET", f"/accounts/{ACCT}/pages/projects/{PROJECT}")
+    r = call("GET", f"/accounts/{acct()}/pages/projects/{PROJECT}")
     if not ok(r):
         sys.exit(f"project lookup failed: {r.get('errors')}")
     target = r["result"].get("subdomain") or f"{PROJECT}.pages.dev"  # e.g. ephemera-8pv.pages.dev
@@ -118,7 +123,7 @@ def deploy(dist: Path) -> None:
     if not entries:
         sys.exit(f"nothing to deploy under {dist}")
 
-    r = call("GET", f"/accounts/{ACCT}/pages/projects/{PROJECT}/upload-token")
+    r = call("GET", f"/accounts/{acct()}/pages/projects/{PROJECT}/upload-token")
     if not ok(r):
         sys.exit(f"upload-token failed: {r.get('errors')}")
     jwt = r["result"]["jwt"]
@@ -143,7 +148,7 @@ def deploy(dist: Path) -> None:
     form = (f"--{boundary}\r\nContent-Disposition: form-data; name=\"manifest\"\r\n\r\n{manifest}\r\n"
             f"--{boundary}\r\nContent-Disposition: form-data; name=\"branch\"\r\n\r\n{BRANCH}\r\n"
             f"--{boundary}--\r\n").encode()
-    r = _request("POST", f"{API}/accounts/{ACCT}/pages/projects/{PROJECT}/deployments",
+    r = _request("POST", f"{API}/accounts/{acct()}/pages/projects/{PROJECT}/deployments",
                  {"Authorization": f"Bearer {os.environ['CLOUDFLARE_API_TOKEN']}",
                   "Content-Type": f"multipart/form-data; boundary={boundary}"}, form)
     if not ok(r):
@@ -157,6 +162,13 @@ if __name__ == "__main__":
     cmd = sys.argv[1] if len(sys.argv) > 1 else "all"
     if cmd not in ("project", "domain", "deploy", "all"):
         sys.exit(__doc__)
+    sys.path.insert(0, str(Path(__file__).resolve().parent))
+    import guard_cf  # noqa: E402
+
+    try:
+        guard_cf.enforce()
+    except guard_cf.GuardRefused as e:
+        sys.exit(str(e))
     if cmd in ("project", "all"):
         ensure_project()
     if cmd in ("deploy", "all"):

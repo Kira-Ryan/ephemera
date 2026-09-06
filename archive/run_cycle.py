@@ -63,14 +63,25 @@ def pause(seconds: float) -> None:
 
 
 def cycle_status(spool: Path, sha: str) -> str | None:
+    """The status of the cycle for THIS manifest, or None if we do not hold it.
+
+    The directory is named from the first 48 bits of the manifest digest (D10), which is enough to
+    find it and not enough to identify it. The full digest recorded inside is what decides, or a
+    directory that merely shares a prefix could report "complete" and suppress a real pull."""
     rec = spool / f"cycle_{sha[:12]}" / "cycle.json"
     if not rec.exists():
         return None
     try:
-        return json.loads(rec.read_text()).get("status")
+        r = json.loads(rec.read_text())
     except (OSError, ValueError) as e:
         log.error("unreadable %s: %s", rec, e)
         return "unreadable"
+    recorded = r.get("manifest_sha256")
+    if recorded != sha:
+        log.error("%s records manifest %s..., not the %s... being served: refusing to treat it as this cycle",
+                  rec.parent.name, str(recorded)[:12], sha[:12])
+        return "prefix-collision"
+    return r.get("status")
 
 
 def count_complete(spool: Path) -> int:

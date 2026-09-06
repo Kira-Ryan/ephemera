@@ -19,11 +19,18 @@ def utc(dt: datetime) -> str:
     return dt.strftime("%Y-%m-%dT%H:%M:%SZ")
 
 
-def set_first_seen(spool: Path, cycle: str, when: datetime, root: str | None = "ab" * 32) -> None:
+KEEP = object()
+
+
+def set_first_seen(spool: Path, cycle: str, when: datetime, root=KEEP) -> None:
+    """Stamp the first-seen time. The Merkle root is left exactly as make_cycle computed it unless a
+    test asks for something else: the scorer verifies the record before scoring, so a fixture that
+    overwrites the root with a constant is testing a record production could never produce."""
     p = spool / cycle / "cycle.json"
     rec = json.loads(p.read_text())
     rec["first_seen_utc"] = utc(when)
-    rec["merkle_root"] = root
+    if root is not KEEP:
+        rec["merkle_root"] = root
     p.write_text(json.dumps(rec))
 
 
@@ -37,10 +44,10 @@ def test_pass_scores_newest_first_pairs_snapshot_and_builds_pack(tmp_path, caplo
                        write_meme(spool / new / "files", 26000, "STARLINK-2", m1, m2)], new)
     set_first_seen(spool, old, T0 - timedelta(hours=8))
     set_first_seen(spool, new, T0)
-    gone = "cycle_000000000000"
+    gone = "cycle_000000000000"          # complete, with a root, but its files have been shipped away
     make_cycle(spool, [], gone)
     (spool / gone / "files").mkdir()
-    set_first_seen(spool, gone, T0 - timedelta(hours=16))
+    set_first_seen(spool, gone, T0 - timedelta(hours=16), root="ab" * 32)
     gapped = "cycle_00000000000g"
     make_cycle(spool, [], gapped)
     set_first_seen(spool, gapped, T0 - timedelta(hours=24), root=None)
@@ -243,3 +250,139 @@ def test_pack_refuses_rows_without_the_public_frame(tmp_path):
     with pytest.raises(ValueError, match="public-frame decomposition"):
         globe_pack.build_pack({"eval_step_min": 60.0, "inputs": {}, "as_of": "", "method": "",
                                "counts": {}, "summary": {"overall": None}}, rows, None)
+
+
+def test_a_failed_pack_leaves_the_cycle_pending_not_silently_done(tmp_path, monkeypatch):
+    """The report file is the completion marker, and it was written before the globe pack was
+    built. A pack failure therefore left the marker behind and the cycle was never retried: the
+    next pass reported clean with nothing pending, for a cycle that has no pack.
+
+    Mutation: write the report before building the pack and this goes red."""
+    import globe_pack  # noqa: PLC0415
+    spool = tmp_path / "spool"
+    l1, l2 = tle("25544")
+    c = "cycle_000000000002"
+    make_cycle(spool, [write_meme(spool / c / "files", 25544, "STARLINK-1", l1, l2)], c)
+    set_first_seen(spool, c, T0)
+    make_snapshot(spool, [gp_row(25544, "STARLINK-1", l1, l2)])
+
+    def boom(*a, **k):
+        raise RuntimeError("simulated pack failure")
+
+    monkeypatch.setattr(globe_pack, "build_pack", boom)
+    res = run.one_pass(spool, max_cycles=1, workers=1, eval_step_min=60)
+    assert res["errors"] and res["scored"] == []
+    assert not (spool / "score" / "visibility_000000000002.json").exists(), \
+        "a completion marker was left behind for a cycle that did not complete"
+
+    monkeypatch.undo()
+    res2 = run.one_pass(spool, max_cycles=1, workers=1, eval_step_min=60)
+    assert [s["cycle"] for s in res2["scored"]] == [c], "the failed cycle was never retried"
+    assert (spool / "score" / "globe_000000000002.json").exists()
+
+
+def test_a_limited_run_never_writes_the_published_filename(tmp_path):
+    """--limit scores a handful of files for development. It wrote the production filename, so a
+    partial score could be picked up by the site build and published as the cycle's figures.
+
+    Mutation: drop the partial_ prefix and this goes red."""
+    spool = tmp_path / "spool"
+    l1, l2 = tle("25544")
+    m1, m2 = tle("26000", "15.05000000")
+    c = "cycle_000000000002"
+    files = spool / c / "files"
+    names = [write_meme(files, 25544, "STARLINK-1", l1, l2), write_meme(files, 26000, "STARLINK-2", m1, m2)]
+    make_cycle(spool, names, c)
+    set_first_seen(spool, c, T0)
+    make_snapshot(spool, [gp_row(25544, "STARLINK-1", l1, l2), gp_row(26000, "STARLINK-2", m1, m2)])
+    run.one_pass(spool, max_cycles=1, workers=1, eval_step_min=60, limit=1)
+    out = spool / "score"
+    assert not (out / "visibility_000000000002.json").exists(), "a partial score took the published name"
+    assert (out / "partial_visibility_000000000002.json").exists()
+    # and the cycle is still owed a real score
+    res = run.one_pass(spool, max_cycles=1, workers=1, eval_step_min=60)
+    assert [s["cycle"] for s in res["scored"]] == [c]
+    assert (out / "visibility_000000000002.json").exists()
+
+
+def test_scoring_verifies_the_provenance_it_publishes(tmp_path):
+    """Every report states the cycle's Merkle root, the manifest digest and the catalogue snapshot's
+    SHA-256, and none of the three was checked before this. Mutating an input changed the numbers
+    while the report went on claiming the same hashes, which is the one thing this project must
+    never do.
+
+    Mutation: drop verify_cycle_inputs() or the catalogue digest check and these go red."""
+    import catalogue as cat  # noqa: PLC0415
+    import pytest  # noqa: PLC0415
+
+    def fresh(tag: str):
+        spool = tmp_path / tag
+        l1, l2 = tle("25544")
+        c = "cycle_000000000002"
+        make_cycle(spool, [write_meme(spool / c / "files", 25544, "STARLINK-1", l1, l2)], c)
+        set_first_seen(spool, c, T0)
+        snap = make_snapshot(spool, [gp_row(25544, "STARLINK-1", l1, l2)])
+        return spool, c, snap
+
+    spool, c, _ = fresh("healthy")
+    assert run.one_pass(spool, max_cycles=1, workers=1, eval_step_min=60)["errors"] == []
+    assert (spool / "score" / f"visibility_{c[6:]}.json").exists()
+
+    # 1. the catalogue bytes no longer hash to what its own record.json says
+    spool, c, snap = fresh("badcat")
+    rows = json.load(gzip.open(snap / "gp.json.gz", "rb"))
+    rows[0]["OBJECT_NAME"] = "TAMPERED"
+    with gzip.open(snap / "gp.json.gz", "wb") as gz:
+        gz.write(json.dumps(rows).encode())
+    with pytest.raises(ValueError, match="does not match"):
+        cat.load(snap)
+    res = run.one_pass(spool, max_cycles=1, workers=1, eval_step_min=60)
+    assert res["errors"] and not (spool / "score" / f"visibility_{c[6:]}.json").exists()
+
+    # 2. the record's own digests no longer rebuild the root the report would publish
+    spool, c, _ = fresh("badroot")
+    rp = spool / c / "cycle.json"
+    r = json.loads(rp.read_text())
+    r["merkle_root"] = "ff" * 32
+    rp.write_text(json.dumps(r))
+    res = run.one_pass(spool, max_cycles=1, workers=1, eval_step_min=60)
+    assert res["errors"] and not (spool / "score" / f"visibility_{c[6:]}.json").exists()
+
+    # 3. MANIFEST.txt is not the manifest whose digest names the cycle
+    spool, c, _ = fresh("badmanifest")
+    (spool / c / "MANIFEST.txt").write_bytes(b"MEME_1_SOMETHING_ELSE.txt\n")
+    res = run.one_pass(spool, max_cycles=1, workers=1, eval_step_min=60)
+    assert res["errors"] and not (spool / "score" / f"visibility_{c[6:]}.json").exists()
+
+    # 4. a stored ephemeris no longer hashes to what the record says: counted, never scored
+    spool, c, _ = fresh("badfile")
+    r = json.loads((spool / c / "cycle.json").read_text())
+    gz = spool / c / "files" / (r["files"][0]["name"] + ".gz")
+    gz.write_bytes(gzip.compress(gzip.decompress(gz.read_bytes()).replace(b"blend", b"BLEND")))
+    res = run.one_pass(spool, max_cycles=1, workers=1, eval_step_min=60)
+    rep = json.loads((spool / "score" / f"visibility_{c[6:]}.json").read_text())
+    assert rep["counts"]["corrupt"] == 1 and rep["counts"]["scored"] == 0
+    assert rep["satellites"]["corrupt"], "a file that no longer matches the record was scored anyway"
+
+
+def test_a_hostile_catalogue_name_cannot_become_markup(tmp_path):
+    """Object names come from an outside catalogue and are written into the globe page. They reached
+    two innerHTML assignments unescaped, so a feed value could run script for every visitor.
+
+    Defended twice on purpose: the pack constrains the name to the characters real ones use, and the
+    page escapes what it is given anyway. Mutation: drop safe_name() and this goes red; drop the
+    page's esc() and the browser test in web/tests goes red."""
+    import globe_pack  # noqa: PLC0415
+    spool = tmp_path / "spool"
+    l1, l2 = tle("25544")
+    c = "cycle_000000000002"
+    make_cycle(spool, [write_meme(spool / c / "files", 25544, "STARLINK-1", l1, l2)], c)
+    set_first_seen(spool, c, T0)
+    hostile = '<img src=x onerror="alert(1)">'
+    make_snapshot(spool, [gp_row(25544, hostile, l1, l2)])
+    run.one_pass(spool, max_cycles=1, workers=1, eval_step_min=60)
+    pack = json.loads((spool / "score" / "globe_000000000002.json").read_text())
+    name = pack["sats"][0]["name"]
+    assert "<" not in name and ">" not in name and '"' not in name, f"markup survived into the pack: {name!r}"
+    assert globe_pack.safe_name("STARLINK-34600") == "STARLINK-34600"      # real names are untouched
+    assert globe_pack.safe_name("A" * 200) == "A" * 64                     # and bounded

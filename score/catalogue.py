@@ -8,6 +8,7 @@ has no I/O against live feeds)."""
 from __future__ import annotations
 
 import gzip
+import hashlib
 import json
 from dataclasses import dataclass
 from datetime import datetime, timezone
@@ -40,9 +41,20 @@ def latest_snapshot(spool: Path) -> Path:
 
 
 def load(snapshot_dir: Path) -> Catalogue:
+    """Load a snapshot, having confirmed it is the snapshot its record claims.
+
+    Every report publishes this digest as the provenance of the public side of the comparison. It
+    was published without ever being computed, so a snapshot edited on disk changed the numbers
+    while the report went on naming the same hash. Reading the bytes and hashing them is the whole
+    of the fix, and it costs one pass over 15 MB."""
     snapshot_dir = Path(snapshot_dir)
     rec = json.loads((snapshot_dir / "record.json").read_text())
-    rows = json.load(gzip.open(snapshot_dir / "gp.json.gz", "rb"))
+    raw = gzip.decompress((snapshot_dir / "gp.json.gz").read_bytes())
+    got = hashlib.sha256(raw).hexdigest()
+    if got != rec["sha256"]:
+        raise ValueError(f"catalogue snapshot {snapshot_dir.name}: the stored bytes hash to {got[:12]}..., "
+                         f"which does not match the recorded {rec['sha256'][:12]}...")
+    rows = json.loads(raw)
     sets: dict[int, ElementSet] = {}
     for r in rows:
         norad = int(r["NORAD_CAT_ID"])
