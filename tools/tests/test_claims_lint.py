@@ -115,3 +115,17 @@ def test_javascript_template_literals_are_not_treated_as_mentions(tmp_path):
     md = tmp_path / "x.md"
     md.write_text("The register forbids `covariance realism` for this scoreboard.\n", encoding="utf-8")
     assert claims_lint.violations_in(md, claims_lint.load_rules()) == []
+
+
+def test_every_built_page_is_checked_for_caveats_wherever_it_sits(tmp_path):
+    """The check used to know two paths by name. A page added anywhere else shipped unchecked.
+    Mutation: restore the fixed list and the archive page below is never reported."""
+    required = claims_lint.load_required()
+    full = " ".join(required)
+    (tmp_path / "archive").mkdir()
+    (tmp_path / "index.html").write_text(f"<p>{full}</p>", encoding="utf-8")
+    (tmp_path / "archive" / "index.html").write_text("<p>a table and nothing else</p>", encoding="utf-8")
+    (tmp_path / "archive" / "probe.html").write_text("<p>a test's scratch file</p>", encoding="utf-8")
+    missing = claims_lint.missing_caveats(tmp_path, required)
+    assert {p.relative_to(tmp_path).as_posix() for p, _ in missing} == {"archive/index.html"}
+    assert len(missing) == len(required)
