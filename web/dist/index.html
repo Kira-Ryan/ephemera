@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Ephemera</title>
-<meta name="description" content="An archive of the public Starlink ephemerides, hashed and anchored in Bitcoin, with a daily measure of how well the public satellite catalogue can see the constellation.">
+<meta name="description" content="An archive of the public Starlink ephemerides, hashed and anchored in Bitcoin, with a daily measure of what the public satellite catalogue can see.">
 <link rel="canonical" href="https://ephemera.space/">
 <link rel="icon" href="icon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="icon-180.png">
@@ -13,7 +13,7 @@
 <meta property="og:site_name" content="Ephemera">
 <meta property="og:title" content="Ephemera">
 <meta property="og:url" content="https://ephemera.space/">
-<meta property="og:description" content="An archive of the public Starlink ephemerides, hashed and anchored in Bitcoin, with a daily measure of how well the public satellite catalogue can see the constellation.">
+<meta property="og:description" content="An archive of the public Starlink ephemerides, hashed and anchored in Bitcoin, with a daily measure of what the public satellite catalogue can see.">
 <meta property="og:image" content="https://ephemera.space/social.png">
 <meta name="twitter:card" content="summary_large_image">
 <style>
@@ -23,312 +23,335 @@
     --ink: #eceada; --ink-soft: #b9b7c6; --ink-faint: #8f8da0;
     --accent: #ffb347; --accent-lit: #ffcd80; --accent-rule: #9d7034;
     --held: #6fd39a; --warn: #ffb347; --bad: #ff7a7a;
-    --km-1: #7fd4ff; --km-10: #ffe08a; --km-30: #ff8c42; --km-far: #ff4d5e;
+    --km-1: #7fd4ff; --km-10: #ffe08a; --km-30: #ff8c42; --km-far: #ff4d5e; --km-lost: #c86bff;
     --serif: Georgia, 'Iowan Old Style', Charter, 'Palatino Linotype', 'Times New Roman', serif;
     --mono: ui-monospace, 'Cascadia Mono', 'SF Mono', Menlo, Consolas, 'DejaVu Sans Mono', monospace;
-    --t-cap: .8125rem; --t-fine: .875rem; --t-lead: 1.25rem; --t-h2: 1.4rem;
-    --s1: .25rem; --s2: .5rem; --s3: .75rem; --s4: 1rem; --s5: 1.5rem;
-    --s6: 2rem; --s7: 3rem; --s8: 4rem;
-    --measure: 60ch;
+
+    /* One baseline for everything vertical. Named --base, not --line: the globe page uses --line
+       for a colour, and the tab bar is injected into that page. */
+    --base: 1.75rem; --half: .875rem; --base-s: 1.3125rem;
+    --frame: 78rem; --outer: clamp(1.25rem, 6vw, 5rem); --gutter: var(--base); --measure: 60ch;
+    --t-body: 1.125rem; --t-lede: 1.25rem; --t-deck: 1.5rem; --t-h2: 2rem; --t-foot: .9375rem;
+    --t-small: .875rem; --t-cap: .8125rem; --t-pull: 4.375rem;
   }
   * { margin: 0; padding: 0; box-sizing: border-box; }
-  html { scroll-behavior: smooth; }
-  body { background: var(--bg); color: var(--ink); font: 1rem/1.62 var(--serif);
-         font-variant-numeric: tabular-nums lining-nums;
-         padding: var(--s6) var(--s4) var(--s8); display: flex; justify-content: center;
-         -webkit-text-size-adjust: 100%; }
-  /* min-width 0 or the wide tables set this flex item's minimum and the whole page overflows */
-  main { max-width: 60rem; width: 100%; min-width: 0; }
-  p { margin-bottom: var(--s3); max-width: var(--measure); }
+  html { scroll-behavior: smooth; -webkit-text-size-adjust: 100%; }
+  body { background: var(--bg); color: var(--ink); font: var(--t-body)/var(--base) var(--serif);
+         font-variant-numeric: tabular-nums lining-nums; }
+
+  /* The frame: the full 78rem until the viewport is too narrow, then the viewport less two margins. */
+  .page { width: min(var(--frame), calc(100% - 2 * var(--outer))); margin: 0 auto;
+          padding: var(--base) 0 calc(3 * var(--base));
+          display: grid; grid-template-columns: repeat(12, minmax(0, 1fr));
+          column-gap: var(--gutter); row-gap: 0; align-items: start; }
+  .page > * { min-width: 0; }
+
+  /* Zones. A block names the columns it occupies; rows are never named. A .z-side placed after a
+     .z-prose lands on the same row; the next .z-prose or .z-full starts a new one. */
+  .z-full  { grid-column: 1 / -1; }
+  .z-prose { grid-column: 1 / span 6; }
+  .z-wide  { grid-column: 1 / span 8; }
+  .z-side  { grid-column: 8 / span 5; }
+  .z-c1 { grid-column: 1 / span 4; } .z-c2 { grid-column: 5 / span 4; } .z-c3 { grid-column: 9 / span 4; }
+  .z-prose > p, .z-prose > ul, .z-prose > ol { max-width: var(--measure); }
+
+  p, ul, ol { margin-bottom: var(--base); }
+  ul, ol { margin-left: 1.25rem; }
+  .fine, .dim, .note, .more, figcaption { font-size: var(--t-small); line-height: var(--base-s); }
+  p.fine, p.dim, p.more, .note p, .note ul { margin-bottom: var(--base-s); }
+  .z-prose > :last-child, .z-side > :last-child, .note > :last-child { margin-bottom: 0; }
+  .z-prose, .z-side, .z-wide, figure.z-full, .tablewrap { margin-bottom: var(--base); }
+
   a { color: var(--accent); text-decoration: underline; text-decoration-thickness: 1px;
       text-underline-offset: .18em; text-decoration-color: var(--accent-rule); }
   a:hover { color: var(--accent-lit); text-decoration-color: var(--accent-lit); }
-  a:focus-visible, summary:focus-visible { outline: 2px solid var(--accent-lit); outline-offset: 3px; }
+  a:focus-visible, summary:focus-visible, input:focus-visible { outline: 2px solid var(--accent-lit); outline-offset: 3px; }
   b, strong { font-weight: 700; color: var(--ink); }
-
+  code { font: .85em var(--mono); color: var(--accent-lit); word-break: break-all; }
+  .mono { font-family: var(--mono); font-size: .9em; }
   .skip { position: absolute; left: -9999px; }
-  .skip:focus { left: var(--s4); top: var(--s4); background: var(--surface-2); padding: var(--s3); z-index: 9; }
+  .skip:focus { left: var(--outer); top: var(--half); background: var(--surface-2); padding: var(--half); z-index: 9; }
+  tr[id], .section[id], [id].col { scroll-margin-top: calc(2 * var(--base)); }
 
-  .masthead { display: flex; align-items: center; gap: var(--s4); flex-wrap: wrap;
-              border-bottom: 2px solid var(--rule); padding-bottom: var(--s4); margin-bottom: var(--s4); }
+  /* masthead: mark and wordmark left, the build stamp right; then the tab bar on a rule */
+  .masthead { grid-column: 1 / -1; display: flex; align-items: center; flex-wrap: wrap;
+              gap: var(--half) var(--base); padding-bottom: var(--half); }
   .mark { flex: none; }
-  .masthead h1 { font: 400 clamp(1.35rem, 4.4vw, 2rem)/1 var(--mono); letter-spacing: .26em;
-                 margin-right: -.26em; color: var(--accent); text-transform: uppercase; }
-  .masthead .where { margin-left: auto; flex: none; font: var(--t-cap)/1.4 var(--mono); letter-spacing: .12em;
-                     color: var(--ink-faint); text-transform: uppercase; text-align: right; }
-  nav { font: var(--t-cap)/1.9 var(--mono); color: var(--ink-faint); margin-bottom: var(--s6);
-        text-transform: uppercase; letter-spacing: .08em; }
-  nav a { text-decoration: none; }
-  nav a:hover { text-decoration: underline; }
-  nav span { opacity: .45; margin: 0 var(--s2); }
+  .masthead h1 { font: 400 1.75rem/1.75rem var(--mono); letter-spacing: .26em; margin-right: -.26em;
+                 text-transform: uppercase; }
+  .masthead h1 a { color: var(--accent); text-decoration: none; }
+  .masthead .where { margin-left: auto; text-align: right; font: var(--t-cap)/var(--base-s) var(--mono);
+                     letter-spacing: .1em; text-transform: uppercase; color: var(--ink-faint); }
+  .standfirst { grid-column: 1 / -1; font: var(--t-cap)/var(--base-s) var(--mono); color: var(--ink-faint);
+                margin: 0 0 var(--half); max-width: none; }
 
-  .tag { font: var(--t-lead)/1.5 var(--serif); max-width: 46ch; margin-bottom: var(--s4); }
-  .tag strong { color: var(--accent); }
-  .dim { color: var(--ink-soft); font-size: var(--t-fine); }
-  .fine { color: var(--ink-faint); font-size: var(--t-fine); line-height: 1.6; }
+  .tabs { grid-column: 1 / -1; display: flex; flex-wrap: wrap; column-gap: var(--base);
+          border-top: 1px solid var(--rule); border-bottom: 1px solid var(--rule-soft);
+          margin-bottom: calc(2 * var(--base));
+          font: var(--t-cap)/var(--base-s) var(--mono); letter-spacing: .1em; text-transform: uppercase; }
+  .tabs a { color: var(--ink-faint); text-decoration: none; margin-top: -1px; border-top: 2px solid transparent;
+            padding: calc(.375 * var(--base) - 1px) 0 calc(.375 * var(--base)); }
+  .tabs a:hover { color: var(--ink); }
+  .tabs a[aria-current="page"] { color: var(--accent); border-top-color: var(--accent); }
 
-  .stats { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1px; background: var(--rule-soft);
-           border: 1px solid var(--rule-soft); margin: var(--s5) 0 var(--s4); }
-  @media (min-width: 46rem) { .stats { grid-template-columns: repeat(4, 1fr); } }
-  .stat { background: var(--surface); padding: var(--s4); }
-  .stat b { display: block; font: 400 clamp(1.6rem, 4vw, 2.3rem)/1 var(--mono);
-            letter-spacing: -.02em; color: var(--ink); white-space: nowrap; }
-  .stat .held { color: var(--held); }
-  .stat span { display: block; margin-top: var(--s2); font: var(--t-cap)/1.35 var(--mono);
-               text-transform: uppercase; letter-spacing: .06em; color: var(--ink-faint); }
+  /* the opening: standfirst beside the pull figures */
+  .deck { font: var(--t-deck)/calc(1.25 * var(--base)) var(--serif); max-width: 40ch; margin-bottom: var(--base); }
+  .deck strong { color: var(--accent); font-weight: 400; }
+  .pulls { display: grid; grid-template-columns: repeat(auto-fit, minmax(11rem, 1fr)); gap: var(--base) var(--gutter); }
+  .pulls > .more { grid-column: 1 / -1; }
+  .pull b { display: block; font: 400 var(--t-pull)/calc(3 * var(--base)) var(--serif); color: var(--ink);
+            letter-spacing: -.02em; white-space: nowrap; }
+  .pull b.held { color: var(--held); } .pull b.warnk { color: var(--warn); }
+  .pull.long b { font-size: 2.75rem; line-height: calc(2 * var(--base)); }
+  .pull span { display: block; font: var(--t-small)/var(--base-s) var(--serif); color: var(--ink-soft); max-width: 26ch; }
+  .pull small { display: block; font: var(--t-cap)/var(--base-s) var(--mono); color: var(--ink-faint);
+                letter-spacing: .06em; text-transform: uppercase; }
 
-  h2 { font: 400 var(--t-h2)/1.25 var(--mono); color: var(--ink); margin: var(--s8) 0 var(--s4);
-       padding-bottom: var(--s3); border-bottom: 1px solid var(--rule);
-       display: flex; align-items: baseline; gap: var(--s3); }
-  h2::before { content: ""; flex: none; width: .5rem; height: .5rem; background: var(--accent);
-               transform: translateY(-.1em); }
-  h3 { font: 400 var(--t-cap)/1.4 var(--mono); text-transform: uppercase; letter-spacing: .1em;
-       color: var(--ink-faint); margin: var(--s6) 0 var(--s3); }
+  /* section heads: a rule across the frame, the head in the text column, the stamp in the margin */
+  .section { grid-column: 1 / -1; display: grid; grid-template-columns: subgrid; column-gap: var(--gutter);
+             align-items: baseline; margin: var(--base) 0 var(--base);
+             border-top: 1px solid var(--rule); padding-top: calc(var(--half) - 1px); }
+  .section h2 { grid-column: 1 / span 6; font: 400 var(--t-h2)/calc(1.5 * var(--base)) var(--serif); color: var(--ink); }
+  .section .stamp { grid-column: 8 / span 5; margin: 0; font: var(--t-cap)/var(--base-s) var(--mono); color: var(--ink-faint); }
+  .section .stamp b { color: var(--ink-soft); font-weight: 400; }
+  .tabs + .section, .standfirst + .section { margin-top: 0; }
+  h3 { font: var(--t-cap)/var(--base-s) var(--mono); letter-spacing: .1em; text-transform: uppercase;
+       color: var(--ink-faint); margin-bottom: 0; }
 
-  .lede { font: var(--t-lead)/1.5 var(--serif); max-width: 52ch; margin-bottom: var(--s4); }
+  .lede { font: var(--t-lede)/var(--base) var(--serif); }
   .lede b { color: var(--accent); }
+  .dim, .more, .note { color: var(--ink-soft); }
+  .fine { color: var(--ink-faint); }
+  .note ul { list-style: none; margin-left: 0; }
+  .note li { margin-bottom: 0; }
+  .warnk { color: var(--warn); } .held { color: var(--held); } .bad { color: var(--bad); }
 
-  figure { margin: var(--s5) 0 var(--s4); }
+  figure { margin: 0 0 var(--base); }
   figure svg { display: block; width: 100%; height: auto; }
-  figcaption { margin-top: var(--s3); color: var(--ink-faint); font-size: var(--t-fine);
-               line-height: 1.6; max-width: var(--measure); }
+  figcaption { margin-top: var(--half); color: var(--ink-faint); max-width: var(--measure); }
+  .curve, .history { overflow-x: auto; }
+  .curve svg, .history svg { min-width: 24rem; }
   .strip .kept { fill: var(--held); } .strip .warn { fill: var(--warn); } .strip .miss { fill: var(--bad); }
-  .strip .pending { fill: var(--ink-faint); }
-  .strip text, .curve text { font: 11px var(--mono); fill: var(--ink-faint); }
-  .curve .grid { stroke: var(--rule-soft); }
+  .strip .pending { fill: var(--ink-faint); } .strip .pull { fill: none; stroke: var(--ink-faint); stroke-width: 1.5; }
+  .strip a:focus-visible rect { stroke: var(--accent-lit); stroke-width: 2; }
+  .strip text, .curve text, .history text { font: 11px var(--mono); fill: var(--ink-faint); }
+  .curve .grid, .history .grid { stroke: var(--rule-soft); }
   .curve .line { fill: none; stroke: var(--accent); stroke-width: 2; }
-  .curve .dot { fill: var(--accent); }
+  .curve .dot, .history .live { fill: var(--accent); }
+  .history .hind { fill: none; stroke: var(--accent); stroke-width: 1.5; }
   .curve .val { fill: var(--ink); }
 
-  .tablewrap { overflow-x: auto; min-width: 0; margin: var(--s4) 0 var(--s3); border: 1px solid var(--rule);
-               background: var(--surface); scrollbar-color: var(--rule) transparent; scrollbar-width: thin; }
+  /* tables: hairlines, a serif caption, sticky head where the frame holds the table */
+  .tablewrap { grid-column: 1 / -1; overflow-x: auto; scrollbar-color: var(--rule) transparent; scrollbar-width: thin; }
   table { border-collapse: collapse; width: 100%; min-width: 42rem;
-          font: var(--t-cap)/1.45 var(--mono); font-variant-numeric: tabular-nums lining-nums; }
-  caption { text-align: left; padding: var(--s3) var(--s4); color: var(--ink-faint);
-            font: var(--t-cap)/1.5 var(--mono); border-bottom: 1px solid var(--rule); }
-  th, td { padding: .42rem .7rem; border-bottom: 1px solid var(--rule-soft);
+          font: var(--t-cap)/var(--base-s) var(--mono); font-variant-numeric: tabular-nums lining-nums; }
+  caption { caption-side: top; text-align: left; font: var(--t-body)/var(--base) var(--serif); color: var(--ink-soft);
+            padding-bottom: var(--half); position: sticky; left: 0; max-width: calc(100vw - 2 * var(--outer)); }
+  th, td { padding: .375rem .75rem .375rem 0; border-bottom: 1px solid var(--rule-soft);
            vertical-align: baseline; white-space: nowrap; text-align: left; }
-  thead th { background: var(--surface-2); color: var(--ink-faint); font-weight: 400;
-             font-size: .75rem; text-transform: uppercase; letter-spacing: .05em;
-             border-bottom: 1px solid var(--rule); position: sticky; top: 0; }
-  td.wrap { white-space: normal; min-width: 18rem; }
-  tbody tr:last-child td { border-bottom: 0; }
+  th:last-child, td:last-child { padding-right: 0; }
+  td.wrap, tr.gap td { white-space: normal; }
+  td.wrap { min-width: 9rem; } td.state { min-width: 18rem; } tr.gap td:nth-child(3) { min-width: 11rem; }
+  @media (max-width: 83.99rem) { td.wrap, tr.gap td { white-space: nowrap; } td.state { white-space: normal; } }
+  thead th { position: sticky; top: 0; z-index: 2; background: var(--bg); color: var(--ink-faint); font-weight: 400;
+             font-size: .75rem; letter-spacing: .06em; text-transform: uppercase; border-bottom: 1px solid var(--rule); }
   tbody tr:hover td { background: var(--surface-2); }
   .num { text-align: right; }
   td.mono { color: var(--ink-soft); }
-  tr.gap td { color: var(--bad); background: rgba(255,122,122,.07); font-weight: 700; }
+  tr.gap td { color: var(--bad); background: rgba(255, 122, 122, .07); font-weight: 700; }
   tr.warn td.state { color: var(--warn); }
-  .held { color: var(--held); } .bad { color: var(--bad); } .warnk { color: var(--warn); }
+  tr:target td { background: var(--surface-2); box-shadow: inset 3px 0 var(--accent); }
+  tbody.month tr.head th { padding-top: var(--base); font: var(--t-body)/var(--base) var(--serif); color: var(--ink);
+                            border-bottom: 1px solid var(--rule); white-space: normal; }
+  tbody.month tr.head th small { margin-left: var(--half); font: var(--t-cap)/var(--base-s) var(--mono); color: var(--ink-faint); }
+  tbody.month tr.head:hover th { background: none; }
+  .months { grid-column: 1 / -1; display: flex; flex-wrap: wrap; gap: 0 var(--base); margin-bottom: var(--base);
+            font: var(--t-cap)/var(--base-s) var(--mono); letter-spacing: .08em; text-transform: uppercase; color: var(--ink-faint); }
+  .months a { text-decoration: none; }
+  .months label { margin-left: auto; cursor: pointer; }
+  body.only-defects tbody tr:not(.gap):not(.warn):not(.hind):not(.head) { display: none; }
+  @media (min-width: 84rem) { .tablewrap { overflow: visible; } }
+  @media (max-width: 83.99rem) {
+    th:first-child, td:first-child { position: sticky; left: 0; z-index: 1; background: var(--bg); }
+    tr.gap td:first-child { background: #1a141e; }
+  }
 
-  details { border: 1px solid var(--rule-soft); background: var(--surface); padding: var(--s3) var(--s4);
-            margin: var(--s4) 0; }
-  summary { cursor: pointer; font: var(--t-cap)/1.5 var(--mono); text-transform: uppercase;
-            letter-spacing: .08em; color: var(--ink-faint); }
-  details[open] summary { margin-bottom: var(--s3); }
-  details p { font-size: var(--t-fine); color: var(--ink-soft); }
-  code { font: .85em var(--mono); color: var(--accent-lit); word-break: break-all; }
+  /* the foot: three columns under one rule each */
+  .col { font: var(--t-foot)/var(--base-s) var(--serif); color: var(--ink-soft); margin-top: var(--base);
+         border-top: 1px solid var(--rule-soft); padding-top: calc(var(--half) - 1px); }
+  .col h2 { font: 400 var(--t-lede)/var(--base) var(--serif); color: var(--ink); margin-bottom: var(--half); }
+  .col p, .col ul, .col ol { margin-bottom: var(--base-s); }
+  .col ol { margin-left: 1.25rem; }
+  .col > :last-child { margin-bottom: 0; }
 
-  ul { margin: 0 0 var(--s3) 1.1rem; max-width: var(--measure); }
-  li { margin-bottom: var(--s2); }
+  /* colophon: who runs this, the build line, and the caveats in two columns of the mono */
+  .colophon { grid-column: 1 / -1; display: grid; grid-template-columns: subgrid; column-gap: var(--gutter);
+              margin-top: calc(2 * var(--base)); border-top: 1px solid var(--rule); padding-top: calc(var(--base) - 1px);
+              font: var(--t-small)/var(--base-s) var(--serif); color: var(--ink-soft); }
+  .colophon .who { grid-column: 1 / span 6; }
+  .colophon .who h2 { font: 400 var(--t-lede)/var(--base) var(--serif); color: var(--ink); margin-bottom: var(--half); }
+  .colophon .build { grid-column: 8 / span 5; font-family: var(--mono); color: var(--ink-faint); }
+  .colophon .caveats { grid-column: 1 / -1; margin-top: var(--base); columns: 2; column-gap: var(--gutter);
+                       font-family: var(--mono); color: var(--ink-faint); }
+  .colophon p { margin-bottom: var(--base-s); }
+  .colophon .caveats p { max-width: none; }
 
-  footer { margin-top: var(--s8); padding-top: var(--s4); border-top: 1px solid var(--rule);
-           color: var(--ink-faint); font: var(--t-fine)/1.65 var(--mono); }
-  footer p { max-width: var(--measure); }
+  details { margin-bottom: var(--base); }
+  summary { cursor: pointer; font: var(--t-cap)/var(--base-s) var(--mono); letter-spacing: .1em;
+            text-transform: uppercase; color: var(--ink-faint); }
+  details[open] summary { margin-bottom: var(--half); }
+  details p { font-size: var(--t-small); line-height: var(--base-s); color: var(--ink-soft); }
+
+  /* Between 48rem and 72rem the frame is too narrow for a reading measure beside a chart, but wide
+     enough for text beside notes and figures, so the bands stay two-column on eight tracks. */
+  @media (max-width: 71.99rem) {
+    .page { grid-template-columns: repeat(8, minmax(0, 1fr)); }
+    .z-full, .z-wide, .z-c1, .z-c2, .z-c3 { grid-column: 1 / -1; }
+    .z-prose { grid-column: 1 / span 5; }
+    .z-side { grid-column: 6 / span 3; }
+    .section h2 { grid-column: 1 / span 5; } .section .stamp { grid-column: 6 / span 3; }
+    .colophon .who { grid-column: 1 / span 5; } .colophon .build { grid-column: 6 / span 3; }
+    :root { --t-pull: 3rem; }
+    .pull b { line-height: calc(2 * var(--base)); }
+    figure.z-side.curve { grid-column: 1 / -1; }
+  }
+  /* Under 48rem everything runs in one column at the measure, in source order. */
+  @media (max-width: 47.99rem) {
+    .page, .section, .colophon { grid-template-columns: minmax(0, 1fr); }
+    .z-full, .z-prose, .z-wide, .z-side, .z-c1, .z-c2, .z-c3, .section h2, .section .stamp,
+    .colophon .who, .colophon .build, .colophon .caveats { grid-column: 1 / -1; }
+    .z-prose, .z-wide, .z-side { max-width: var(--measure); }
+    .colophon .caveats { columns: 1; }
+    .z-side.note { border-left: 2px solid var(--rule-soft); padding-left: var(--base); }
+  }
+  @media (max-width: 40rem) {
+    html { font-size: 94%; }
+    :root { --t-h2: 1.75rem; --t-deck: 1.25rem; }
+    .deck { line-height: var(--base); }
+    .section h2 { line-height: calc(1.25 * var(--base)); }
+    .z-side.note { padding-left: var(--half); }
+  }
 
   @media print {
-    body { background: #fff; color: #000; padding: 0; display: block; }
-    :root { --ink: #000; --ink-soft: #333; --ink-faint: #444; --accent: #7a4a00;
-            --surface: #fff; --surface-2: #f2f2f2; --rule: #999; --rule-soft: #ccc; }
-    nav, .skip { display: none; }
+    :root { --ink: #000; --ink-soft: #333; --ink-faint: #444; --accent: #7a4a00; --accent-lit: #7a4a00; --bg: #fff;
+            --surface: #fff; --surface-2: #f2f2f2; --rule: #999; --rule-soft: #ccc;
+            --bad: #9b1c1c; --warn: #7a4a00; --held: #1b6b3a; }
+    body { background: #fff; color: #000; }
+    .page, .section, .colophon { display: block; width: auto; }
+    .tabs, .skip, .months { display: none; }
     .tablewrap { overflow: visible; } table { min-width: 0; font-size: 9pt; }
+    thead th, th:first-child, td:first-child { position: static; }
+    tr.warn td.state::before { content: "DEFECT: "; }
+    tr.gap td { -webkit-print-color-adjust: exact; print-color-adjust: exact; background: #fbe9e9; }
+    .colophon .caveats { columns: 1; }
     a { text-decoration: none; } h2 { break-after: avoid; }
   }
 </style>
 </head>
 <body>
-<a class="skip" href="#finding">Skip to the finding</a>
-<main>
-  <div class="masthead">
-    <svg class="mark" width="44" height="44" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" aria-hidden="true" focusable="false"><g fill="none" stroke="#ffb347" stroke-width="8"><path d="M40.60 11.75A22 22 0 0 0 11.46 24.12"/><path d="M10.00 31.62A22 22 0 0 0 32.38 54.00" opacity="0.52"/><path d="M39.88 52.54A22 22 0 0 0 52.25 23.40" opacity="0.26"/></g><circle cx="47.56" cy="16.44" r="6" fill="#ffb347"/><rect x="24" y="24" width="16" height="16" fill="#ffb347"/></svg>
-    <h1>Ephemera</h1>
-    <span class="where">ephemera.space<br>built 2026-09-06 17:25 UTC</span>
+<a class="skip" href="#finding">Skip to the content</a>
+<main class="page" id="main">
+  <header class="masthead">
+    <svg class="mark" width="40" height="40" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" aria-hidden="true" focusable="false"><g fill="none" stroke="#ffb347" stroke-width="8"><path d="M40.60 11.75A22 22 0 0 0 11.46 24.12"/><path d="M10.00 31.62A22 22 0 0 0 32.38 54.00" opacity="0.52"/><path d="M39.88 52.54A22 22 0 0 0 52.25 23.40" opacity="0.26"/></g><circle cx="47.56" cy="16.44" r="6" fill="#ffb347"/><rect x="24" y="24" width="16" height="16" fill="#ffb347"/></svg>
+    <h1><a href="./">Ephemera</a></h1>
+    <span class="where">ephemera.space<br>built 2026-09-06 20:20 UTC</span>
+  </header>
+
+<nav class="tabs" aria-label="Pages">
+  <a href="./" aria-current="page">Front page</a>
+  <a href="finding/">The finding</a>
+  <a href="scored/">Scored cycles</a>
+  <a href="archive/">The archive</a>
+  <a href="check/">Check it</a>
+  <a href="globe/" title="3D view: loads a 5.2 MB pack and needs WebGL">The globe</a>
+</nav>
+  <div class="z-prose">
+    <p class="deck">Every eight hours, SpaceX publishes where each of about eleven thousand Starlink satellites will be
+    for the next three days, and how sure it is. Eight hours later that set is gone, replaced by the next one.
+    <strong>Ephemera keeps them, and measures what the public catalogue can see.</strong></p>
+    <p class="fine">The files carry a full position and velocity uncertainty every sixty seconds, read from the feed
+    on 30 August 2026. Starlink is the only operator with public covariance; other operators enter via CelesTrak
+    SupGP without covariance.</p>
   </div>
-  <nav><a href="#finding">The finding</a><span>/</span><a href="#archive">The archive</a><span>/</span><a
-    href="globe/">The globe</a><span>/</span><a href="#check">Check it</a><span>/</span><a
-    href="#data">Data</a><span>/</span><a href="#next">Not here yet</a><span>/</span><a
-    href="#who">Who runs this</a></nav>
+  <aside class="z-side pulls" aria-label="Headline figures"><div class="pull"><b>88%</b><span>of the scored Starlink satellites within 10 km of the operator's trajectory, at file start</span><small>cycle d475086e7ca5, scored 2026-09-06 13:19 UTC</small></div><div class="pull"><b>1.9 km</b><span>median separation between the two predictions, at file start</span><small>same cycle, same instant</small></div></aside>
 
-  <p class="tag">Every eight hours, SpaceX publishes where each of about eleven thousand Starlink satellites
-  will be for the next three days, and how sure it is. Eight hours later that set is gone, replaced by the
-  next one. <strong>Ephemera keeps them, and measures what the public catalogue can see.</strong></p>
-  <p class="dim">The files carry a full position and velocity uncertainty every sixty seconds, read from the
-  feed on 30 August 2026. Starlink is the only operator with public covariance; other operators enter via
-  CelesTrak SupGP without covariance.</p>
+  <header class="z-full section" id="finding">
+    <h2>What the public catalogue can see</h2>
+    <p class="stamp">Headline figures from cycle <b>d475086e7ca5</b>, first seen 2026-09-06 12:27 UTC,
+    scored 2026-09-06 13:19 UTC against the public catalogue snapshot fetched
+    2026-09-06 12:10 UTC (12,811 element sets).</p>
+  </header>
+  <div class="z-prose">
+    <p class="lede">At the first instant of each operator file, the public catalogue puts <b>88%</b> of the scored Starlink satellites within 10 km of where the operator says they are. The middle satellite is <b>1.9 km</b> away, with the public information a median of 9 hours old. Where the public information is two to three days old, the two predictions are about <b>24 km</b> apart. Both sides are predictions, and most of that spread is planned trajectory changes the public catalogue cannot know about.</p>
+    <p>Everyone outside SpaceX sees Starlink through the public catalogue of orbital elements. Ephemera takes that public element set for each satellite, propagates it with SGP4, and compares it against the operator's own published trajectory for the same satellite at the same instants. The distance between the two is what this measures. It is not an error of the satellite, and it is not a statement about which side is right.</p>
+    <p class="fine"><b class="warnk">16</b> satellites (0.1%) are more than 1,000 km from the public prediction at publication, which is a large part of an orbit. For those the public element set is not on the operator's trajectory at all. Ephemera does not label any separation as a manoeuvre; that needs a detector this project has not built.</p>
+  </div>
+  <figure class="z-side curve"><svg viewBox="0 0 620 280" role="img" aria-label="Median separation between the public and operator predictions, rising with element age."><line class="grid" x1="50.0" y1="204.4" x2="580" y2="204.4"/><text x="42" y="208.4" text-anchor="end">1 km</text><line class="grid" x1="50.0" y1="154.4" x2="580" y2="154.4"/><text x="42" y="158.4" text-anchor="end">3 km</text><line class="grid" x1="50.0" y1="99.6" x2="580" y2="99.6"/><text x="42" y="103.6" text-anchor="end">10 km</text><line class="grid" x1="50.0" y1="49.6" x2="580" y2="49.6"/><text x="42" y="53.6" text-anchor="end">30 km</text><polyline class="line" points="50.0,199.3 156.0,174.2 262.0,139.8 368.0,98.0 474.0,59.2 580.0,42.7"/><circle class="dot" cx="50.0" cy="199.3" r="4"/><text class="val" x="50.0" y="187.3" text-anchor="middle">1.1</text><text x="50.0" y="258" text-anchor="middle">0-6 h</text><text x="50.0" y="272" text-anchor="middle" opacity=".7">3,531</text><circle class="dot" cx="156.0" cy="174.2" r="4"/><text class="val" x="156.0" y="162.2" text-anchor="middle">1.9</text><text x="156.0" y="258" text-anchor="middle">6-12 h</text><text x="156.0" y="272" text-anchor="middle" opacity=".7">7,607</text><circle class="dot" cx="262.0" cy="139.8" r="4"/><text class="val" x="262.0" y="127.8" text-anchor="middle">4.1</text><text x="262.0" y="258" text-anchor="middle">12-24 h</text><text x="262.0" y="272" text-anchor="middle" opacity=".7">19,398</text><circle class="dot" cx="368.0" cy="98.0" r="4"/><text class="val" x="368.0" y="86.0" text-anchor="middle">10.4</text><text x="368.0" y="258" text-anchor="middle">24-48 h</text><text x="368.0" y="272" text-anchor="middle" opacity=".7">44,126</text><circle class="dot" cx="474.0" cy="59.2" r="4"/><text class="val" x="474.0" y="47.2" text-anchor="middle">24.3</text><text x="474.0" y="258" text-anchor="middle">48-72 h</text><text x="474.0" y="272" text-anchor="middle" opacity=".7">43,833</text><circle class="dot" cx="580.0" cy="42.7" r="4"/><text class="val" x="580.0" y="30.7" text-anchor="middle">34.8</text><text x="580.0" y="258" text-anchor="middle">over 72 h</text><text x="580.0" y="272" text-anchor="middle" opacity=".7">24,683</text></svg><figcaption>Median separation between the two predictions, by how old the public catalogue's information was. Log scale; the second line under each point is how many comparisons it holds. Cycle d475086e7ca5, scored 2026-09-06 13:19 UTC.</figcaption></figure>
+  <div class="z-prose">
+    <p class="fine"><b>Feed health for this cycle.</b> 11,085 of 11,112 operator files scored. 27 have no entry in the public catalogue, of which 27 are new satellites the catalogue has not numbered yet; 0 marked decayed; 0 failed to propagate; 0 unreadable; 0 no longer matching the record. Public element sets were a mean of <b>12.5 h</b> old when the snapshot was taken (median 10.4 h, 90th percentile 23.5 h, 0 over 72 h). Averaged over every comparison, which run out to three days into the operator file, element age is 46.6 h: the difference is the file's own prediction horizon, not catalogue staleness. Space-Track: 46 snapshots held, last fetched 2026-09-06 20:10 UTC with 12,811 element sets. Poller heartbeat coverage over the last 24 h: 100.0%.</p>
+  </div>
+  <aside class="z-side note">
+    <h3>Further</h3>
+    <ul>
+      <li><a href="finding/">The full finding</a>: the same curve as numbers, by element age and by altitude shell, with the method.</li>
+      <li><a href="scored/">Every scored cycle</a>: one row per cycle, measured at the first instant of each file.</li>
+      <li><a href="globe/">See it on the globe</a>: every satellite drawn twice, the operator trajectory and the public catalogue's ghost (a 5.2 MB pack, needs WebGL).</li>
+    </ul>
+  </aside>
 
-  <div class="stats"><div class="stat"><b>88%</b><span>within 10 km at file start</span></div><div class="stat"><b>1.9 km</b><span>median miss at file start</span></div><div class="stat"><b>24</b><span>cycles kept</span></div><div class="stat"><b class=held>24 of 24</b><span>anchored in bitcoin</span></div></div>
-  <p class="fine">Headline figures from cycle d475086e7ca5, scored 2026-09-06 13:19 UTC, measured at the first instant of each operator file. Archive figures as of 2026-09-06 17:25 UTC.</p>
+  <header class="z-full section" id="archive">
+    <h2>The archive behind it</h2>
+    <p class="stamp">As of 2026-09-06 20:20 UTC. Poller: home (residential; single poller until poller A exists).</p>
+  </header>
+  <div class="z-prose">
+    <p>The operator side of every comparison comes from files this project caught before they were replaced. Each cycle is hashed file by file into one Merkle root, the root is stamped into the Bitcoin blockchain through OpenTimestamps, and the manifest plus ten files chosen by the root itself are pushed into the Wayback Machine so an independent copy exists that this project does not control.</p>
+    <p class="fine">As of <b>2026-09-06 20:20 UTC</b>: <b>24</b> cycles, <b>24</b> complete with roots, <b>24</b> anchored in Bitcoin, <b>7</b> with a defect in the independent copy. Source bytes archived: <b>539 GB</b> across 265,803 files as served. Stored gzipped as <b>222 GB</b>, of which 84 GB is on the poller's disk and 138 GB exists only in cold object storage. Cadence holds, meaning a set served longer than nine hours: <b>2</b>. Poller heartbeat coverage over the last 24 hours: <b>100.0%</b>. This project exists because SpaceX publishes the feed openly.</p>
+  </div>
+  <aside class="z-side pulls" aria-label="Archive figures"><div class="pull long"><b class="held">24 of 24</b><span>cycle roots anchored in Bitcoin through OpenTimestamps</span><small>as of 2026-09-06 20:20 UTC</small></div><div class="pull"><b class="warnk">7</b><span>cycles whose independent copy has a defect, printed on their rows</span><small>as of 2026-09-06 20:20 UTC</small></div><p class="more"><a href="archive/">The archive record</a>: every cycle, its root, its stamp, its independent copy, and the daily roots.</p></aside>
+  <figure class="z-full strip"><svg viewBox="-6 0 1012 74" role="img" aria-label="Every archived cycle on a time axis, one block each, coloured by state; each block links to its row."><a href="archive/#c-d475086e7ca5"><rect class="kept" x="928.5" y="8.0" width="7" height="40" rx="1"><title>d475086e7ca5 first seen 2026-09-06 12:27 UTC, 11,112 files</title></rect></a><a href="archive/#c-035065e7ec46"><rect class="kept" x="886.8" y="8.0" width="7" height="40" rx="1"><title>035065e7ec46 first seen 2026-09-06 04:22 UTC, 11,113 files</title></rect></a><a href="archive/#c-8c1b1c3f5d69"><rect class="kept" x="846.1" y="8.0" width="7" height="40" rx="1"><title>8c1b1c3f5d69 first seen 2026-09-05 20:29 UTC, 11,113 files</title></rect></a><a href="archive/#c-a68f33d2d2f7"><rect class="kept" x="804.9" y="8.0" width="7" height="40" rx="1"><title>a68f33d2d2f7 first seen 2026-09-05 12:29 UTC, 11,114 files</title></rect></a><a href="archive/#c-729590130225"><rect class="kept" x="765.1" y="8.0" width="7" height="40" rx="1"><title>729590130225 first seen 2026-09-05 04:46 UTC, 11,114 files</title></rect></a><a href="archive/#c-5ccb4ed5d13a"><rect class="kept" x="729.7" y="8.0" width="7" height="40" rx="1"><title>5ccb4ed5d13a first seen 2026-09-04 21:54 UTC, 11,115 files</title></rect></a><a href="archive/#c-03329cf37459"><rect class="kept" x="684.2" y="8.0" width="7" height="40" rx="1"><title>03329cf37459 first seen 2026-09-04 13:04 UTC, 11,116 files</title></rect></a><a href="archive/#c-500ae4c3a713"><rect class="kept" x="648.4" y="8.0" width="7" height="40" rx="1"><title>500ae4c3a713 first seen 2026-09-04 06:08 UTC, 11,114 files</title></rect></a><a href="archive/#c-f842b22c4167"><rect class="kept" x="627.9" y="8.0" width="7" height="40" rx="1"><title>f842b22c4167 first seen 2026-09-04 02:10 UTC, 11,116 files</title></rect></a><a href="archive/#c-a39dfdfee0fd"><rect class="kept" x="555.7" y="8.0" width="7" height="40" rx="1"><title>a39dfdfee0fd first seen 2026-09-03 12:09 UTC, 11,117 files</title></rect></a><a href="archive/#c-1e726fe006d9"><rect class="kept" x="514.8" y="8.0" width="7" height="40" rx="1"><title>1e726fe006d9 first seen 2026-09-03 04:13 UTC, 11,118 files</title></rect></a><a href="archive/#c-b37c74c03907"><rect class="kept" x="487.4" y="8.0" width="7" height="40" rx="1"><title>b37c74c03907 first seen 2026-09-02 22:54 UTC, 10,682 files</title></rect></a><a href="archive/#c-3572d8775913"><rect class="kept" x="473.7" y="8.0" width="7" height="40" rx="1"><title>3572d8775913 first seen 2026-09-02 20:15 UTC, 11,118 files</title></rect></a><a href="archive/#c-f5112bb77a2a"><rect class="kept" x="431.8" y="8.0" width="7" height="40" rx="1"><title>f5112bb77a2a first seen 2026-09-02 12:08 UTC, 11,092 files</title></rect></a><a href="archive/#c-0a85a65d5dbe"><rect class="warn" x="391.0" y="8.0" width="7" height="40" rx="1"><title>0a85a65d5dbe first seen 2026-09-02 04:12 UTC, 11,093 files, the archived manifest copy is another cycle&#x27;s file</title></rect></a><a href="archive/#c-51d5c047650a"><rect class="kept" x="366.2" y="8.0" width="7" height="40" rx="1"><title>51d5c047650a first seen 2026-09-01 23:24 UTC, 10,902 files</title></rect></a><a href="archive/#c-7414ea02eac1"><rect class="warn" x="349.4" y="8.0" width="7" height="40" rx="1"><title>7414ea02eac1 first seen 2026-09-01 20:09 UTC, 11,093 files, the archived manifest copy is another cycle&#x27;s file</title></rect></a><a href="archive/#c-7be3c2c6fc2c"><rect class="kept" x="309.6" y="8.0" width="7" height="40" rx="1"><title>7be3c2c6fc2c first seen 2026-09-01 12:26 UTC, 11,094 files</title></rect></a><a href="archive/#c-d03dc522da18"><rect class="warn" x="257.7" y="8.0" width="7" height="40" rx="1"><title>d03dc522da18 first seen 2026-09-01 02:22 UTC, 11,093 files, 6 of 10 sample captures were lost</title></rect></a><a href="archive/#c-513b92c4683e"><rect class="warn" x="226.8" y="8.0" width="7" height="40" rx="1"><title>513b92c4683e first seen 2026-08-31 20:22 UTC, 10,481 files, the manifest was never captured</title></rect></a><a href="archive/#c-1d424255c9ae"><rect class="kept" x="182.3" y="8.0" width="7" height="40" rx="1"><title>1d424255c9ae first seen 2026-08-31 11:44 UTC, 8,568 files</title></rect></a><a href="archive/#c-5e4faf0f4e4e"><rect class="warn" x="143.2" y="8.0" width="7" height="40" rx="1"><title>5e4faf0f4e4e first seen 2026-08-31 04:09 UTC, 9,353 files, no independent copy was made</title></rect></a><a href="archive/#c-92e6892c0f3e"><rect class="warn" x="101.4" y="8.0" width="7" height="40" rx="1"><title>92e6892c0f3e first seen 2026-08-30 20:02 UTC, 9,111 files, no independent copy was made</title></rect></a><a href="archive/#c-72bcd7796b49"><rect class="warn" x="67.9" y="8.0" width="7" height="40" rx="1"><title>72bcd7796b49 first seen 2026-08-30 13:32 UTC, 17,861 files, no independent copy was made</title></rect></a><line x1="121.8" y1="8.0" x2="121.8" y2="52" stroke="#283152"/><text x="121.8" y="66" text-anchor="middle">31 Aug</text><line x1="245.5" y1="8.0" x2="245.5" y2="52" stroke="#283152"/><text x="245.5" y="66" text-anchor="middle">01 Sep</text><line x1="369.3" y1="8.0" x2="369.3" y2="52" stroke="#283152"/><text x="369.3" y="66" text-anchor="middle">02 Sep</text><line x1="493.0" y1="8.0" x2="493.0" y2="52" stroke="#283152"/><text x="493.0" y="66" text-anchor="middle">03 Sep</text><line x1="616.8" y1="8.0" x2="616.8" y2="52" stroke="#283152"/><text x="616.8" y="66" text-anchor="middle">04 Sep</text><line x1="740.5" y1="8.0" x2="740.5" y2="52" stroke="#283152"/><text x="740.5" y="66" text-anchor="middle">05 Sep</text><line x1="864.3" y1="8.0" x2="864.3" y2="52" stroke="#283152"/><text x="864.3" y="66" text-anchor="middle">06 Sep</text></svg><figcaption>The last 30 days, one block per cycle on a time axis. Green is complete and independently copied, grey is complete with the copy still pending, amber is complete but the independent copy failed, red is an incomplete pull, and a hollow block is a pull still running. Gaps in the spacing are the feed's own cadence. Each block links to its row. As of 2026-09-06 20:20 UTC.</figcaption></figure>
 
-  <h2 id="finding">What the public catalogue can see</h2>
-  <p class="lede">At the first instant of each operator file, the public catalogue puts <b>88%</b> of the scored Starlink satellites within 10 km of where the operator says they are. The middle satellite is <b>1.9 km</b> away, with the public information a median of 9 hours old. Where the public information is two to three days old, the two predictions are about <b>24 km</b> apart. Both sides are predictions, and most of that spread is planned trajectory changes the public catalogue cannot know about.</p>
-  <p>Everyone outside SpaceX sees Starlink through the public catalogue of orbital elements. Ephemera takes
-  that public element set for each satellite, propagates it with SGP4, and compares it against the operator's
-  own published trajectory for the same satellite at the same instants. The distance between the two is what
-  this section measures. It is not an error of the satellite, and it is not a statement about which side is
-  right.</p>
-  <p class="dim"><b class="warnk">16</b> satellites (0.1%) are more than 1,000 km from the public prediction at publication, which is a large part of an orbit. For those the public element set is not on the operator's trajectory at all. Ephemera does not label any separation as a manoeuvre; that needs a detector this project has not built.</p>
-  <p class="fine">Latest scored cycle <span class="mono">d475086e7ca5</span>, first seen
-  2026-09-06 12:27 UTC, scored 2026-09-06 13:19 UTC against the public
-  catalogue snapshot fetched 2026-09-06 12:10 UTC
-  (12,811 element sets). <a href="globe/">See it on the globe</a>: every satellite drawn twice, the operator trajectory and the public catalogue's ghost.</p>
-  <figure class="curve"><svg viewBox="0 0 1000 300" role="img" aria-label="Median separation between the public and operator predictions, rising with element age."><line class="grid" x1="54.0" y1="221.5" x2="954" y2="221.5"/><text x="46" y="225.5" text-anchor="end">1 km</text><line class="grid" x1="54.0" y1="166.9" x2="954" y2="166.9"/><text x="46" y="170.9" text-anchor="end">3 km</text><line class="grid" x1="54.0" y1="107.1" x2="954" y2="107.1"/><text x="46" y="111.1" text-anchor="end">10 km</text><line class="grid" x1="54.0" y1="52.5" x2="954" y2="52.5"/><text x="46" y="56.5" text-anchor="end">30 km</text><polyline class="line" points="54.0,215.9 234.0,188.5 414.0,151.0 594.0,105.3 774.0,63.0 954.0,45.0"/><circle class="dot" cx="54.0" cy="215.9" r="4"/><text class="val" x="54.0" y="203.9" text-anchor="middle">1.1</text><text x="54.0" y="278" text-anchor="middle">0-6 h</text><text x="54.0" y="292" text-anchor="middle" opacity=".7">3,531</text><circle class="dot" cx="234.0" cy="188.5" r="4"/><text class="val" x="234.0" y="176.5" text-anchor="middle">1.9</text><text x="234.0" y="278" text-anchor="middle">6-12 h</text><text x="234.0" y="292" text-anchor="middle" opacity=".7">7,607</text><circle class="dot" cx="414.0" cy="151.0" r="4"/><text class="val" x="414.0" y="139.0" text-anchor="middle">4.1</text><text x="414.0" y="278" text-anchor="middle">12-24 h</text><text x="414.0" y="292" text-anchor="middle" opacity=".7">19,398</text><circle class="dot" cx="594.0" cy="105.3" r="4"/><text class="val" x="594.0" y="93.3" text-anchor="middle">10.4</text><text x="594.0" y="278" text-anchor="middle">24-48 h</text><text x="594.0" y="292" text-anchor="middle" opacity=".7">44,126</text><circle class="dot" cx="774.0" cy="63.0" r="4"/><text class="val" x="774.0" y="51.0" text-anchor="middle">24.3</text><text x="774.0" y="278" text-anchor="middle">48-72 h</text><text x="774.0" y="292" text-anchor="middle" opacity=".7">43,833</text><circle class="dot" cx="954.0" cy="45.0" r="4"/><text class="val" x="954.0" y="33.0" text-anchor="middle">34.8</text><text x="954.0" y="278" text-anchor="middle">over 72 h</text><text x="954.0" y="292" text-anchor="middle" opacity=".7">24,683</text></svg><figcaption>Median separation between the two predictions, by how old the public catalogue's information was. Log scale; the second line under each point is how many comparisons it holds. Cycle d475086e7ca5, scored 2026-09-06 13:19 UTC.</figcaption></figure>
-  <div class="tablewrap"><table>
-    <caption>The same curve as numbers, for cycle d475086e7ca5.</caption>
-    <thead><tr><th scope="col">element age</th><th scope="col" class="num">comparisons</th>
-      <th scope="col" class="num">median km</th><th scope="col" class="num">90th pct km</th>
-      <th scope="col" class="num">within 10 km</th><th scope="col" class="num">within 30 km</th></tr></thead>
-    <tbody><tr><td>0-6 h</td><td class="num">3,531</td><td class="num">1.1</td><td class="num">7.5</td><td class="num">92%</td><td class="num">99%</td></tr><tr><td>6-12 h</td><td class="num">7,607</td><td class="num">1.9</td><td class="num">11.5</td><td class="num">89%</td><td class="num">97%</td></tr><tr><td>12-24 h</td><td class="num">19,398</td><td class="num">4.1</td><td class="num">21.0</td><td class="num">79%</td><td class="num">92%</td></tr><tr><td>24-48 h</td><td class="num">44,126</td><td class="num">10.4</td><td class="num">60.6</td><td class="num">49%</td><td class="num">82%</td></tr><tr><td>48-72 h</td><td class="num">43,833</td><td class="num">24.3</td><td class="num">157.7</td><td class="num">34%</td><td class="num">56%</td></tr><tr><td>over 72 h</td><td class="num">24,683</td><td class="num">34.8</td><td class="num">169.3</td><td class="num">29%</td><td class="num">48%</td></tr></tbody>
-  </table></div>
-  <p class="fine">Element age is how old the public catalogue's information was at the instant compared. It runs
-  larger than catalogue staleness because a single operator file predicts three days ahead, so a comparison late
-  in the file is both further ahead and matched against an older element set. The two effects are not separated
-  within one cycle, which is why the headline above uses only the first instant of each file.</p>
-  <h3>By altitude shell</h3><div class="tablewrap"><table><caption>Same comparisons, split by where the satellite is. The lowest shell is where satellites are being raised and lowered, so its spread is the widest.</caption><thead><tr><th scope="col">shell</th><th scope="col" class="num">comparisons</th><th scope="col" class="num">median km</th><th scope="col" class="num">within 10 km</th></tr></thead><tbody><tr><td>under 400 km</td><td class="num">14,085</td><td class="num">97.4</td><td class="num">23%</td></tr><tr><td>400-500 km</td><td class="num">118,811</td><td class="num">10.4</td><td class="num">49%</td></tr><tr><td>500-600 km</td><td class="num">10,282</td><td class="num">3.8</td><td class="num">71%</td></tr></tbody></table></div>
-  <p class="fine"><b>Feed health for this cycle.</b> 11,085 of 11,112 operator files scored. 27 have no entry in the public catalogue, of which 27 are new satellites the catalogue has not numbered yet; 0 marked decayed; 0 failed to propagate; 0 unreadable. Public element sets were a mean of <b>12.5 h</b> old when the snapshot was taken (median 10.4 h, 90th percentile 23.5 h, 0 over 72 h). Averaged over every comparison, which run out to three days into the operator file, element age is 46.6 h: the difference is the file's own prediction horizon, not catalogue staleness. Space-Track: 44 snapshots held, last fetched 2026-09-06 16:10 UTC with 12,811 element sets. Poller heartbeat coverage over the last 24 h: 100.0%.</p>
-  <h3>Every scored cycle</h3>
-  <div class="tablewrap"><table>
-    <caption>One row per cycle, measured at the first instant of each file so the rows are comparable.
-    Newest first.</caption>
-    <thead><tr><th scope="col">cycle first seen</th><th scope="col">cycle</th>
-      <th scope="col" class="num">scored</th><th scope="col">pairing</th>
-      <th scope="col" class="num">median age h</th><th scope="col" class="num">median km</th>
-      <th scope="col" class="num">within 10 km</th><th scope="col" class="num">lost</th></tr></thead>
-    <tbody><tr><td>2026-09-06 12:27</td><td class="mono">d475086e7ca5</td><td class="num">11,085</td><td class="">scored live</td><td class="num">8.5</td><td class="num">1.9</td><td class="num">88%</td><td class="num">16</td></tr><tr><td>2026-09-06 04:22</td><td class="mono">035065e7ec46</td><td class="num">11,086</td><td class="">scored live</td><td class="num">11.3</td><td class="num">2.3</td><td class="num">88%</td><td class="num">11</td></tr><tr><td>2026-09-05 20:29</td><td class="mono">8c1b1c3f5d69</td><td class="num">11,086</td><td class="">scored live</td><td class="num">8.5</td><td class="num">2.1</td><td class="num">90%</td><td class="num">10</td></tr><tr><td>2026-09-05 12:29</td><td class="mono">a68f33d2d2f7</td><td class="num">11,087</td><td class="">scored live</td><td class="num">7.2</td><td class="num">1.9</td><td class="num">88%</td><td class="num">5</td></tr><tr><td>2026-09-05 04:46</td><td class="mono">729590130225</td><td class="num">11,087</td><td class="">scored live</td><td class="num">11.3</td><td class="num">2.6</td><td class="num">86%</td><td class="num">4</td></tr><tr><td>2026-09-04 21:54</td><td class="mono">5ccb4ed5d13a</td><td class="num">11,088</td><td class="">scored live</td><td class="num">10.1</td><td class="num">2.4</td><td class="num">86%</td><td class="num">9</td></tr><tr><td>2026-09-04 13:04</td><td class="mono">03329cf37459</td><td class="num">11,089</td><td class="">scored live</td><td class="num">9.6</td><td class="num">2.3</td><td class="num">86%</td><td class="num">5</td></tr><tr><td>2026-09-04 06:08</td><td class="mono">500ae4c3a713</td><td class="num">11,087</td><td class="">scored live</td><td class="num">13.4</td><td class="num">3.2</td><td class="num">82%</td><td class="num">5</td></tr></tbody>
-  </table></div>
-  <p class="fine">Showing the 8 most recent of 20 scored cycles; the rest are in ledger.json. 
-  A cycle marked <b class="warnk">scored with hindsight</b> was matched against a catalogue snapshot fetched
-  after it, because the cycle predates this project's catalogue feed. Its element sets already know what the
-  satellite did during the file, so its numbers look better than they should and are not comparable with the
-  rest. 7 of 20 scored cycles are in that state, and the count only falls from here.</p>
-  <details><summary>How this was measured</summary>
-    <p>Public element set (Space-Track gp snapshot) propagated with SGP4 (skyfield 1.55, python-sgp4 2.27; TEME to GCRS by Skyfield, taken as J2000) and differenced against the operator-published trajectory (EME2000) at the file&#x27;s own record epochs every 360 min. Distance in km; components in the operator&#x27;s radial/in-track/cross-track frame; altitude is geocentric radius minus 6378.137 km; element age is evaluation epoch minus element-set epoch, signed. A comparison beyond 1000 km is counted as lost: the public set is not on the file&#x27;s trajectory at all. at_file_start takes each satellite once, at the first epoch of its own file, which is the only cut comparable between cycles. Both inputs are predictions; the operator&#x27;s includes planned trajectory changes the public set cannot know about.</p>
-    <p>Snapshot <span class="mono">20260906T121016Z_c57c820c4e54</span>. Evaluation every
-    360 minutes across each file's own record epochs. Public element sets come from
-    Space-Track.org and are redistributed under Space-Track's blanket approval for basic space situational
-    awareness data, with citation.</p>
-  </details>
+  <section class="z-c1 col" id="check">
+    <h2>Check it yourself</h2>
+    <p>None of this is worth anything if you have to take my word for it. Three things you can run right now, for cycle <span class="mono">d475086e7ca5</span>:</p><ol><li>Fetch the <a href="https://web.archive.org/web/20260906131208id_/https://api.starlink.com/public-files/ephemerides/MANIFEST.txt?cycle=d475086e7ca5">independent copy</a> of the file list and hash it. SHA-256 <code>d475086e7ca567d2875a495ecb22352cb702f8b6aad7502416eb849b592696f2</code>.</li><li>Recompute which ten files were copied: <code>int(sha256(root + ":" + k), 16) mod n</code> for k from 0 to 9.</li><li>Run <code>ots verify root.txt.ots</code> against a Bitcoin node: this root is in block 965772.</li></ol><p class="more"><a href="check/">The full procedure</a>, and what still needs the data release.</p>
+  </section>
+  <section class="z-c2 col" id="data">
+    <h2>Data, licence and citation</h2>
+    <p><a href="ledger.json">ledger.json</a> carries every cycle, its root, its attestation, its witness state and
+    every scored summary, as the JSON the pages are built from. The globe's per-cycle pack is at
+    <a href="globe/pack.json">globe/pack.json</a> (5.2 MB). The full per-comparison
+    rows, about 140,000 per cycle, are available on request.</p>
+    <p>Code is MIT. Figures derived by this project are intended for CC BY 4.0. The raw SpaceX files carry no stated
+    licence; a written request went to SpaceX on 31 August 2026 and is unanswered as of this build.
+    <a href="check/#data">Licence and citation in full.</a></p>
+  </section>
+  <section class="z-c3 col" id="next">
+    <h2>Not here yet</h2>
+    <p>7 days of archive is not a long record, and this page should not pretend otherwise. What is not running:</p>
+    <ul>
+      <li>A second poller on a different machine in a different country.</li>
+      <li>The self-consistency scoreboard, prediction against later prediction.</li>
+      <li>The manoeuvre census: three differently defined counts side by side, never a ratio.</li>
+      <li>Other constellations, via CelesTrak SupGP without covariance.</li>
+      <li>A restore drill from cold storage.</li>
+    </ul>
+  </section>
 
-  <h2 id="archive">The archive behind it</h2>
-  <p>The operator side of every comparison above comes from files this project caught before they were
-  replaced. Each cycle is hashed file by file into one Merkle root, the root is stamped into the Bitcoin
-  blockchain through OpenTimestamps, and the manifest plus ten files chosen by the root itself are pushed
-  into the Wayback Machine so an independent copy exists that this project does not control.</p>
-  <p class="fine">As of <b>2026-09-06 17:25 UTC</b>: <b>24</b> cycles,
-  <b>24</b> complete with roots, <b>24</b> anchored in Bitcoin,
-  <b>7</b> with a defect in the independent copy. Source bytes archived:
-  <b>539 GB</b> across 265,803 files as served. Stored gzipped as
-  <b>222 GB</b>, of which 84 GB is on the poller's disk and
-  138 GB exists only in cold object storage. Cadence holds, meaning a set served
-  longer than nine hours: <b>2</b>. Poller heartbeat coverage over the last 24 hours:
-  <b>100.0%</b>. This project exists because SpaceX publishes the feed openly.</p>
-  <figure class="strip"><svg viewBox="-6 0 1012 74" role="img" aria-label="Every archived cycle on a time axis, one block each, coloured by state."><line class="grid" x1="67.5" y1="8.0" x2="67.5" y2="52" stroke="#283152"/><text x="67.5" y="66" text-anchor="middle">31 Aug</text><line class="grid" x1="208.7" y1="8.0" x2="208.7" y2="52" stroke="#283152"/><text x="208.7" y="66" text-anchor="middle">01 Sep</text><line class="grid" x1="349.9" y1="8.0" x2="349.9" y2="52" stroke="#283152"/><text x="349.9" y="66" text-anchor="middle">02 Sep</text><line class="grid" x1="491.1" y1="8.0" x2="491.1" y2="52" stroke="#283152"/><text x="491.1" y="66" text-anchor="middle">03 Sep</text><line class="grid" x1="632.3" y1="8.0" x2="632.3" y2="52" stroke="#283152"/><text x="632.3" y="66" text-anchor="middle">04 Sep</text><line class="grid" x1="773.5" y1="8.0" x2="773.5" y2="52" stroke="#283152"/><text x="773.5" y="66" text-anchor="middle">05 Sep</text><line class="grid" x1="914.7" y1="8.0" x2="914.7" y2="52" stroke="#283152"/><text x="914.7" y="66" text-anchor="middle">06 Sep</text><rect class="kept" x="988.0" y="8.0" width="7" height="40" rx="1"><title>d475086e7ca5 first seen 2026-09-06 12:27 UTC, 11,112 files</title></rect><rect class="kept" x="940.5" y="8.0" width="7" height="40" rx="1"><title>035065e7ec46 first seen 2026-09-06 04:22 UTC, 11,113 files</title></rect><rect class="kept" x="894.1" y="8.0" width="7" height="40" rx="1"><title>8c1b1c3f5d69 first seen 2026-09-05 20:29 UTC, 11,113 files</title></rect><rect class="kept" x="847.0" y="8.0" width="7" height="40" rx="1"><title>a68f33d2d2f7 first seen 2026-09-05 12:29 UTC, 11,114 files</title></rect><rect class="kept" x="801.6" y="8.0" width="7" height="40" rx="1"><title>729590130225 first seen 2026-09-05 04:46 UTC, 11,114 files</title></rect><rect class="kept" x="761.2" y="8.0" width="7" height="40" rx="1"><title>5ccb4ed5d13a first seen 2026-09-04 21:54 UTC, 11,115 files</title></rect><rect class="kept" x="709.2" y="8.0" width="7" height="40" rx="1"><title>03329cf37459 first seen 2026-09-04 13:04 UTC, 11,116 files</title></rect><rect class="kept" x="668.5" y="8.0" width="7" height="40" rx="1"><title>500ae4c3a713 first seen 2026-09-04 06:08 UTC, 11,114 files</title></rect><rect class="kept" x="645.1" y="8.0" width="7" height="40" rx="1"><title>f842b22c4167 first seen 2026-09-04 02:10 UTC, 11,116 files</title></rect><rect class="kept" x="562.7" y="8.0" width="7" height="40" rx="1"><title>a39dfdfee0fd first seen 2026-09-03 12:09 UTC, 11,117 files</title></rect><rect class="kept" x="515.9" y="8.0" width="7" height="40" rx="1"><title>1e726fe006d9 first seen 2026-09-03 04:13 UTC, 11,118 files</title></rect><rect class="kept" x="484.7" y="8.0" width="7" height="40" rx="1"><title>b37c74c03907 first seen 2026-09-02 22:54 UTC, 10,682 files</title></rect><rect class="kept" x="469.1" y="8.0" width="7" height="40" rx="1"><title>3572d8775913 first seen 2026-09-02 20:15 UTC, 11,118 files</title></rect><rect class="kept" x="421.3" y="8.0" width="7" height="40" rx="1"><title>f5112bb77a2a first seen 2026-09-02 12:08 UTC, 11,092 files</title></rect><rect class="warn" x="374.7" y="8.0" width="7" height="40" rx="1"><title>0a85a65d5dbe first seen 2026-09-02 04:12 UTC, 11,093 files, the archived manifest copy is another cycle&#x27;s file</title></rect><rect class="kept" x="346.4" y="8.0" width="7" height="40" rx="1"><title>51d5c047650a first seen 2026-09-01 23:24 UTC, 10,902 files</title></rect><rect class="warn" x="327.3" y="8.0" width="7" height="40" rx="1"><title>7414ea02eac1 first seen 2026-09-01 20:09 UTC, 11,093 files, the archived manifest copy is another cycle&#x27;s file</title></rect><rect class="kept" x="281.9" y="8.0" width="7" height="40" rx="1"><title>7be3c2c6fc2c first seen 2026-09-01 12:26 UTC, 11,094 files</title></rect><rect class="warn" x="222.7" y="8.0" width="7" height="40" rx="1"><title>d03dc522da18 first seen 2026-09-01 02:22 UTC, 11,093 files, 6 of 10 sample captures were lost</title></rect><rect class="warn" x="187.4" y="8.0" width="7" height="40" rx="1"><title>513b92c4683e first seen 2026-08-31 20:22 UTC, 10,481 files, the manifest was never captured</title></rect><rect class="kept" x="136.5" y="8.0" width="7" height="40" rx="1"><title>1d424255c9ae first seen 2026-08-31 11:44 UTC, 8,568 files</title></rect><rect class="warn" x="92.0" y="8.0" width="7" height="40" rx="1"><title>5e4faf0f4e4e first seen 2026-08-31 04:09 UTC, 9,353 files, no independent copy was made</title></rect><rect class="warn" x="44.2" y="8.0" width="7" height="40" rx="1"><title>92e6892c0f3e first seen 2026-08-30 20:02 UTC, 9,111 files, no independent copy was made</title></rect><rect class="warn" x="6.0" y="8.0" width="7" height="40" rx="1"><title>72bcd7796b49 first seen 2026-08-30 13:32 UTC, 17,861 files, no independent copy was made</title></rect></svg><figcaption>Every cycle kept, on a time axis. Green is complete and independently copied, grey is complete with the copy still pending, amber is complete but the independent copy failed, red is an incomplete pull. Gaps in the spacing are the feed's own cadence. As of 2026-09-06 17:25 UTC.</figcaption></figure>
-  <div class="tablewrap"><table>
-    <caption>The most recent 19 cycles, plus every older cycle with a defect.
-    Amber marks a cycle whose own pull succeeded but whose independent copy did not.</caption>
-    <thead><tr><th scope="col">first seen (utc)</th><th scope="col">cycle</th>
-      <th scope="col" class="num">files</th><th scope="col" class="num">source gb</th>
-      <th scope="col">merkle root</th><th scope="col">opentimestamps</th>
-      <th scope="col">wayback machine</th><th scope="col">held</th></tr></thead>
-    <tbody><tr class=""><td>2026-09-06 12:27</td><td class="mono">d475086e7ca5</td><td class="num">11,112</td><td class="num">22.6</td><td class="mono">8a4fb2ab793a</td><td>block 965772</td><td class="state wrap">manifest ok, 10/10 samples verified</td><td>spool and cold storage</td></tr><tr class=""><td>2026-09-06 04:22</td><td class="mono">035065e7ec46</td><td class="num">11,113</td><td class="num">22.6</td><td class="mono">6d11a07bef42</td><td>block 965726</td><td class="state wrap">manifest ok, 10/10 samples verified</td><td>spool and cold storage</td></tr><tr class=""><td>2026-09-05 20:29</td><td class="mono">8c1b1c3f5d69</td><td class="num">11,113</td><td class="num">22.6</td><td class="mono">3c4a8c8cfd57</td><td>block 965673</td><td class="state wrap">manifest ok, 10/10 samples verified</td><td>spool and cold storage</td></tr><tr class=""><td>2026-09-05 12:29</td><td class="mono">a68f33d2d2f7</td><td class="num">11,114</td><td class="num">22.6</td><td class="mono">48ed9eb75f81</td><td>block 965621</td><td class="state wrap">manifest ok, 10/10 samples verified</td><td>spool and cold storage</td></tr><tr class=""><td>2026-09-05 04:46</td><td class="mono">729590130225</td><td class="num">11,114</td><td class="num">22.6</td><td class="mono">b8f760c6427c</td><td>block 965572</td><td class="state wrap">manifest ok, 10/10 samples verified</td><td>spool and cold storage</td></tr><tr class=""><td>2026-09-04 21:54</td><td class="mono">5ccb4ed5d13a</td><td class="num">11,115</td><td class="num">22.6</td><td class="mono">19859c99cb34</td><td>block 965538</td><td class="state wrap">manifest ok, 10/10 samples verified</td><td>spool and cold storage</td></tr><tr class=""><td>2026-09-04 13:04</td><td class="mono">03329cf37459</td><td class="num">11,116</td><td class="num">22.6</td><td class="mono">6c8e500c2ea1</td><td>block 965484</td><td class="state wrap">manifest ok, 10/10 samples verified</td><td>spool and cold storage</td></tr><tr class=""><td>2026-09-04 06:08</td><td class="mono">500ae4c3a713</td><td class="num">11,114</td><td class="num">22.6</td><td class="mono">6ad94b42b7e0</td><td>block 965447</td><td class="state wrap">manifest ok, 10/10 samples verified</td><td>spool and cold storage</td></tr><tr class=""><td>2026-09-04 02:10</td><td class="mono">f842b22c4167</td><td class="num">11,116</td><td class="num">22.6</td><td class="mono">496637697c70</td><td>block 965419</td><td class="state wrap">manifest ok, 10/10 samples verified</td><td>spool and cold storage</td></tr><tr class=""><td>2026-09-03 12:09</td><td class="mono">a39dfdfee0fd</td><td class="num">11,117</td><td class="num">22.6</td><td class="mono">7ff9f56e1cc1</td><td>block 965318</td><td class="state wrap">manifest ok, 10/10 samples verified</td><td>cold storage only</td></tr><tr class=""><td>2026-09-03 04:13</td><td class="mono">1e726fe006d9</td><td class="num">11,118</td><td class="num">22.5</td><td class="mono">449b43de57fa</td><td>block 965263</td><td class="state wrap">manifest ok, 10/10 samples verified</td><td>cold storage only</td></tr><tr class=""><td>2026-09-02 22:54</td><td class="mono">b37c74c03907</td><td class="num">10,682</td><td class="num">21.7</td><td class="mono">3b31bf7689b6</td><td>block 965241</td><td class="state wrap">manifest ok, 10/10 samples verified</td><td>cold storage only</td></tr><tr class="warn"><td>2026-09-02 04:12</td><td class="mono">0a85a65d5dbe</td><td class="num">11,093</td><td class="num">22.5</td><td class="mono">381a895ce84e</td><td>block 965124</td><td class="state wrap">manifest COPY DOES NOT MATCH (the archived copy is another cycle's manifest), 10/10 samples verified</td><td>cold storage only</td></tr><tr class="warn"><td>2026-09-01 20:09</td><td class="mono">7414ea02eac1</td><td class="num">11,093</td><td class="num">22.5</td><td class="mono">58ba872f5507</td><td>block 965085</td><td class="state wrap">manifest COPY DOES NOT MATCH (the archived copy is another cycle's manifest), 10/10 samples verified</td><td>cold storage only</td></tr><tr class="warn"><td>2026-09-01 02:22</td><td class="mono">d03dc522da18</td><td class="num">11,093</td><td class="num">22.5</td><td class="mono">5d69cd6dc0c9</td><td>block 964976</td><td class="state wrap">manifest ok, 4/10 samples verified, 6 lost</td><td>cold storage only</td></tr><tr class="warn"><td>2026-08-31 20:22</td><td class="mono">513b92c4683e</td><td class="num">10,481</td><td class="num">21.3</td><td class="mono">476705cfc526</td><td>block 964940</td><td class="state wrap">manifest NEVER CAPTURED, 0/10 samples verified, 10 lost</td><td>cold storage only</td></tr><tr class="warn"><td>2026-08-31 04:09</td><td class="mono">5e4faf0f4e4e</td><td class="num">9,353</td><td class="num">19.0</td><td class="mono">91ca361b797a</td><td>block 964904</td><td class="state wrap">no independent copy: cycle superseded before witnessing completed: 1 manifest + 10 sample captures never made</td><td>cold storage only</td></tr><tr class="warn"><td>2026-08-30 20:02</td><td class="mono">92e6892c0f3e</td><td class="num">9,111</td><td class="num">18.5</td><td class="mono">8c653747b19a</td><td>block 964904</td><td class="state wrap">no independent copy: cycle superseded before witnessing completed: 1 manifest + 10 sample captures never made</td><td>cold storage only</td></tr><tr class="warn"><td>2026-08-30 13:32</td><td class="mono">72bcd7796b49</td><td class="num">17,861</td><td class="num">36.2</td><td class="mono">677d3043ef28</td><td>block 964904</td><td class="state wrap">no independent copy: cycle superseded before witnessing completed: 1 manifest + 10 sample captures never made</td><td>cold storage only</td></tr></tbody>
-  </table></div>
-  <p class="fine">5 older cycles are not shown here and are all in ledger.json. 
-  Method: built from each cycle&#x27;s cycle.json, witness.json and ship.json in the poller&#x27;s spool; coverage is the fraction of the last 24 h&#x27;s minutes with a watcher heartbeat under 10 minutes old (D18); a cadence hold is a manifest first-seen gap over 9 h; source bytes are the responses as served, stored bytes are the gzipped archive objects the shipper recorded. Poller: home (residential; single poller until poller A exists).</p>
-  <h3>Daily roots</h3>
-  <div class="tablewrap"><table>
-    <caption>A root over each day's complete cycle roots, built shortly after midnight UTC and stamped
-    separately.</caption>
-    <thead><tr><th scope="col">date</th><th scope="col">root</th><th scope="col" class="num">leaves</th>
-      <th scope="col">opentimestamps</th><th scope="col">note</th></tr></thead>
-    <tbody><tr><td>2026-09-05</td><td class="mono">8f896c1c8a23</td><td class="num">3</td><td>block 965689</td><td class="wrap">none</td></tr><tr><td>2026-09-04</td><td class="mono">8ad055e396ee</td><td class="num">4</td><td>block 965543</td><td class="wrap">none</td></tr><tr><td>2026-09-03</td><td class="mono">d123271b2835</td><td class="num">2</td><td>block 965400</td><td class="wrap">none</td></tr><tr><td>2026-09-02</td><td class="mono">647c6951a21d</td><td class="num">4</td><td>block 965241</td><td class="wrap">none</td></tr><tr><td>2026-09-01</td><td class="mono">7ecb7906d01b</td><td class="num">3</td><td>block 965103</td><td class="wrap">excluded 51d5c047650a (still pulling when the root was built)</td></tr><tr><td>2026-08-31</td><td class="mono">948ecce3337d</td><td class="num">3</td><td>block 964963</td><td class="wrap">none</td></tr><tr><td>2026-08-30</td><td class="mono">1d7acc715f62</td><td class="num">2</td><td>block 964927</td><td class="wrap">none</td></tr></tbody>
-  </table></div>
-  <p class="fine">A cycle still pulling at midnight is left out of that day's root and stays out. It keeps its
-  own cycle root and its own OpenTimestamps proof, so nothing is unwitnessed, but it sits under no daily
-  root.</p>
-
-  <h2 id="check">Check it yourself</h2>
-  <p>None of this is worth anything if you have to take my word for it. Here is what you can run right now,
-  and what still needs data this site does not publish yet. I would rather say which is which.</p>
-  <p><b>Fetch an independent copy and hash it.</b> Each cycle's file list is pushed into the Wayback Machine
-  the moment it is caught, so a copy exists that I do not control. For cycle
-  <span class="mono">d475086e7ca5</span> that copy is
-  <a href="https://web.archive.org/web/20260906131208id_/https://api.starlink.com/public-files/ephemerides/MANIFEST.txt?cycle=d475086e7ca5">here</a>, and its SHA-256 is
-  <code>d475086e7ca567d2875a495ecb22352cb702f8b6aad7502416eb849b592696f2</code>. Download it, hash it, and you have checked that the
-  list of files I claim to have caught is the list the source was actually serving. Ten files from each
-  cycle are copied the same way, and every copy URL and digest is in
-  <a href="ledger.json">ledger.json</a>.</p>
-  <p><b>Check which ten files were copied.</b> I do not get to choose them. File number
-  <code>int(sha256(root + ":" + k), 16) mod n</code> for k from 0 to 9, where n is the number of files in
-  the list you just downloaded. Run that and you get the same ten names this site published.</p>
-  <p><b>Check the timestamp.</b> Each cycle root is stamped through OpenTimestamps. Running
-  <code>ots verify root.txt.ots</code> against a Bitcoin node shows this cycle's root committed in block
-  965772, which fixes the latest moment it could have been written. Nobody,
-  including me, can move a root backwards once it is in a block. The proof files ship with the data
-  release.</p>
-  <p class="fine">What you cannot do from this page alone is rebuild the Merkle root, because that needs the
-  SHA-256 of every one of the 11,112 files in the cycle and this site publishes the
-  summary rather than the full digest list. Those digests, and the exact byte format of the root file, come
-  with the data release described below. The construction is the plain one: leaves are the file digests in
-  manifest order, adjacent pairs are hashed as SHA-256 of the two digests joined end to end, and an odd
-  trailing node is paired with a copy of itself.</p>
-
-  <h2 id="data">Data, licence and citation</h2>
-  <ul>
-    <li><a href="ledger.json">ledger.json</a> carries every cycle, its root, its attestation, its witness
-    state and every scored summary on this page, as machine-readable JSON. It is the same file the page is
-    built from.</li>
-    <li>The globe's per-cycle pack, with the element sets and the scored separations, is at
-    <a href="globe/pack.json">globe/pack.json</a> for the newest scored cycle.</li>
-    <li>The full per-comparison rows, about 140,000 per cycle, are kept in the archive and are available on
-    request. They move to public object storage once the storage layer is finished.</li>
-    <li>The raw operator files are held as published, hashed and witnessed. They are not re-published here
-    while the licence question below is open.</li>
-  </ul>
-  <p class="fine"><b>Licence.</b> Code is MIT. Figures derived by this project are intended for CC BY 4.0.
-  The raw SpaceX files carry no stated licence; a written request went to SpaceX on 31 August 2026 and is
-  unanswered as of this build, and any file comes down on request. Public element sets come from
-  Space-Track.org and are redistributed under Space-Track's blanket approval for basic space situational
-  awareness data, with citation.</p>
-  <p class="fine"><b>Citation.</b> Ryan, K. (2026). <i>Ephemera: an archive of the public Starlink
-  ephemerides and a daily measure of public catalogue visibility.</i> https://ephemera.space, retrieved
-  2026-09-06 17:25 UTC.</p>
-
-  <h2 id="next">Not here yet</h2>
-  <p>7 days of archive is not a long record, and this page should not pretend otherwise. What is running:
-  the poller, the hashing, the witnessing, cold storage, and the catalogue comparison above. What is not:</p>
-  <ul>
-    <li>A second poller on a different machine in a different country, so that a gap in one is visible in the
-    other rather than invisible in both.</li>
-    <li>The self-consistency scoreboard, which compares an earlier operator prediction with a later one from
-    the same operator, normalised by the earlier uncertainty.</li>
-    <li>The manoeuvre census, which will publish three differently defined counts side by side and never a
-    ratio against anyone's declared figure.</li>
-    <li>Other constellations, which reach this project through CelesTrak SupGP without covariance.</li>
-    <li>A restore drill from cold storage, proving a cycle can be pulled back and re-verified end to end.</li>
-  </ul>
-
-  <h2 id="who">Who runs this</h2>
-  <p>Kira Ryan, on my own time, on a home computer, with no funding and no
-  affiliation to any operator or agency. If a figure here is wrong I want to know, and corrections get
-  published rather than quietly fixed.</p>
-  <p class="fine"><a href="mailto:KiraRyan27@gmail.com">KiraRyan27@gmail.com</a> &nbsp;
-  <a href="https://www.linkedin.com/in/kira-ryan/">linkedin.com/in/kira-ryan</a></p>
-
-  <footer>
-    <p>Operator ephemerides are predictions, not observations. Public GP data is too noisy to test
-    sub-metre covariance; the self-consistency scoreboard measures prediction-versus-later-prediction.
-    That scoreboard is not built yet. Inputs are archived by this project and witnessed by OpenTimestamps
-    and the Wayback Machine; they are not re-fetchable from the source after one cycle. Every figure above
-    carries the build time it was true at. Gapped or lost items are printed, never hidden.</p>
+  <footer class="z-full colophon">
+    <div class="who">
+      <h2 id="who">Who runs this</h2>
+      <p>Kira Ryan, on my own time, on a home computer, with no funding and no affiliation to any operator or agency. If a figure here is wrong I want to know, and corrections get published rather than quietly fixed.</p>
+      <p><a href="mailto:KiraRyan27@gmail.com">KiraRyan27@gmail.com</a> &nbsp;
+      <a href="https://www.linkedin.com/in/kira-ryan/">linkedin.com/in/kira-ryan</a></p>
+    </div>
+    <div class="build">
+      <p>Built 2026-09-06 20:20 UTC from <a href="ledger.json">ledger.json</a>. Every figure on this page
+      carries the time it was true at.</p>
+      <p>Cite as: Ryan, K. (2026). Ephemera: an archive of the public Starlink ephemerides and a daily measure
+      of public catalogue visibility. https://ephemera.space, retrieved 2026-09-06 20:20 UTC.</p>
+    </div>
+    <div class="caveats"><p>Operator ephemerides are predictions, not observations. Starlink is the only operator with public covariance; other operators enter via CelesTrak SupGP without covariance. Public GP data is too noisy to test sub-metre covariance; the self-consistency scoreboard measures prediction-versus-later-prediction. That scoreboard is not built yet. Inputs are archived by this project and witnessed by OpenTimestamps and the Wayback Machine; they are not re-fetchable from the source after one cycle. Every figure above carries the build time it was true at. Gapped or lost items are printed, never hidden.</p></div>
   </footer>
+
 </main>
 </body>
 </html>
