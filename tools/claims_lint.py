@@ -35,7 +35,6 @@ REGISTER = REPO / "DOCS" / "claims-register.md"
 # PLAN.md discuss the prohibited wording by name and are not scanned.
 DEFAULT_TARGETS = ["README.md", "VERIFY.md", "archive/README.md", "probes", "web/dist", "bulletins"]
 # Built pages that must each carry every required caveat, relative to a scanned directory.
-CAVEAT_PAGES = ("index.html", "globe/index.html")
 ALLOW_MARKER = "<!-- lint:allow -->"   # a line carrying this is skipped (a deliberate mention)
 CONTEXT_BOUND = {"confirms", "refutes"}
 CONTEXT_WORDS = re.compile(r"\b(fcc|spacex|manoeuvre|maneuver|manoeuvres|maneuvers|declared|census|207,152)\b", re.I)
@@ -93,9 +92,10 @@ def missing_caveats(root: Path, required: list[str]) -> list[tuple[Path, str]]:
     """Required caveats absent from a built page. Whitespace-insensitive, because the generator
     wraps prose wherever the template happens to break."""
     out = []
-    for rel in CAVEAT_PAGES:
-        page = root / rel
-        if not page.is_file():
+    # Every built page, wherever it sits. A fixed list of two paths was fine while the site was
+    # two pages; a page added later would have shipped with no caveat check at all.
+    for page in sorted(root.rglob("*.html")):
+        if not page.is_file() or page.name.startswith("probe"):
             continue
         flat = " ".join(page.read_text(encoding="utf-8", errors="replace").split())
         for caveat in required:
