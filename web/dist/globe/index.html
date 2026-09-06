@@ -122,6 +122,11 @@
   const COLOURS = [[1, "#7fd4ff"], [10, "#ffe08a"], [30, "#ff8c42"], [1000, "#ff4d5e"], [Infinity, "#c86bff"]];
   const LOST_KM = 1000;
   const fmt = (n) => n.toLocaleString("en-GB");
+  // Satellite names come from an outside catalogue and are written into innerHTML below, so they
+  // are escaped here. The pack builder also constrains them, and both are deliberate: the page
+  // should not depend on the feed being well behaved.
+  const esc = (v) => String(v).replace(/[&<>"']/g, (c) =>
+    ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]);
   const iso = (d) => d.toISOString().slice(0, 16).replace("T", " ") + " UTC";
 
   function unit(a) { const n = Math.hypot(a[0], a[1], a[2]); return [a[0] / n, a[1] / n, a[2] / n]; }
@@ -212,8 +217,8 @@
       + " set is not on the file's trajectory at all. They are listed apart from the smaller separations"
       + " below because they would otherwise fill the list. Ephemera does not label any separation as a"
       + " manoeuvre; that needs a detector this project has not built.</p>" : "")
-      + worst.map((s, i) => '<button data-i="' + i + '"><span class="mono">' + s.id + "</span> "
-      + s.name + ' <span class="mono">' + s.max.toFixed(1) + " km at most</span></button>").join("");
+      + worst.map((s, i) => '<button data-i="' + i + '"><span class="mono">' + esc(s.id) + "</span> "
+      + esc(s.name) + ' <span class="mono">' + s.max.toFixed(1) + " km at most</span></button>").join("");
     $("worst").addEventListener("click", (ev) => {
       const b = ev.target.closest("button");
       if (b) select(worst[Number(b.dataset.i)], true);
@@ -291,7 +296,7 @@
     }
     function describe(s, date) {
       const st = s.last, age = (date - s.setEpoch) / 3.6e6;
-      $("sel").innerHTML = "<b>" + s.name + "</b> <span class=\"mono\">NORAD " + s.id + "</span><br>"
+      $("sel").innerHTML = "<b>" + esc(s.name) + "</b> <span class=\"mono\">NORAD " + esc(s.id) + "</span><br>"
         + (st ? "distance between the two predictions now: <b>" + st.dist.toFixed(2) + " km</b><br>"
             + "<span class=\"mono\">radial " + st.ric[0].toFixed(2) + " km, in-track " + st.ric[1].toFixed(2) + " km, cross-track " + st.ric[2].toFixed(2) + " km</span><br>" : "")
         + "element set epoch " + iso(s.setEpoch) + " (age " + age.toFixed(1) + " h at this instant)<br>"
