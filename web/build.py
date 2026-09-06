@@ -953,6 +953,11 @@ def main(argv: list[str] | None = None) -> int:
     ap.add_argument("--spool", type=Path, required=True)
     ap.add_argument("--out", type=Path, default=REPO / "web" / "dist")
     args = ap.parse_args(argv)
+    if not args.spool.is_dir():
+        # A missing spool must not become an empty site. glob() over a path that is not there
+        # returns nothing, and nothing renders as "the archive holds 0 cycles", which is a lie.
+        print(f"build: spool {args.spool} is not a directory - refusing to build an empty site", file=sys.stderr)
+        return 2
     ledger = build_ledger(args.spool, utc_now())
     args.out.mkdir(parents=True, exist_ok=True)
     (args.out / "ledger.json").write_text(json.dumps(ledger, indent=1), encoding="utf-8")
