@@ -11,13 +11,24 @@
 <style>
   :root { --bg: #090c17; --ink: #eceada; --dim: #b9b7c6; --accent: #ffb347; --line: #3d4a75; --bad: #ff7a7a;
           --km-1: #7fd4ff; --km-10: #ffe08a; --km-30: #ff8c42; --km-far: #ff4d5e; --km-lost: #c86bff;
+          --rule-soft: #283152; --ink-faint: #8f8da0;
+          --mono: ui-monospace, 'Cascadia Mono', 'SF Mono', Menlo, Consolas, 'DejaVu Sans Mono', monospace;
           --deck: 108px; }     /* the band Cesium's timeline and clock occupy at the bottom */
   * { margin: 0; padding: 0; box-sizing: border-box; }
   html, body { height: 100%; background: var(--bg); color: var(--ink); font: 14px/1.5 Georgia, 'Times New Roman', serif; overflow: hidden; }
   #globe { position: absolute; inset: 0; }
   .panel { position: absolute; background: rgba(12, 15, 29, .86); border: 1px solid var(--line); border-radius: 4px; padding: .8rem .95rem; backdrop-filter: blur(3px); }
-  #top { top: .8rem; left: .8rem; max-width: 26rem; }
-  #top h1 { font-family: ui-monospace, 'Cascadia Code', Consolas, monospace; font-size: .9rem; font-weight: 400; letter-spacing: .45em; color: var(--accent); text-transform: uppercase; margin-bottom: .45rem; }
+  #top { top: .8rem; left: .8rem; max-width: 26rem; max-height: 46vh; overflow: auto; }
+  /* The shared chrome, injected by web/build.py in place of the marker comment below. These rules
+     are self-contained: the site stylesheet's --base tokens do not exist here. */
+  #top .chrome { display: flex; align-items: center; gap: .5rem; margin-bottom: .35rem; }
+  #top .chrome .wm { font: 400 .95rem/1 var(--mono); letter-spacing: .3em; color: var(--accent); text-transform: uppercase; }
+  #top .tabs { display: flex; flex-wrap: wrap; gap: 0 .8rem; margin: .2rem 0 .55rem; padding-bottom: .3rem;
+               border-bottom: 1px solid var(--rule-soft); font: .68rem/1.7 var(--mono); letter-spacing: .08em; text-transform: uppercase; }
+  #top .tabs a { color: var(--ink-faint); text-decoration: none; border-bottom: 2px solid transparent; }
+  #top .tabs a:hover { color: var(--ink); }
+  #top .tabs a[aria-current="page"] { color: var(--accent); border-bottom-color: var(--accent); }
+  #top h1 { font-family: var(--mono); font-size: .9rem; font-weight: 400; letter-spacing: .45em; color: var(--accent); text-transform: uppercase; margin-bottom: .45rem; }
   #top h1 a { color: var(--dim); letter-spacing: .1em; font-size: .7rem; text-decoration: none; margin-left: .6rem; }
   #status { font-family: ui-monospace, Consolas, monospace; font-size: .78rem; color: var(--ink); line-height: 1.45; }
   #instant { font-family: ui-monospace, Consolas, monospace; font-size: .78rem; color: var(--dim); margin-top: .35rem; }
@@ -63,8 +74,17 @@
 <div id="globe"></div>
 
 <div id="top" class="panel">
-  <h1>Ephemera globe <a href="../">scoreboard and archive record</a></h1>
-  <div id="status">Loading the latest globe pack.</div>
+  <div class="chrome"><svg class="mark" width="22" height="22" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" aria-hidden="true" focusable="false"><g fill="none" stroke="#ffb347" stroke-width="8"><path d="M40.60 11.75A22 22 0 0 0 11.46 24.12"/><path d="M10.00 31.62A22 22 0 0 0 32.38 54.00" opacity="0.52"/><path d="M39.88 52.54A22 22 0 0 0 52.25 23.40" opacity="0.26"/></g><circle cx="47.56" cy="16.44" r="6" fill="#ffb347"/><rect x="24" y="24" width="16" height="16" fill="#ffb347"/></svg> <span class="wm">Ephemera</span>
+  <nav class="tabs" aria-label="Pages">
+    <a href=".././">Front page</a>
+    <a href="../finding/">The finding</a>
+    <a href="../scored/">Scored cycles</a>
+    <a href="../archive/">The archive</a>
+    <a href="../check/">Check it</a>
+    <a href="../globe/" aria-current="page" title="3D view: loads a 5.2 MB pack and needs WebGL">The globe</a>
+  </nav></div>
+  <h1>Ephemera globe</h1>
+  <div id="status">Loading the globe pack (5.2 MB, WebGL needed).</div>
   <div id="instant"></div>
   <div id="webgl"></div>
   <div class="legend">

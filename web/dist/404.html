@@ -1,0 +1,293 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Ephemera: Not found</title>
+<meta name="description" content="There is no page at this address.">
+<link rel="canonical" href="https://ephemera.space/404.html">
+<link rel="icon" href="/icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="/icon-180.png">
+<meta name="theme-color" content="#090c17">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Ephemera">
+<meta property="og:title" content="Ephemera: Not found">
+<meta property="og:url" content="https://ephemera.space/404.html">
+<meta property="og:description" content="There is no page at this address.">
+<meta property="og:image" content="https://ephemera.space/social.png">
+<meta name="twitter:card" content="summary_large_image">
+<style>
+  :root {
+    --bg: #090c17; --surface: #111629; --surface-2: #171d33;
+    --rule: #3d4a75; --rule-soft: #283152;
+    --ink: #eceada; --ink-soft: #b9b7c6; --ink-faint: #8f8da0;
+    --accent: #ffb347; --accent-lit: #ffcd80; --accent-rule: #9d7034;
+    --held: #6fd39a; --warn: #ffb347; --bad: #ff7a7a;
+    --km-1: #7fd4ff; --km-10: #ffe08a; --km-30: #ff8c42; --km-far: #ff4d5e; --km-lost: #c86bff;
+    --serif: Georgia, 'Iowan Old Style', Charter, 'Palatino Linotype', 'Times New Roman', serif;
+    --mono: ui-monospace, 'Cascadia Mono', 'SF Mono', Menlo, Consolas, 'DejaVu Sans Mono', monospace;
+
+    /* One baseline for everything vertical. Named --base, not --line: the globe page uses --line
+       for a colour, and the tab bar is injected into that page. */
+    --base: 1.75rem; --half: .875rem; --base-s: 1.3125rem;
+    --frame: 78rem; --outer: clamp(1.25rem, 6vw, 5rem); --gutter: var(--base); --measure: 60ch;
+    --t-body: 1.125rem; --t-lede: 1.25rem; --t-deck: 1.5rem; --t-h2: 2rem; --t-foot: .9375rem;
+    --t-small: .875rem; --t-cap: .8125rem; --t-pull: 4.375rem;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; -webkit-text-size-adjust: 100%; }
+  body { background: var(--bg); color: var(--ink); font: var(--t-body)/var(--base) var(--serif);
+         font-variant-numeric: tabular-nums lining-nums; }
+
+  /* The frame: the full 78rem until the viewport is too narrow, then the viewport less two margins. */
+  .page { width: min(var(--frame), calc(100% - 2 * var(--outer))); margin: 0 auto;
+          padding: var(--base) 0 calc(3 * var(--base));
+          display: grid; grid-template-columns: repeat(12, minmax(0, 1fr));
+          column-gap: var(--gutter); row-gap: 0; align-items: start; }
+  .page > * { min-width: 0; }
+
+  /* Zones. A block names the columns it occupies; rows are never named. A .z-side placed after a
+     .z-prose lands on the same row; the next .z-prose or .z-full starts a new one. */
+  .z-full  { grid-column: 1 / -1; }
+  .z-prose { grid-column: 1 / span 6; }
+  .z-wide  { grid-column: 1 / span 8; }
+  .z-side  { grid-column: 8 / span 5; }
+  .z-c1 { grid-column: 1 / span 4; } .z-c2 { grid-column: 5 / span 4; } .z-c3 { grid-column: 9 / span 4; }
+  .z-prose > p, .z-prose > ul, .z-prose > ol { max-width: var(--measure); }
+
+  p, ul, ol { margin-bottom: var(--base); }
+  ul, ol { margin-left: 1.25rem; }
+  .fine, .dim, .note, .more, figcaption { font-size: var(--t-small); line-height: var(--base-s); }
+  p.fine, p.dim, p.more, .note p, .note ul { margin-bottom: var(--base-s); }
+  .z-prose > :last-child, .z-side > :last-child, .note > :last-child { margin-bottom: 0; }
+  .z-prose, .z-side, .z-wide, figure.z-full, .tablewrap { margin-bottom: var(--base); }
+
+  a { color: var(--accent); text-decoration: underline; text-decoration-thickness: 1px;
+      text-underline-offset: .18em; text-decoration-color: var(--accent-rule); }
+  a:hover { color: var(--accent-lit); text-decoration-color: var(--accent-lit); }
+  a:focus-visible, summary:focus-visible, input:focus-visible { outline: 2px solid var(--accent-lit); outline-offset: 3px; }
+  b, strong { font-weight: 700; color: var(--ink); }
+  code { font: .85em var(--mono); color: var(--accent-lit); word-break: break-all; }
+  .mono { font-family: var(--mono); font-size: .9em; }
+  .skip { position: absolute; left: -9999px; }
+  .skip:focus { left: var(--outer); top: var(--half); background: var(--surface-2); padding: var(--half); z-index: 9; }
+  tr[id], .section[id], [id].col { scroll-margin-top: calc(2 * var(--base)); }
+
+  /* masthead: mark and wordmark left, the build stamp right; then the tab bar on a rule */
+  .masthead { grid-column: 1 / -1; display: flex; align-items: center; flex-wrap: wrap;
+              gap: var(--half) var(--base); padding-bottom: var(--half); }
+  .mark { flex: none; }
+  .masthead h1 { font: 400 1.75rem/1.75rem var(--mono); letter-spacing: .26em; margin-right: -.26em;
+                 text-transform: uppercase; }
+  .masthead h1 a { color: var(--accent); text-decoration: none; }
+  .masthead .where { margin-left: auto; text-align: right; font: var(--t-cap)/var(--base-s) var(--mono);
+                     letter-spacing: .1em; text-transform: uppercase; color: var(--ink-faint); }
+  .standfirst { grid-column: 1 / -1; font: var(--t-cap)/var(--base-s) var(--mono); color: var(--ink-faint);
+                margin: 0 0 var(--half); max-width: none; }
+
+  .tabs { grid-column: 1 / -1; display: flex; flex-wrap: wrap; column-gap: var(--base);
+          border-top: 1px solid var(--rule); border-bottom: 1px solid var(--rule-soft);
+          margin-bottom: calc(2 * var(--base));
+          font: var(--t-cap)/var(--base-s) var(--mono); letter-spacing: .1em; text-transform: uppercase; }
+  .tabs a { color: var(--ink-faint); text-decoration: none; margin-top: -1px; border-top: 2px solid transparent;
+            padding: calc(.375 * var(--base) - 1px) 0 calc(.375 * var(--base)); }
+  .tabs a:hover { color: var(--ink); }
+  .tabs a[aria-current="page"] { color: var(--accent); border-top-color: var(--accent); }
+
+  /* the opening: standfirst beside the pull figures */
+  .deck { font: var(--t-deck)/calc(1.25 * var(--base)) var(--serif); max-width: 40ch; margin-bottom: var(--base); }
+  .deck strong { color: var(--accent); font-weight: 400; }
+  .pulls { display: grid; grid-template-columns: repeat(auto-fit, minmax(11rem, 1fr)); gap: var(--base) var(--gutter); }
+  .pulls > .more { grid-column: 1 / -1; }
+  .pull b { display: block; font: 400 var(--t-pull)/calc(3 * var(--base)) var(--serif); color: var(--ink);
+            letter-spacing: -.02em; white-space: nowrap; }
+  .pull b.held { color: var(--held); } .pull b.warnk { color: var(--warn); }
+  .pull.long b { font-size: 2.75rem; line-height: calc(2 * var(--base)); }
+  .pull span { display: block; font: var(--t-small)/var(--base-s) var(--serif); color: var(--ink-soft); max-width: 26ch; }
+  .pull small { display: block; font: var(--t-cap)/var(--base-s) var(--mono); color: var(--ink-faint);
+                letter-spacing: .06em; text-transform: uppercase; }
+
+  /* section heads: a rule across the frame, the head in the text column, the stamp in the margin */
+  .section { grid-column: 1 / -1; display: grid; grid-template-columns: subgrid; column-gap: var(--gutter);
+             align-items: baseline; margin: var(--base) 0 var(--base);
+             border-top: 1px solid var(--rule); padding-top: calc(var(--half) - 1px); }
+  .section h2 { grid-column: 1 / span 6; font: 400 var(--t-h2)/calc(1.5 * var(--base)) var(--serif); color: var(--ink); }
+  .section .stamp { grid-column: 8 / span 5; margin: 0; font: var(--t-cap)/var(--base-s) var(--mono); color: var(--ink-faint); }
+  .section .stamp b { color: var(--ink-soft); font-weight: 400; }
+  .tabs + .section, .standfirst + .section { margin-top: 0; }
+  h3 { font: var(--t-cap)/var(--base-s) var(--mono); letter-spacing: .1em; text-transform: uppercase;
+       color: var(--ink-faint); margin-bottom: 0; }
+
+  .lede { font: var(--t-lede)/var(--base) var(--serif); }
+  .lede b { color: var(--accent); }
+  .dim, .more, .note { color: var(--ink-soft); }
+  .fine { color: var(--ink-faint); }
+  .note ul { list-style: none; margin-left: 0; }
+  .note li { margin-bottom: 0; }
+  .warnk { color: var(--warn); } .held { color: var(--held); } .bad { color: var(--bad); }
+
+  figure { margin: 0 0 var(--base); }
+  figure svg { display: block; width: 100%; height: auto; }
+  figcaption { margin-top: var(--half); color: var(--ink-faint); max-width: var(--measure); }
+  .curve, .history { overflow-x: auto; }
+  .curve svg, .history svg { min-width: 24rem; }
+  .strip .kept { fill: var(--held); } .strip .warn { fill: var(--warn); } .strip .miss { fill: var(--bad); }
+  .strip .pending { fill: var(--ink-faint); } .strip .pull { fill: none; stroke: var(--ink-faint); stroke-width: 1.5; }
+  .strip a:focus-visible rect { stroke: var(--accent-lit); stroke-width: 2; }
+  .strip text, .curve text, .history text { font: 11px var(--mono); fill: var(--ink-faint); }
+  .curve .grid, .history .grid { stroke: var(--rule-soft); }
+  .curve .line { fill: none; stroke: var(--accent); stroke-width: 2; }
+  .curve .dot, .history .live { fill: var(--accent); }
+  .history .hind { fill: none; stroke: var(--accent); stroke-width: 1.5; }
+  .curve .val { fill: var(--ink); }
+
+  /* tables: hairlines, a serif caption, sticky head where the frame holds the table */
+  .tablewrap { grid-column: 1 / -1; overflow-x: auto; scrollbar-color: var(--rule) transparent; scrollbar-width: thin; }
+  table { border-collapse: collapse; width: 100%; min-width: 42rem;
+          font: var(--t-cap)/var(--base-s) var(--mono); font-variant-numeric: tabular-nums lining-nums; }
+  caption { caption-side: top; text-align: left; font: var(--t-body)/var(--base) var(--serif); color: var(--ink-soft);
+            padding-bottom: var(--half); position: sticky; left: 0; max-width: calc(100vw - 2 * var(--outer)); }
+  th, td { padding: .375rem .75rem .375rem 0; border-bottom: 1px solid var(--rule-soft);
+           vertical-align: baseline; white-space: nowrap; text-align: left; }
+  th:last-child, td:last-child { padding-right: 0; }
+  td.wrap, tr.gap td { white-space: normal; }
+  td.wrap { min-width: 9rem; } td.state { min-width: 18rem; } tr.gap td:nth-child(3) { min-width: 11rem; }
+  @media (max-width: 83.99rem) { td.wrap, tr.gap td { white-space: nowrap; } td.state { white-space: normal; } }
+  thead th { position: sticky; top: 0; z-index: 2; background: var(--bg); color: var(--ink-faint); font-weight: 400;
+             font-size: .75rem; letter-spacing: .06em; text-transform: uppercase; border-bottom: 1px solid var(--rule); }
+  tbody tr:hover td { background: var(--surface-2); }
+  .num { text-align: right; }
+  td.mono { color: var(--ink-soft); }
+  tr.gap td { color: var(--bad); background: rgba(255, 122, 122, .07); font-weight: 700; }
+  tr.warn td.state { color: var(--warn); }
+  tr:target td { background: var(--surface-2); box-shadow: inset 3px 0 var(--accent); }
+  tbody.month tr.head th { padding-top: var(--base); font: var(--t-body)/var(--base) var(--serif); color: var(--ink);
+                            border-bottom: 1px solid var(--rule); white-space: normal; }
+  tbody.month tr.head th small { margin-left: var(--half); font: var(--t-cap)/var(--base-s) var(--mono); color: var(--ink-faint); }
+  tbody.month tr.head:hover th { background: none; }
+  .months { grid-column: 1 / -1; display: flex; flex-wrap: wrap; gap: 0 var(--base); margin-bottom: var(--base);
+            font: var(--t-cap)/var(--base-s) var(--mono); letter-spacing: .08em; text-transform: uppercase; color: var(--ink-faint); }
+  .months a { text-decoration: none; }
+  .months label { margin-left: auto; cursor: pointer; }
+  body.only-defects tbody tr:not(.gap):not(.warn):not(.hind):not(.head) { display: none; }
+  @media (min-width: 84rem) { .tablewrap { overflow: visible; } }
+  @media (max-width: 83.99rem) {
+    th:first-child, td:first-child { position: sticky; left: 0; z-index: 1; background: var(--bg); }
+    tr.gap td:first-child { background: #1a141e; }
+  }
+
+  /* the foot: three columns under one rule each */
+  .col { font: var(--t-foot)/var(--base-s) var(--serif); color: var(--ink-soft); margin-top: var(--base);
+         border-top: 1px solid var(--rule-soft); padding-top: calc(var(--half) - 1px); }
+  .col h2 { font: 400 var(--t-lede)/var(--base) var(--serif); color: var(--ink); margin-bottom: var(--half); }
+  .col p, .col ul, .col ol { margin-bottom: var(--base-s); }
+  .col ol { margin-left: 1.25rem; }
+  .col > :last-child { margin-bottom: 0; }
+
+  /* colophon: who runs this, the build line, and the caveats in two columns of the mono */
+  .colophon { grid-column: 1 / -1; display: grid; grid-template-columns: subgrid; column-gap: var(--gutter);
+              margin-top: calc(2 * var(--base)); border-top: 1px solid var(--rule); padding-top: calc(var(--base) - 1px);
+              font: var(--t-small)/var(--base-s) var(--serif); color: var(--ink-soft); }
+  .colophon .who { grid-column: 1 / span 6; }
+  .colophon .who h2 { font: 400 var(--t-lede)/var(--base) var(--serif); color: var(--ink); margin-bottom: var(--half); }
+  .colophon .build { grid-column: 8 / span 5; font-family: var(--mono); color: var(--ink-faint); }
+  .colophon .caveats { grid-column: 1 / -1; margin-top: var(--base); columns: 2; column-gap: var(--gutter);
+                       font-family: var(--mono); color: var(--ink-faint); }
+  .colophon p { margin-bottom: var(--base-s); }
+  .colophon .caveats p { max-width: none; }
+
+  details { margin-bottom: var(--base); }
+  summary { cursor: pointer; font: var(--t-cap)/var(--base-s) var(--mono); letter-spacing: .1em;
+            text-transform: uppercase; color: var(--ink-faint); }
+  details[open] summary { margin-bottom: var(--half); }
+  details p { font-size: var(--t-small); line-height: var(--base-s); color: var(--ink-soft); }
+
+  /* Between 48rem and 72rem the frame is too narrow for a reading measure beside a chart, but wide
+     enough for text beside notes and figures, so the bands stay two-column on eight tracks. */
+  @media (max-width: 71.99rem) {
+    .page { grid-template-columns: repeat(8, minmax(0, 1fr)); }
+    .z-full, .z-wide, .z-c1, .z-c2, .z-c3 { grid-column: 1 / -1; }
+    .z-prose { grid-column: 1 / span 5; }
+    .z-side { grid-column: 6 / span 3; }
+    .section h2 { grid-column: 1 / span 5; } .section .stamp { grid-column: 6 / span 3; }
+    .colophon .who { grid-column: 1 / span 5; } .colophon .build { grid-column: 6 / span 3; }
+    :root { --t-pull: 3rem; }
+    .pull b { line-height: calc(2 * var(--base)); }
+    figure.z-side.curve { grid-column: 1 / -1; }
+  }
+  /* Under 48rem everything runs in one column at the measure, in source order. */
+  @media (max-width: 47.99rem) {
+    .page, .section, .colophon { grid-template-columns: minmax(0, 1fr); }
+    .z-full, .z-prose, .z-wide, .z-side, .z-c1, .z-c2, .z-c3, .section h2, .section .stamp,
+    .colophon .who, .colophon .build, .colophon .caveats { grid-column: 1 / -1; }
+    .z-prose, .z-wide, .z-side { max-width: var(--measure); }
+    .colophon .caveats { columns: 1; }
+    .z-side.note { border-left: 2px solid var(--rule-soft); padding-left: var(--base); }
+  }
+  @media (max-width: 40rem) {
+    html { font-size: 94%; }
+    :root { --t-h2: 1.75rem; --t-deck: 1.25rem; }
+    .deck { line-height: var(--base); }
+    .section h2 { line-height: calc(1.25 * var(--base)); }
+    .z-side.note { padding-left: var(--half); }
+  }
+
+  @media print {
+    :root { --ink: #000; --ink-soft: #333; --ink-faint: #444; --accent: #7a4a00; --accent-lit: #7a4a00; --bg: #fff;
+            --surface: #fff; --surface-2: #f2f2f2; --rule: #999; --rule-soft: #ccc;
+            --bad: #9b1c1c; --warn: #7a4a00; --held: #1b6b3a; }
+    body { background: #fff; color: #000; }
+    .page, .section, .colophon { display: block; width: auto; }
+    .tabs, .skip, .months { display: none; }
+    .tablewrap { overflow: visible; } table { min-width: 0; font-size: 9pt; }
+    thead th, th:first-child, td:first-child { position: static; }
+    tr.warn td.state::before { content: "DEFECT: "; }
+    tr.gap td { -webkit-print-color-adjust: exact; print-color-adjust: exact; background: #fbe9e9; }
+    .colophon .caveats { columns: 1; }
+    a { text-decoration: none; } h2 { break-after: avoid; }
+  }
+</style>
+</head>
+<body>
+<a class="skip" href="#main">Skip to the content</a>
+<main class="page" id="main">
+  <header class="masthead">
+    <svg class="mark" width="40" height="40" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" aria-hidden="true" focusable="false"><g fill="none" stroke="#ffb347" stroke-width="8"><path d="M40.60 11.75A22 22 0 0 0 11.46 24.12"/><path d="M10.00 31.62A22 22 0 0 0 32.38 54.00" opacity="0.52"/><path d="M39.88 52.54A22 22 0 0 0 52.25 23.40" opacity="0.26"/></g><circle cx="47.56" cy="16.44" r="6" fill="#ffb347"/><rect x="24" y="24" width="16" height="16" fill="#ffb347"/></svg>
+    <h1><a href="/">Ephemera</a></h1>
+    <span class="where">ephemera.space<br>built 2026-09-06 20:20 UTC</span>
+  </header>
+  <p class="standfirst">An archive of the public Starlink ephemerides, hashed and anchored in Bitcoin, with a daily measure of what the public satellite catalogue can see.</p>
+
+<nav class="tabs" aria-label="Pages">
+  <a href="/" aria-current="page">Front page</a>
+  <a href="/finding/">The finding</a>
+  <a href="/scored/">Scored cycles</a>
+  <a href="/archive/">The archive</a>
+  <a href="/check/">Check it</a>
+  <a href="/globe/" title="3D view: loads a 5.2 MB pack and needs WebGL">The globe</a>
+</nav>
+  <header class="z-full section"><h2>There is no page at this address</h2>
+    <p class="stamp">The archive, the scored cycles and the checks are in the tabs above.</p></header>
+  <div class="z-prose"><p>If a link brought you here, the page it named has moved or never existed. Every table row on
+  this site has a permanent address of the form <code>archive/#c-&lt;cycle&gt;</code> or
+  <code>scored/#s-&lt;cycle&gt;</code>, and the front page is one tab to the left.</p></div>
+
+  <footer class="z-full colophon">
+    <div class="who">
+      <h2 id="who">Who runs this</h2>
+      <p>Kira Ryan, on my own time, on a home computer in Cape Town, with no funding and no affiliation to any operator or agency.</p>
+      <p><a href="mailto:KiraRyan27@gmail.com">KiraRyan27@gmail.com</a> &nbsp;
+      <a href="https://www.linkedin.com/in/kira-ryan/">linkedin.com/in/kira-ryan</a></p>
+    </div>
+    <div class="build">
+      <p>Built 2026-09-06 20:20 UTC from <a href="/ledger.json">ledger.json</a>. Every figure on this page
+      carries the time it was true at.</p>
+      <p>Cite as: Ryan, K. (2026). Ephemera: an archive of the public Starlink ephemerides and a daily measure
+      of public catalogue visibility. https://ephemera.space, retrieved 2026-09-06 20:20 UTC.</p>
+    </div>
+    <div class="caveats"><p>Operator ephemerides are predictions, not observations. Starlink is the only operator with public covariance; other operators enter via CelesTrak SupGP without covariance. Public GP data is too noisy to test sub-metre covariance; the self-consistency scoreboard measures prediction-versus-later-prediction. That scoreboard is not built yet. Inputs are archived by this project and witnessed by OpenTimestamps and the Wayback Machine; they are not re-fetchable from the source after one cycle. Every figure above carries the build time it was true at. Gapped or lost items are printed, never hidden.</p></div>
+  </footer>
+
+</main>
+</body>
+</html>

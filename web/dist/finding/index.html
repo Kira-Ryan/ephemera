@@ -3,17 +3,17 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Ephemera</title>
-<meta name="description" content="An archive of the public Starlink ephemerides, hashed and anchored in Bitcoin, with a daily measure of what the public satellite catalogue can see.">
-<link rel="canonical" href="https://ephemera.space/">
-<link rel="icon" href="icon.svg" type="image/svg+xml">
-<link rel="apple-touch-icon" href="icon-180.png">
+<title>Ephemera: The finding</title>
+<meta name="description" content="How far the public catalogue&#x27;s prediction sits from the operator&#x27;s, for every Starlink satellite in the latest scored cycle, by element age and altitude shell.">
+<link rel="canonical" href="https://ephemera.space/finding/">
+<link rel="icon" href="../icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="../icon-180.png">
 <meta name="theme-color" content="#090c17">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="Ephemera">
-<meta property="og:title" content="Ephemera">
-<meta property="og:url" content="https://ephemera.space/">
-<meta property="og:description" content="An archive of the public Starlink ephemerides, hashed and anchored in Bitcoin, with a daily measure of what the public satellite catalogue can see.">
+<meta property="og:title" content="Ephemera: The finding">
+<meta property="og:url" content="https://ephemera.space/finding/">
+<meta property="og:description" content="How far the public catalogue&#x27;s prediction sits from the operator&#x27;s, for every Starlink satellite in the latest scored cycle, by element age and altitude shell.">
 <meta property="og:image" content="https://ephemera.space/social.png">
 <meta name="twitter:card" content="summary_large_image">
 <style>
@@ -249,102 +249,62 @@
 </style>
 </head>
 <body>
-<a class="skip" href="#finding">Skip to the content</a>
+<a class="skip" href="#main">Skip to the content</a>
 <main class="page" id="main">
   <header class="masthead">
     <svg class="mark" width="40" height="40" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" aria-hidden="true" focusable="false"><g fill="none" stroke="#ffb347" stroke-width="8"><path d="M40.60 11.75A22 22 0 0 0 11.46 24.12"/><path d="M10.00 31.62A22 22 0 0 0 32.38 54.00" opacity="0.52"/><path d="M39.88 52.54A22 22 0 0 0 52.25 23.40" opacity="0.26"/></g><circle cx="47.56" cy="16.44" r="6" fill="#ffb347"/><rect x="24" y="24" width="16" height="16" fill="#ffb347"/></svg>
-    <h1><a href="./">Ephemera</a></h1>
+    <h1><a href="../">Ephemera</a></h1>
     <span class="where">ephemera.space<br>built 2026-09-06 20:20 UTC</span>
   </header>
+  <p class="standfirst">An archive of the public Starlink ephemerides, hashed and anchored in Bitcoin, with a daily measure of what the public satellite catalogue can see.</p>
 
 <nav class="tabs" aria-label="Pages">
-  <a href="./" aria-current="page">Front page</a>
-  <a href="finding/">The finding</a>
-  <a href="scored/">Scored cycles</a>
-  <a href="archive/">The archive</a>
-  <a href="check/">Check it</a>
-  <a href="globe/" title="3D view: loads a 5.2 MB pack and needs WebGL">The globe</a>
+  <a href=".././">Front page</a>
+  <a href="../finding/" aria-current="page">The finding</a>
+  <a href="../scored/">Scored cycles</a>
+  <a href="../archive/">The archive</a>
+  <a href="../check/">Check it</a>
+  <a href="../globe/" title="3D view: loads a 5.2 MB pack and needs WebGL">The globe</a>
 </nav>
-  <div class="z-prose">
-    <p class="deck">Every eight hours, SpaceX publishes where each of about eleven thousand Starlink satellites will be
-    for the next three days, and how sure it is. Eight hours later that set is gone, replaced by the next one.
-    <strong>Ephemera keeps them, and measures what the public catalogue can see.</strong></p>
-    <p class="fine">The files carry a full position and velocity uncertainty every sixty seconds, read from the feed
-    on 30 August 2026. Starlink is the only operator with public covariance; other operators enter via CelesTrak
-    SupGP without covariance.</p>
-  </div>
-  <aside class="z-side pulls" aria-label="Headline figures"><div class="pull"><b>88%</b><span>of the scored Starlink satellites within 10 km of the operator's trajectory, at file start</span><small>cycle d475086e7ca5, scored 2026-09-06 13:19 UTC</small></div><div class="pull"><b>1.9 km</b><span>median separation between the two predictions, at file start</span><small>same cycle, same instant</small></div></aside>
-
   <header class="z-full section" id="finding">
     <h2>What the public catalogue can see</h2>
-    <p class="stamp">Headline figures from cycle <b>d475086e7ca5</b>, first seen 2026-09-06 12:27 UTC,
-    scored 2026-09-06 13:19 UTC against the public catalogue snapshot fetched
-    2026-09-06 12:10 UTC (12,811 element sets).</p>
+    <p class="stamp">Cycle <b>d475086e7ca5</b>, first seen 2026-09-06 12:27 UTC, scored
+    2026-09-06 13:19 UTC against the public catalogue snapshot fetched 2026-09-06 12:10
+    UTC (12,811 element sets).</p>
   </header>
-  <div class="z-prose">
-    <p class="lede">At the first instant of each operator file, the public catalogue puts <b>88%</b> of the scored Starlink satellites within 10 km of where the operator says they are. The middle satellite is <b>1.9 km</b> away, with the public information a median of 9 hours old. Where the public information is two to three days old, the two predictions are about <b>24 km</b> apart. Both sides are predictions, and most of that spread is planned trajectory changes the public catalogue cannot know about.</p>
-    <p>Everyone outside SpaceX sees Starlink through the public catalogue of orbital elements. Ephemera takes that public element set for each satellite, propagates it with SGP4, and compares it against the operator's own published trajectory for the same satellite at the same instants. The distance between the two is what this measures. It is not an error of the satellite, and it is not a statement about which side is right.</p>
-    <p class="fine"><b class="warnk">16</b> satellites (0.1%) are more than 1,000 km from the public prediction at publication, which is a large part of an orbit. For those the public element set is not on the operator's trajectory at all. Ephemera does not label any separation as a manoeuvre; that needs a detector this project has not built.</p>
-  </div>
-  <figure class="z-side curve"><svg viewBox="0 0 620 280" role="img" aria-label="Median separation between the public and operator predictions, rising with element age."><line class="grid" x1="50.0" y1="204.4" x2="580" y2="204.4"/><text x="42" y="208.4" text-anchor="end">1 km</text><line class="grid" x1="50.0" y1="154.4" x2="580" y2="154.4"/><text x="42" y="158.4" text-anchor="end">3 km</text><line class="grid" x1="50.0" y1="99.6" x2="580" y2="99.6"/><text x="42" y="103.6" text-anchor="end">10 km</text><line class="grid" x1="50.0" y1="49.6" x2="580" y2="49.6"/><text x="42" y="53.6" text-anchor="end">30 km</text><polyline class="line" points="50.0,199.3 156.0,174.2 262.0,139.8 368.0,98.0 474.0,59.2 580.0,42.7"/><circle class="dot" cx="50.0" cy="199.3" r="4"/><text class="val" x="50.0" y="187.3" text-anchor="middle">1.1</text><text x="50.0" y="258" text-anchor="middle">0-6 h</text><text x="50.0" y="272" text-anchor="middle" opacity=".7">3,531</text><circle class="dot" cx="156.0" cy="174.2" r="4"/><text class="val" x="156.0" y="162.2" text-anchor="middle">1.9</text><text x="156.0" y="258" text-anchor="middle">6-12 h</text><text x="156.0" y="272" text-anchor="middle" opacity=".7">7,607</text><circle class="dot" cx="262.0" cy="139.8" r="4"/><text class="val" x="262.0" y="127.8" text-anchor="middle">4.1</text><text x="262.0" y="258" text-anchor="middle">12-24 h</text><text x="262.0" y="272" text-anchor="middle" opacity=".7">19,398</text><circle class="dot" cx="368.0" cy="98.0" r="4"/><text class="val" x="368.0" y="86.0" text-anchor="middle">10.4</text><text x="368.0" y="258" text-anchor="middle">24-48 h</text><text x="368.0" y="272" text-anchor="middle" opacity=".7">44,126</text><circle class="dot" cx="474.0" cy="59.2" r="4"/><text class="val" x="474.0" y="47.2" text-anchor="middle">24.3</text><text x="474.0" y="258" text-anchor="middle">48-72 h</text><text x="474.0" y="272" text-anchor="middle" opacity=".7">43,833</text><circle class="dot" cx="580.0" cy="42.7" r="4"/><text class="val" x="580.0" y="30.7" text-anchor="middle">34.8</text><text x="580.0" y="258" text-anchor="middle">over 72 h</text><text x="580.0" y="272" text-anchor="middle" opacity=".7">24,683</text></svg><figcaption>Median separation between the two predictions, by how old the public catalogue's information was. Log scale; the second line under each point is how many comparisons it holds. Cycle d475086e7ca5, scored 2026-09-06 13:19 UTC.</figcaption></figure>
-  <div class="z-prose">
-    <p class="fine"><b>Feed health for this cycle.</b> 11,085 of 11,112 operator files scored. 27 have no entry in the public catalogue, of which 27 are new satellites the catalogue has not numbered yet; 0 marked decayed; 0 failed to propagate; 0 unreadable; 0 no longer matching the record. Public element sets were a mean of <b>12.5 h</b> old when the snapshot was taken (median 10.4 h, 90th percentile 23.5 h, 0 over 72 h). Averaged over every comparison, which run out to three days into the operator file, element age is 46.6 h: the difference is the file's own prediction horizon, not catalogue staleness. Space-Track: 46 snapshots held, last fetched 2026-09-06 20:10 UTC with 12,811 element sets. Poller heartbeat coverage over the last 24 h: 100.0%.</p>
-  </div>
+  <div class="z-prose"><p class="lede">At the first instant of each operator file, the public catalogue puts <b>88%</b> of the scored Starlink satellites within 10 km of where the operator says they are. The middle satellite is <b>1.9 km</b> away, with the public information a median of 9 hours old. Where the public information is two to three days old, the two predictions are about <b>24 km</b> apart. Both sides are predictions, and most of that spread is planned trajectory changes the public catalogue cannot know about.</p><p>Everyone outside SpaceX sees Starlink through the public catalogue of orbital elements. Ephemera takes that public element set for each satellite, propagates it with SGP4, and compares it against the operator's own published trajectory for the same satellite at the same instants. The distance between the two is what this measures. It is not an error of the satellite, and it is not a statement about which side is right.</p><p class="fine"><b class="warnk">16</b> satellites (0.1%) are more than 1,000 km from the public prediction at publication, which is a large part of an orbit. For those the public element set is not on the operator's trajectory at all. Ephemera does not label any separation as a manoeuvre; that needs a detector this project has not built.</p></div>
+  <figure class="z-full curve"><svg viewBox="0 0 1000 300" role="img" aria-label="Median separation between the public and operator predictions, rising with element age."><line class="grid" x1="54.0" y1="221.5" x2="954" y2="221.5"/><text x="46" y="225.5" text-anchor="end">1 km</text><line class="grid" x1="54.0" y1="166.9" x2="954" y2="166.9"/><text x="46" y="170.9" text-anchor="end">3 km</text><line class="grid" x1="54.0" y1="107.1" x2="954" y2="107.1"/><text x="46" y="111.1" text-anchor="end">10 km</text><line class="grid" x1="54.0" y1="52.5" x2="954" y2="52.5"/><text x="46" y="56.5" text-anchor="end">30 km</text><polyline class="line" points="54.0,215.9 234.0,188.5 414.0,151.0 594.0,105.3 774.0,63.0 954.0,45.0"/><circle class="dot" cx="54.0" cy="215.9" r="4"/><text class="val" x="54.0" y="203.9" text-anchor="middle">1.1</text><text x="54.0" y="278" text-anchor="middle">0-6 h</text><text x="54.0" y="292" text-anchor="middle" opacity=".7">3,531</text><circle class="dot" cx="234.0" cy="188.5" r="4"/><text class="val" x="234.0" y="176.5" text-anchor="middle">1.9</text><text x="234.0" y="278" text-anchor="middle">6-12 h</text><text x="234.0" y="292" text-anchor="middle" opacity=".7">7,607</text><circle class="dot" cx="414.0" cy="151.0" r="4"/><text class="val" x="414.0" y="139.0" text-anchor="middle">4.1</text><text x="414.0" y="278" text-anchor="middle">12-24 h</text><text x="414.0" y="292" text-anchor="middle" opacity=".7">19,398</text><circle class="dot" cx="594.0" cy="105.3" r="4"/><text class="val" x="594.0" y="93.3" text-anchor="middle">10.4</text><text x="594.0" y="278" text-anchor="middle">24-48 h</text><text x="594.0" y="292" text-anchor="middle" opacity=".7">44,126</text><circle class="dot" cx="774.0" cy="63.0" r="4"/><text class="val" x="774.0" y="51.0" text-anchor="middle">24.3</text><text x="774.0" y="278" text-anchor="middle">48-72 h</text><text x="774.0" y="292" text-anchor="middle" opacity=".7">43,833</text><circle class="dot" cx="954.0" cy="45.0" r="4"/><text class="val" x="954.0" y="33.0" text-anchor="middle">34.8</text><text x="954.0" y="278" text-anchor="middle">over 72 h</text><text x="954.0" y="292" text-anchor="middle" opacity=".7">24,683</text></svg><figcaption>Median separation between the two predictions, by how old the public catalogue's information was. Log scale; the second line under each point is how many comparisons it holds. Cycle d475086e7ca5, scored 2026-09-06 13:19 UTC.</figcaption></figure>
+  <div class="tablewrap"><table>
+    <caption>The same curve as numbers, for cycle d475086e7ca5. Scored 2026-09-06 13:19 UTC.</caption>
+    <thead><tr><th scope="col">element age</th><th scope="col" class="num">comparisons</th>
+      <th scope="col" class="num">median km</th><th scope="col" class="num">90th pct km</th>
+      <th scope="col" class="num">within 10 km</th><th scope="col" class="num">within 30 km</th></tr></thead>
+    <tbody><tr><td>0-6 h</td><td class="num">3,531</td><td class="num">1.1</td><td class="num">7.5</td><td class="num">92%</td><td class="num">99%</td></tr><tr><td>6-12 h</td><td class="num">7,607</td><td class="num">1.9</td><td class="num">11.5</td><td class="num">89%</td><td class="num">97%</td></tr><tr><td>12-24 h</td><td class="num">19,398</td><td class="num">4.1</td><td class="num">21.0</td><td class="num">79%</td><td class="num">92%</td></tr><tr><td>24-48 h</td><td class="num">44,126</td><td class="num">10.4</td><td class="num">60.6</td><td class="num">49%</td><td class="num">82%</td></tr><tr><td>48-72 h</td><td class="num">43,833</td><td class="num">24.3</td><td class="num">157.7</td><td class="num">34%</td><td class="num">56%</td></tr><tr><td>over 72 h</td><td class="num">24,683</td><td class="num">34.8</td><td class="num">169.3</td><td class="num">29%</td><td class="num">48%</td></tr></tbody>
+  </table></div>
+  <div class="z-prose"><p class="fine">Element age is how old the public catalogue's information was at the instant
+  compared. It runs larger than catalogue staleness because a single operator file predicts three days ahead, so a
+  comparison late in the file is both further ahead and matched against an older element set. The two effects are not
+  separated within one cycle, which is why the headline uses only the first instant of each file.</p></div>
+  <div class="tablewrap"><table><caption>By altitude shell. The lowest shell is where satellites are being raised and lowered, so its spread is the widest.</caption><thead><tr><th scope="col">shell</th><th scope="col" class="num">comparisons</th><th scope="col" class="num">median km</th><th scope="col" class="num">within 10 km</th></tr></thead><tbody><tr><td>under 400 km</td><td class="num">14,085</td><td class="num">97.4</td><td class="num">23%</td></tr><tr><td>400-500 km</td><td class="num">118,811</td><td class="num">10.4</td><td class="num">49%</td></tr><tr><td>500-600 km</td><td class="num">10,282</td><td class="num">3.8</td><td class="num">71%</td></tr></tbody></table></div>
+  <div class="z-prose"><p class="fine"><b>Feed health for this cycle.</b> 11,085 of 11,112 operator files scored. 27 have no entry in the public catalogue, of which 27 are new satellites the catalogue has not numbered yet; 0 marked decayed; 0 failed to propagate; 0 unreadable; 0 no longer matching the record. Public element sets were a mean of <b>12.5 h</b> old when the snapshot was taken (median 10.4 h, 90th percentile 23.5 h, 0 over 72 h). Averaged over every comparison, which run out to three days into the operator file, element age is 46.6 h: the difference is the file's own prediction horizon, not catalogue staleness. Space-Track: 46 snapshots held, last fetched 2026-09-06 20:10 UTC with 12,811 element sets. Poller heartbeat coverage over the last 24 h: 100.0%.</p></div>
   <aside class="z-side note">
-    <h3>Further</h3>
-    <ul>
-      <li><a href="finding/">The full finding</a>: the same curve as numbers, by element age and by altitude shell, with the method.</li>
-      <li><a href="scored/">Every scored cycle</a>: one row per cycle, measured at the first instant of each file.</li>
-      <li><a href="globe/">See it on the globe</a>: every satellite drawn twice, the operator trajectory and the public catalogue's ghost (a 5.2 MB pack, needs WebGL).</li>
-    </ul>
+    <h3>How this was measured</h3>
+    <p>Public element set (Space-Track gp snapshot) propagated with SGP4 (skyfield 1.55, python-sgp4 2.27; TEME to GCRS by Skyfield, taken as J2000) and differenced against the operator-published trajectory (EME2000) at the file&#x27;s own record epochs every 360 min. Distance in km; components in the operator&#x27;s radial/in-track/cross-track frame; altitude is geocentric radius minus 6378.137 km; element age is evaluation epoch minus element-set epoch, signed. A comparison beyond 1000 km is counted as lost: the public set is not on the file&#x27;s trajectory at all. at_file_start takes each satellite once, at the first epoch of its own file, which is the only cut comparable between cycles. Both inputs are predictions; the operator&#x27;s includes planned trajectory changes the public set cannot know about.</p>
+    <p>Snapshot <span class="mono">20260906T121016Z_c57c820c4e54</span>. Evaluation every 360 minutes
+    across each file's own record epochs. Public element sets come from Space-Track.org and are redistributed under
+    Space-Track's blanket approval for basic space situational awareness data, with citation.</p>
+    <p><a href="../scored/">Every scored cycle</a> &nbsp; <a href="../globe/">See it on the globe</a></p>
   </aside>
-
-  <header class="z-full section" id="archive">
-    <h2>The archive behind it</h2>
-    <p class="stamp">As of 2026-09-06 20:20 UTC. Poller: home (Cape Town, residential; single poller until poller A exists).</p>
-  </header>
-  <div class="z-prose">
-    <p>The operator side of every comparison comes from files this project caught before they were replaced. Each cycle is hashed file by file into one Merkle root, the root is stamped into the Bitcoin blockchain through OpenTimestamps, and the manifest plus ten files chosen by the root itself are pushed into the Wayback Machine so an independent copy exists that this project does not control.</p>
-    <p class="fine">As of <b>2026-09-06 20:20 UTC</b>: <b>24</b> cycles, <b>24</b> complete with roots, <b>24</b> anchored in Bitcoin, <b>7</b> with a defect in the independent copy. Source bytes archived: <b>539 GB</b> across 265,803 files as served. Stored gzipped as <b>222 GB</b>, of which 84 GB is on the poller's disk and 138 GB exists only in cold object storage. Cadence holds, meaning a set served longer than nine hours: <b>2</b>. Poller heartbeat coverage over the last 24 hours: <b>100.0%</b>. This project exists because SpaceX publishes the feed openly.</p>
-  </div>
-  <aside class="z-side pulls" aria-label="Archive figures"><div class="pull long"><b class="held">24 of 24</b><span>cycle roots anchored in Bitcoin through OpenTimestamps</span><small>as of 2026-09-06 20:20 UTC</small></div><div class="pull"><b class="warnk">7</b><span>cycles whose independent copy has a defect, printed on their rows</span><small>as of 2026-09-06 20:20 UTC</small></div><p class="more"><a href="archive/">The archive record</a>: every cycle, its root, its stamp, its independent copy, and the daily roots.</p></aside>
-  <figure class="z-full strip"><svg viewBox="-6 0 1012 74" role="img" aria-label="Every archived cycle on a time axis, one block each, coloured by state; each block links to its row."><a href="archive/#c-d475086e7ca5"><rect class="kept" x="928.5" y="8.0" width="7" height="40" rx="1"><title>d475086e7ca5 first seen 2026-09-06 12:27 UTC, 11,112 files</title></rect></a><a href="archive/#c-035065e7ec46"><rect class="kept" x="886.8" y="8.0" width="7" height="40" rx="1"><title>035065e7ec46 first seen 2026-09-06 04:22 UTC, 11,113 files</title></rect></a><a href="archive/#c-8c1b1c3f5d69"><rect class="kept" x="846.1" y="8.0" width="7" height="40" rx="1"><title>8c1b1c3f5d69 first seen 2026-09-05 20:29 UTC, 11,113 files</title></rect></a><a href="archive/#c-a68f33d2d2f7"><rect class="kept" x="804.9" y="8.0" width="7" height="40" rx="1"><title>a68f33d2d2f7 first seen 2026-09-05 12:29 UTC, 11,114 files</title></rect></a><a href="archive/#c-729590130225"><rect class="kept" x="765.1" y="8.0" width="7" height="40" rx="1"><title>729590130225 first seen 2026-09-05 04:46 UTC, 11,114 files</title></rect></a><a href="archive/#c-5ccb4ed5d13a"><rect class="kept" x="729.7" y="8.0" width="7" height="40" rx="1"><title>5ccb4ed5d13a first seen 2026-09-04 21:54 UTC, 11,115 files</title></rect></a><a href="archive/#c-03329cf37459"><rect class="kept" x="684.2" y="8.0" width="7" height="40" rx="1"><title>03329cf37459 first seen 2026-09-04 13:04 UTC, 11,116 files</title></rect></a><a href="archive/#c-500ae4c3a713"><rect class="kept" x="648.4" y="8.0" width="7" height="40" rx="1"><title>500ae4c3a713 first seen 2026-09-04 06:08 UTC, 11,114 files</title></rect></a><a href="archive/#c-f842b22c4167"><rect class="kept" x="627.9" y="8.0" width="7" height="40" rx="1"><title>f842b22c4167 first seen 2026-09-04 02:10 UTC, 11,116 files</title></rect></a><a href="archive/#c-a39dfdfee0fd"><rect class="kept" x="555.7" y="8.0" width="7" height="40" rx="1"><title>a39dfdfee0fd first seen 2026-09-03 12:09 UTC, 11,117 files</title></rect></a><a href="archive/#c-1e726fe006d9"><rect class="kept" x="514.8" y="8.0" width="7" height="40" rx="1"><title>1e726fe006d9 first seen 2026-09-03 04:13 UTC, 11,118 files</title></rect></a><a href="archive/#c-b37c74c03907"><rect class="kept" x="487.4" y="8.0" width="7" height="40" rx="1"><title>b37c74c03907 first seen 2026-09-02 22:54 UTC, 10,682 files</title></rect></a><a href="archive/#c-3572d8775913"><rect class="kept" x="473.7" y="8.0" width="7" height="40" rx="1"><title>3572d8775913 first seen 2026-09-02 20:15 UTC, 11,118 files</title></rect></a><a href="archive/#c-f5112bb77a2a"><rect class="kept" x="431.8" y="8.0" width="7" height="40" rx="1"><title>f5112bb77a2a first seen 2026-09-02 12:08 UTC, 11,092 files</title></rect></a><a href="archive/#c-0a85a65d5dbe"><rect class="warn" x="391.0" y="8.0" width="7" height="40" rx="1"><title>0a85a65d5dbe first seen 2026-09-02 04:12 UTC, 11,093 files, the archived manifest copy is another cycle&#x27;s file</title></rect></a><a href="archive/#c-51d5c047650a"><rect class="kept" x="366.2" y="8.0" width="7" height="40" rx="1"><title>51d5c047650a first seen 2026-09-01 23:24 UTC, 10,902 files</title></rect></a><a href="archive/#c-7414ea02eac1"><rect class="warn" x="349.4" y="8.0" width="7" height="40" rx="1"><title>7414ea02eac1 first seen 2026-09-01 20:09 UTC, 11,093 files, the archived manifest copy is another cycle&#x27;s file</title></rect></a><a href="archive/#c-7be3c2c6fc2c"><rect class="kept" x="309.6" y="8.0" width="7" height="40" rx="1"><title>7be3c2c6fc2c first seen 2026-09-01 12:26 UTC, 11,094 files</title></rect></a><a href="archive/#c-d03dc522da18"><rect class="warn" x="257.7" y="8.0" width="7" height="40" rx="1"><title>d03dc522da18 first seen 2026-09-01 02:22 UTC, 11,093 files, 6 of 10 sample captures were lost</title></rect></a><a href="archive/#c-513b92c4683e"><rect class="warn" x="226.8" y="8.0" width="7" height="40" rx="1"><title>513b92c4683e first seen 2026-08-31 20:22 UTC, 10,481 files, the manifest was never captured</title></rect></a><a href="archive/#c-1d424255c9ae"><rect class="kept" x="182.3" y="8.0" width="7" height="40" rx="1"><title>1d424255c9ae first seen 2026-08-31 11:44 UTC, 8,568 files</title></rect></a><a href="archive/#c-5e4faf0f4e4e"><rect class="warn" x="143.2" y="8.0" width="7" height="40" rx="1"><title>5e4faf0f4e4e first seen 2026-08-31 04:09 UTC, 9,353 files, no independent copy was made</title></rect></a><a href="archive/#c-92e6892c0f3e"><rect class="warn" x="101.4" y="8.0" width="7" height="40" rx="1"><title>92e6892c0f3e first seen 2026-08-30 20:02 UTC, 9,111 files, no independent copy was made</title></rect></a><a href="archive/#c-72bcd7796b49"><rect class="warn" x="67.9" y="8.0" width="7" height="40" rx="1"><title>72bcd7796b49 first seen 2026-08-30 13:32 UTC, 17,861 files, no independent copy was made</title></rect></a><line x1="121.8" y1="8.0" x2="121.8" y2="52" stroke="#283152"/><text x="121.8" y="66" text-anchor="middle">31 Aug</text><line x1="245.5" y1="8.0" x2="245.5" y2="52" stroke="#283152"/><text x="245.5" y="66" text-anchor="middle">01 Sep</text><line x1="369.3" y1="8.0" x2="369.3" y2="52" stroke="#283152"/><text x="369.3" y="66" text-anchor="middle">02 Sep</text><line x1="493.0" y1="8.0" x2="493.0" y2="52" stroke="#283152"/><text x="493.0" y="66" text-anchor="middle">03 Sep</text><line x1="616.8" y1="8.0" x2="616.8" y2="52" stroke="#283152"/><text x="616.8" y="66" text-anchor="middle">04 Sep</text><line x1="740.5" y1="8.0" x2="740.5" y2="52" stroke="#283152"/><text x="740.5" y="66" text-anchor="middle">05 Sep</text><line x1="864.3" y1="8.0" x2="864.3" y2="52" stroke="#283152"/><text x="864.3" y="66" text-anchor="middle">06 Sep</text></svg><figcaption>The last 30 days, one block per cycle on a time axis. Green is complete and independently copied, grey is complete with the copy still pending, amber is complete but the independent copy failed, red is an incomplete pull, and a hollow block is a pull still running. Gaps in the spacing are the feed's own cadence. Each block links to its row. As of 2026-09-06 20:20 UTC.</figcaption></figure>
-
-  <section class="z-c1 col" id="check">
-    <h2>Check it yourself</h2>
-    <p>None of this is worth anything if you have to take my word for it. Three things you can run right now, for cycle <span class="mono">d475086e7ca5</span>:</p><ol><li>Fetch the <a href="https://web.archive.org/web/20260906131208id_/https://api.starlink.com/public-files/ephemerides/MANIFEST.txt?cycle=d475086e7ca5">independent copy</a> of the file list and hash it. SHA-256 <code>d475086e7ca567d2875a495ecb22352cb702f8b6aad7502416eb849b592696f2</code>.</li><li>Recompute which ten files were copied: <code>int(sha256(root + ":" + k), 16) mod n</code> for k from 0 to 9.</li><li>Run <code>ots verify root.txt.ots</code> against a Bitcoin node: this root is in block 965772.</li></ol><p class="more"><a href="check/">The full procedure</a>, and what still needs the data release.</p>
-  </section>
-  <section class="z-c2 col" id="data">
-    <h2>Data, licence and citation</h2>
-    <p><a href="ledger.json">ledger.json</a> carries every cycle, its root, its attestation, its witness state and
-    every scored summary, as the JSON the pages are built from. The globe's per-cycle pack is at
-    <a href="globe/pack.json">globe/pack.json</a> (5.2 MB). The full per-comparison
-    rows, about 140,000 per cycle, are available on request.</p>
-    <p>Code is MIT. Figures derived by this project are intended for CC BY 4.0. The raw SpaceX files carry no stated
-    licence; a written request went to SpaceX on 31 August 2026 and is unanswered as of this build.
-    <a href="check/#data">Licence and citation in full.</a></p>
-  </section>
-  <section class="z-c3 col" id="next">
-    <h2>Not here yet</h2>
-    <p>7 days of archive is not a long record, and this page should not pretend otherwise. What is not running:</p>
-    <ul>
-      <li>A second poller on a different machine in a different country.</li>
-      <li>The self-consistency scoreboard, prediction against later prediction.</li>
-      <li>The manoeuvre census: three differently defined counts side by side, never a ratio.</li>
-      <li>Other constellations, via CelesTrak SupGP without covariance.</li>
-      <li>A restore drill from cold storage.</li>
-    </ul>
-  </section>
 
   <footer class="z-full colophon">
     <div class="who">
       <h2 id="who">Who runs this</h2>
-      <p>Kira Ryan, on my own time, on a home computer in Cape Town, with no funding and no affiliation to any operator or agency. If a figure here is wrong I want to know, and corrections get published rather than quietly fixed.</p>
+      <p>Kira Ryan, on my own time, on a home computer in Cape Town, with no funding and no affiliation to any operator or agency.</p>
       <p><a href="mailto:KiraRyan27@gmail.com">KiraRyan27@gmail.com</a> &nbsp;
       <a href="https://www.linkedin.com/in/kira-ryan/">linkedin.com/in/kira-ryan</a></p>
     </div>
     <div class="build">
-      <p>Built 2026-09-06 20:20 UTC from <a href="ledger.json">ledger.json</a>. Every figure on this page
+      <p>Built 2026-09-06 20:20 UTC from <a href="../ledger.json">ledger.json</a>. Every figure on this page
       carries the time it was true at.</p>
       <p>Cite as: Ryan, K. (2026). Ephemera: an archive of the public Starlink ephemerides and a daily measure
       of public catalogue visibility. https://ephemera.space, retrieved 2026-09-06 20:20 UTC.</p>
