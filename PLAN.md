@@ -284,3 +284,28 @@ document's tracking table, not here.
   cycle done, the deploy runs an account guard it cannot bypass, the automated publish commits only
   web/dist, catalogue names cannot become markup, and requirements.txt is complete with a test that
   walks the repo's imports. Suite 165 -> 178.
+
+- 2026-09-06 - Layout redesign after the owner called the front page "AI generated": a single
+  left-justified column of stat tiles with every table on one page that would grow a mile long.
+  The site is now the page map of D20 (proposed): the front page keeps the finding and the archive
+  as prose with pull figures and one 30-day cycle strip; the finding, the scored cycles, the
+  archive record and the verification kit each have their own page and tab; the growing tables are
+  split into month sections with an only-defects toggle, and row ids never move so links keep
+  working; every page carries its own title and canonical; a build removes any HTML it did not
+  write; there is a branded 404. The frame is a 12-column grid at 78 rem with prose in the left
+  six columns and figures beside it, an 8-column regime under 72 rem and one column on a phone.
+  The globe borrows the masthead and tab bar through a marker comment so the tab list has one
+  source. web/pages.py renders all of it; web/build.py keeps the ledger. Verified by screenshots
+  of every page at 1440, 1024 and 520 px against a build from the real spool, lint clean on all
+  seven pages. Found on the way, all fixed: the strip crammed eight days of blocks into a 30-day
+  axis and labelled one tick; the side-column curve's labels scaled to dust; a pull still running
+  was painted the same red as a gapped pull (now a hollow block); the 404 linked its icons and tabs
+  relatively, which breaks at any nested missing path; the scored page showed scored figures
+  without the feed-health line; the front page called every non-headline cycle a hindsight pairing
+  and named the headline cycle as the latest scored one; and once a newer scored cycle exists that
+  the headline cannot use, the front page and the finding now say so. The test suite was retargeted
+  to the page map without weakening a single assertion, and thirteen new tests pin the page map,
+  the canonicals, the tab state, the pruning, the 404, the print palette, the pack size, the
+  only-defects toggle measured in a browser, a link check over every built page, and the layout at
+  390, 1024 and 1440 px in a real browser; every new test was proven by mutating its call site.
+  Suite 178 -> 197.
