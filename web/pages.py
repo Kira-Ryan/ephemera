@@ -883,8 +883,9 @@ def home(ledger: dict, pack_mb: float | None) -> str:
     every scored summary, as the JSON the pages are built from. The globe's per-cycle pack is at
     <a href="globe/pack.json">globe/pack.json</a>{f" ({pack_mb:.1f} MB)" if pack_mb else ""}. The full per-comparison
     rows, about 140,000 per cycle, are available on request.</p>
-    <p>Code is MIT. Figures derived by this project are intended for CC BY 4.0. The raw SpaceX files carry no stated
-    licence; a written request went to SpaceX on 31 August 2026 and is unanswered as of this build.
+    <p>Code is MIT, though the repository is not public yet. Figures derived by this project are intended for
+    CC BY 4.0. The raw SpaceX files carry no stated licence; a written request went to SpaceX on 31 August 2026
+    and is unanswered as of this build.
     <a href="check/#data">Licence and citation in full.</a></p>
   </section>
   <section class="z-c3 col" id="next">
@@ -1117,7 +1118,9 @@ def check(ledger: dict, pack_mb: float | None) -> str:
       <li>The raw operator files are held as published, hashed and witnessed. They are not re-published here while the
       licence question below is open.</li>
     </ul>
-    <p class="fine"><b>Licence.</b> Code is MIT. Figures derived by this project are intended for CC BY 4.0. The raw
+    <p class="fine"><b>Licence.</b> Code is MIT. The repository is not public yet, so the propagation and the
+    scoring cannot be read from here today; that is a gap in what this page asks you to check, and it is named
+    rather than left for you to find. Figures derived by this project are intended for CC BY 4.0. The raw
     SpaceX files carry no stated licence; a written request went to SpaceX on 31 August 2026 and is unanswered as of
     this build, and any file comes down on request. Public element sets come from Space-Track.org and are redistributed
     under Space-Track's blanket approval for basic space situational awareness data, with citation.</p>
