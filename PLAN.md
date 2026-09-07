@@ -74,7 +74,8 @@ Cloudflare account.
       (template committed), STS identity check, refusal on missing/empty allowlist, no override path
       (a test greps for one); every infra script must source it first (call-site test; mutation red).
       Owner supplied the personal account (<redacted>, profile latentsky) on 2 Sep; the guard
-      now pins that profile and forbids the employer account 222222222222 by ID. Proven live.
+      now pins that profile and forbids the employer account by ID, read from the gitignored
+      personal.env. Proven live.
 
 ### New since the plan was written
 
