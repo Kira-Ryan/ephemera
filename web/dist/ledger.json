@@ -1,21 +1,21 @@
 {
  "schema": 2,
- "generated_utc": "2026-09-09T00:20:01Z",
+ "generated_utc": "2026-09-09T08:20:01Z",
  "poller": "home (Cape Town, residential; single poller until poller A exists)",
  "method": "built from each cycle's cycle.json, witness.json and ship.json in the poller's spool; coverage is the fraction of the last 24 h's minutes with a watcher heartbeat under 10 minutes old (D18); a cadence hold is a manifest first-seen gap over 9 h; source bytes are the responses as served, stored bytes are the gzipped archive objects the shipper recorded",
  "totals": {
-  "cycles": 31,
+  "cycles": 32,
   "complete": 31,
-  "attested": 30,
+  "attested": 31,
   "witness_defects": 8,
   "bytes_raw": 697601752597,
   "bytes_stored": 286809384960,
-  "bytes_stored_local": 83574712320,
-  "bytes_stored_cold_only": 203234672640,
+  "bytes_stored_local": 74290483200,
+  "bytes_stored_cold_only": 212518901760,
   "files": 343749,
-  "cadence_holds": 3
+  "cadence_holds": 4
  },
- "coverage_24h": 1.0,
+ "coverage_24h": 0.7430555555555556,
  "visibility": {
   "reports": [
    {
@@ -5479,8 +5479,13 @@
   ],
   "latest": "cycle_23a1332e6e3c"
  },
- "catalogue_snapshots": 70,
+ "catalogue_snapshots": 71,
  "catalogue": [
+  {
+   "fetched_utc": "2026-09-09T08:10:11Z",
+   "records": 12811,
+   "sha12": "0c8e73f13461"
+  },
   {
    "fetched_utc": "2026-09-09T00:10:13Z",
    "records": 12811,
@@ -5535,14 +5540,44 @@
    "fetched_utc": "2026-09-08T04:10:11Z",
    "records": 12811,
    "sha12": "0a66b026e467"
-  },
-  {
-   "fetched_utc": "2026-09-08T02:10:13Z",
-   "records": 12811,
-   "sha12": "7f1da8745d85"
   }
  ],
  "cycles": [
+  {
+   "cycle": "cycle_0e700520864b",
+   "manifest_sha256": "0e700520864b93635abcbb008e6fefe11946113d521b41bb4ae319239c026789",
+   "first_seen_utc": "2026-09-09T07:47:42Z",
+   "status": "in-progress",
+   "files_listed": 11134,
+   "files_recorded": 0,
+   "files_failed": 0,
+   "bytes_raw": 0,
+   "wall_seconds": null,
+   "merkle_root": null,
+   "ots": {
+    "stamped": false,
+    "attested_block": null
+   },
+   "wayback": {
+    "attempted": false,
+    "manifest_verified": false,
+    "manifest_captured": false,
+    "manifest_error": null,
+    "samples_verified": 0,
+    "samples_total": 0,
+    "losses": 0,
+    "skipped": null,
+    "manifest_copy_url": null,
+    "manifest_copy_sha256": null,
+    "samples": []
+   },
+   "storage": {
+    "bytes_stored": 0,
+    "storage_class": null,
+    "local_files": true,
+    "deleted_locally_utc": null
+   }
+  },
   {
    "cycle": "cycle_23a1332e6e3c",
    "manifest_sha256": "23a1332e6e3cdb6056ca100f4d69813d8cb71f9678be784663225acdf360fce7",
@@ -5556,7 +5591,7 @@
    "merkle_root": "6d48865887d32efa51d3a0bf71891685e769f7740816319f0d82f8adf92f7237",
    "ots": {
     "stamped": true,
-    "attested_block": null
+    "attested_block": 966122
    },
    "wayback": {
     "attempted": true,
@@ -6403,8 +6438,8 @@
    "storage": {
     "bytes_stored": 9284229120,
     "storage_class": "DEEP_ARCHIVE",
-    "local_files": true,
-    "deleted_locally_utc": null
+    "local_files": false,
+    "deleted_locally_utc": "2026-09-09T08:06:55Z"
    }
   },
   {
