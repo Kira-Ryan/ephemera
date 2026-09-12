@@ -254,7 +254,7 @@
   <header class="masthead">
     <svg class="mark" width="40" height="40" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" aria-hidden="true" focusable="false"><g fill="none" stroke="#ffb347" stroke-width="8"><path d="M40.60 11.75A22 22 0 0 0 11.46 24.12"/><path d="M10.00 31.62A22 22 0 0 0 32.38 54.00" opacity="0.52"/><path d="M39.88 52.54A22 22 0 0 0 52.25 23.40" opacity="0.26"/></g><circle cx="47.56" cy="16.44" r="6" fill="#ffb347"/><rect x="24" y="24" width="16" height="16" fill="#ffb347"/></svg>
     <h1><a href="../">Ephemera</a></h1>
-    <span class="where">ephemera.space<br>built 2026-09-12 08:20 UTC</span>
+    <span class="where">ephemera.space<br>built 2026-09-12 12:20 UTC</span>
   </header>
   <p class="standfirst">An archive of the public Starlink ephemerides, hashed and anchored in Bitcoin, with a daily measure of what the public satellite catalogue can see.</p>
 
@@ -286,7 +286,7 @@
   comparison late in the file is both further ahead and matched against an older element set. The two effects are not
   separated within one cycle, which is why the headline uses only the first instant of each file.</p></div>
   <div class="tablewrap"><table><caption>By altitude shell. The lowest shell is where satellites are being raised and lowered, so its spread is the widest.</caption><thead><tr><th scope="col">shell</th><th scope="col" class="num">comparisons</th><th scope="col" class="num">median km</th><th scope="col" class="num">within 10 km</th></tr></thead><tbody><tr><td>under 400 km</td><td class="num">13,982</td><td class="num">104.5</td><td class="num">28%</td></tr><tr><td>400-500 km</td><td class="num">120,225</td><td class="num">12.7</td><td class="num">45%</td></tr><tr><td>500-600 km</td><td class="num">9,576</td><td class="num">4.5</td><td class="num">68%</td></tr></tbody></table></div>
-  <div class="z-prose"><p class="fine"><b>Feed health for this cycle.</b> 11,130 of 11,132 operator files scored. 1 have no entry in the public catalogue, of which 1 are new satellites the catalogue has not numbered yet; 0 marked decayed; 1 failed to propagate; 0 unreadable; 0 no longer matching the record. Public element sets were a mean of <b>13.7 h</b> old when the snapshot was taken (median 12.3 h, 90th percentile 22.9 h, 15 over 72 h). Averaged over every comparison, which run out to three days into the operator file, element age is 47.8 h: the difference is the file's own prediction horizon, not catalogue staleness. Space-Track: 104 snapshots held, last fetched 2026-09-12 08:10 UTC with 12,865 element sets. Poller heartbeat coverage over the last 24 h: 100.0%.</p></div>
+  <div class="z-prose"><p class="fine"><b>Feed health for this cycle.</b> 11,130 of 11,132 operator files scored. 1 have no entry in the public catalogue, of which 1 are new satellites the catalogue has not numbered yet; 0 marked decayed; 1 failed to propagate; 0 unreadable; 0 no longer matching the record. Public element sets were a mean of <b>13.7 h</b> old when the snapshot was taken (median 12.3 h, 90th percentile 22.9 h, 15 over 72 h). Averaged over every comparison, which run out to three days into the operator file, element age is 47.8 h: the difference is the file's own prediction horizon, not catalogue staleness. Space-Track: 106 snapshots held, last fetched 2026-09-12 12:10 UTC with 12,865 element sets. Poller heartbeat coverage over the last 24 h: 100.0%.</p></div>
   <aside class="z-side note">
     <h3>How this was measured</h3>
     <p>Public element set (Space-Track gp snapshot) propagated with SGP4 (skyfield 1.55, python-sgp4 2.27; TEME to GCRS by Skyfield, taken as J2000) and differenced against the operator-published trajectory (EME2000) at the file&#x27;s own record epochs every 360 min. Distance in km; components in the operator&#x27;s radial/in-track/cross-track frame; altitude is geocentric radius minus 6378.137 km; element age is evaluation epoch minus element-set epoch, signed. A comparison beyond 1000 km is counted as lost: the public set is not on the file&#x27;s trajectory at all. at_file_start takes each satellite once, at the first epoch of its own file, which is the only cut comparable between cycles. Both inputs are predictions; the operator&#x27;s includes planned trajectory changes the public set cannot know about.</p>
@@ -304,10 +304,10 @@
       <a href="https://www.linkedin.com/in/kira-ryan/">linkedin.com/in/kira-ryan</a></p>
     </div>
     <div class="build">
-      <p>Built 2026-09-12 08:20 UTC from <a href="../ledger.json">ledger.json</a>. Every figure on this page
+      <p>Built 2026-09-12 12:20 UTC from <a href="../ledger.json">ledger.json</a>. Every figure on this page
       carries the time it was true at.</p>
       <p>Cite as: Ryan, K. (2026). Ephemera: an archive of the public Starlink ephemerides and a daily measure
-      of public catalogue visibility. https://ephemera.space, retrieved 2026-09-12 08:20 UTC.</p>
+      of public catalogue visibility. https://ephemera.space, retrieved 2026-09-12 12:20 UTC.</p>
     </div>
     <div class="caveats"><p>Operator ephemerides are predictions, not observations. Starlink is the only operator with public covariance; other operators enter via CelesTrak SupGP without covariance. Public GP data is too noisy to test sub-metre covariance; the self-consistency scoreboard measures prediction-versus-later-prediction. That scoreboard is not built yet. Inputs are archived by this project and witnessed by OpenTimestamps and the Wayback Machine; they are not re-fetchable from the source after one cycle. Every figure above carries the build time it was true at. Gapped or lost items are printed, never hidden.</p></div>
   </footer>
