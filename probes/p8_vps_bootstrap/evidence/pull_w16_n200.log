@@ -1,0 +1,4 @@
+2026-09-12 16:46:09,192 INFO cycle cycle_34e224670e92: manifest sha256=34e224670e9263b9c85f58fec97c878a69251961adf042d81f91a2291d1fcb5f listed=11132 pulling=200 anomalies=0 (--limit 200: partial slice, no root)
+2026-09-12 16:46:37,862 INFO progress 200/200 (0 failed) 30s
+2026-09-12 16:46:37,882 INFO done: partial 200/11132 files, 0 failed, 10932 not attempted, 408.1 MB raw, root=None, 30s
+2026-09-12 16:46:37,882 WARNING partial slice recorded under /home/ubuntu/p8/spool_w16_n200/partial/cycle_34e224670e92 - no Merkle root by design

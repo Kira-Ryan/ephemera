@@ -1,0 +1,48 @@
+2026-09-12 16:50:10,067 INFO cycle cycle_34e224670e92: manifest sha256=34e224670e9263b9c85f58fec97c878a69251961adf042d81f91a2291d1fcb5f listed=11132 pulling=11132 anomalies=0
+2026-09-12 16:51:12,384 INFO progress 500/11132 (0 failed) 63s
+2026-09-12 16:52:18,353 INFO progress 1000/11132 (0 failed) 128s
+2026-09-12 16:53:22,499 INFO progress 1500/11132 (0 failed) 193s
+2026-09-12 16:54:27,389 INFO progress 2000/11132 (0 failed) 258s
+2026-09-12 16:55:31,986 INFO progress 2500/11132 (0 failed) 322s
+2026-09-12 16:56:36,759 INFO progress 3000/11132 (0 failed) 387s
+2026-09-12 16:57:43,271 INFO progress 3500/11132 (0 failed) 453s
+2026-09-12 16:58:47,984 INFO progress 4000/11132 (0 failed) 518s
+2026-09-12 16:59:53,165 INFO progress 4500/11132 (0 failed) 583s
+2026-09-12 17:01:02,565 INFO progress 5000/11132 (0 failed) 653s
+2026-09-12 17:02:08,676 INFO progress 5500/11132 (0 failed) 719s
+2026-09-12 17:03:11,397 INFO progress 6000/11132 (0 failed) 782s
+2026-09-12 17:04:15,963 INFO progress 6500/11132 (0 failed) 846s
+2026-09-12 17:05:19,071 INFO progress 7000/11132 (0 failed) 909s
+2026-09-12 17:06:24,277 INFO progress 7500/11132 (0 failed) 974s
+2026-09-12 17:07:27,658 INFO progress 8000/11132 (0 failed) 1038s
+2026-09-12 17:08:28,450 INFO progress 8500/11132 (0 failed) 1099s
+2026-09-12 17:09:35,106 INFO progress 9000/11132 (0 failed) 1165s
+2026-09-12 17:10:43,197 INFO progress 9500/11132 (0 failed) 1233s
+2026-09-12 17:11:47,898 INFO progress 10000/11132 (0 failed) 1298s
+2026-09-12 17:12:50,350 INFO progress 10500/11132 (0 failed) 1360s
+2026-09-12 17:13:54,765 INFO progress 11000/11132 (0 failed) 1425s
+2026-09-12 17:14:12,412 INFO progress 11132/11132 (0 failed) 1443s
+2026-09-12 17:14:12,792 INFO done: complete 11132/11132 files, 0 failed, 0 not attempted, 22599.2 MB raw, root=3a1dc167948cd8c8d478f1e96fa117da95c51308017a233e03070248ef47ad68, 1443s
+	Command being timed: "/home/ubuntu/p8/venv/bin/python archive/poll.py --spool /home/ubuntu/p8/spool_full --workers 16 --contact kiraryan27@gmail.com --min-free-gb 2"
+	User time (seconds): 2549.32
+	System time (seconds): 47.55
+	Percent of CPU this job got: 179%
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 24:03.41
+	Average shared text size (kbytes): 0
+	Average unshared data size (kbytes): 0
+	Average stack size (kbytes): 0
+	Average total size (kbytes): 0
+	Maximum resident set size (kbytes): 578392
+	Average resident set size (kbytes): 0
+	Major (requiring I/O) page faults: 21
+	Minor (reclaiming a frame) page faults: 5302417
+	Voluntary context switches: 255237
+	Involuntary context switches: 1044287
+	Swaps: 0
+	File system inputs: 8360
+	File system outputs: 18369560
+	Socket messages sent: 0
+	Socket messages received: 0
+	Signals delivered: 0
+	Page size (bytes): 4096
+	Exit status: 0

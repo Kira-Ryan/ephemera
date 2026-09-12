@@ -310,3 +310,20 @@ document's tracking table, not here.
   only-defects toggle measured in a browser, a link check over every built page, and the layout at
   390, 1024 and 1440 px in a real browser; every new test was proven by mutating its call site.
   Suite 178 -> 197.
+- 2026-09-09 - A Windows update rebooted the home PC and Docker Desktop's privileged helper
+  (com.docker.service) stopped staying up, so every OTS stamp failed for four hours while the
+  Wayback half of the witness kept working; recovered by launching Docker Desktop elevated. The
+  same day the owner ruled that nothing about the site may depend on the home machine, which is
+  item 6b. A survey and runbook for the move (six components, cutover, secrets, systemd units)
+  were produced and adversarially checked; the runbook's first step is the datacentre probe.
+- 2026-09-12 - Probe P8 run and passed (`probes/p8_vps_bootstrap/`). On a throwaway Linux host
+  under the account guard (created and destroyed the same hour, under USD 0.10), the operator's
+  feed served a datacentre address at full rate: a complete cycle, 11,132 files, 0 failed, in 24
+  minutes against 45 to 116 at home, and the Merkle root was byte-identical to the one the home
+  poller wrote for the same manifest 4.4 hours earlier (D10 observed, not argued). S3 took a 2 GiB
+  object at 55.7 MB/s, the OpenTimestamps client stamped natively in 1.5 s so Docker leaves the
+  project, Wayback did not throttle at the witness's 12 s gap, and CelesTrak answered, which the
+  home IP never could (P3 unblocked). Owner decisions the same day: hosting stays non-AWS per
+  D14 with cost a factor (Hetzner class, EUR 15 to 30 a month, unverified), and the host also
+  publishes the site. Next: the owner opens the hosting account; day one on the real host repeats
+  P8, then the runbook's cutover with both pollers running.

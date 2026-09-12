@@ -13,6 +13,7 @@ A probe that fails is a finding, not a failure.
 | P5 | What are SpaceX's terms? | Written refusal | Email the space-safety onboarding address asking for mirroring terms; record the request date and any answer in `DOCS/claims-register.md` |
 | P6 | Is `ephemeris_source:blend` the only manoeuvre-content marker? | Manoeuvre content is unlabelled in every file | Diff headers and record structure across a full cycle and across two consecutive cycles for the same satellite |
 | P7 | Can the June 2026 degradation be reproduced from what still exists? | No source retains the period | Query CelesTrak history statistics and any SupGP archive Kelso will share; if reproducible, it becomes the scoreboard's first replay |
+| P8 | Can the whole pipeline run from a datacentre IP? | The feed refuses a hosting address, a cycle projects past 6 h, S3 under 3 MB/s, or Wayback throttles the second capture | On a throwaway Linux host: reachability of every endpoint, the manifest and its 304, the pull rate with the real poller at 16 and 32 connections, a 2 GiB S3 PUT, the native OTS client, three Wayback captures at the witness's gap |
 
 Order: P5 is an email and goes out first; P1 and P2 run the same day, because the archive starts the
 moment they pass (D03); P3 is bulletin #1; P4, P6 and P7 fill the rest of the week.

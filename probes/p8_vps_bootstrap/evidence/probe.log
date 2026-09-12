@@ -1,0 +1,167 @@
+== P8 start 2026-09-12T16:44:10Z host=ip-172-31-37-141 kernel=Linux 7.0.0-1012-aws x86_64
+   os: Ubuntu 24.04.4 LTS
+   -> public_ip=34.242.139.192
+   -> os=Ubuntu 24.04.4 LTS
+   -> python=Python 3.12.3
+   -> vcpu=2
+   -> ram_gb=1
+   -> disk_free_gb_work=13
+
+== 8.1 reachability 2026-09-12T16:44:10Z
+   starlink_manifest: 200 connect=0.003383s tls=0.045335s ip=151.101.65.143  [resolves: 151.101.1.143 151.101.129.143 151.101.193.143 151.101.65.143 ]
+   -> reach_starlink_manifest=200 connect=0.003383s tls=0.045335s ip=151.101.65.143
+   spacetrack: 200 connect=0.001856s tls=0.032095s ip=34.107.153.114  [resolves: 34.107.153.114 ]
+   -> reach_spacetrack=200 connect=0.001856s tls=0.032095s ip=34.107.153.114
+   wayback: 200 connect=0.141885s tls=0.292488s ip=207.241.237.3  [resolves: 207.241.237.3 ]
+   -> reach_wayback=200 connect=0.141885s tls=0.292488s ip=207.241.237.3
+   s3_euw1: 307 connect=0.001732s tls=0.032414s ip=3.5.75.20  [resolves: 3.5.73.122 3.5.73.39 3.5.73.92 3.5.75.20 3.5.75.3 52.92.17.240 52.92.18.152 52.92.3.72 ]
+   -> reach_s3_euw1=307 connect=0.001732s tls=0.032414s ip=3.5.75.20
+   sts: 302 connect=0.002075s tls=0.033053s ip=67.220.229.110  [resolves: 67.220.229.110 ]
+   -> reach_sts=302 connect=0.002075s tls=0.033053s ip=67.220.229.110
+   github: 200 connect=0.002609s tls=0.033344s ip=4.208.26.197  [resolves: 4.208.26.197 ]
+   -> reach_github=200 connect=0.002609s tls=0.033344s ip=4.208.26.197
+   cloudflare_api: 400 connect=0.001949s tls=0.032909s ip=104.19.192.177  [resolves: 104.19.192.174 104.19.192.175 104.19.192.176 104.19.192.177 104.19.192.29 104.19.193.29 2606:4700:300a::6813:c01d 2606:4700:300a::6813:c0ae 2606:4700:300a::6813:c0af 2606:4700:300a::6813:c0b0 2606:4700:300a::6813:c0b1 2606:4700:300a::6813:c11d ]
+   -> reach_cloudflare_api=400 connect=0.001949s tls=0.032909s ip=104.19.192.177
+   celestrak: 200 connect=0.144188s tls=0.490631s ip=104.168.149.178  [resolves: 104.168.149.178 ]
+   -> reach_celestrak=200 connect=0.144188s tls=0.490631s ip=104.168.149.178
+   ots_alice: 200 connect=0.094923s tls=0.297426s ip=167.99.188.103  [resolves: 167.99.188.103 2604:a880:cad:d0::ef4:a001 ]
+   -> reach_ots_alice=200 connect=0.094923s tls=0.297426s ip=167.99.188.103
+   ots_bob: 200 connect=0.069418s tls=0.143622s ip=35.168.1.55  [resolves: 2600:1f18:4037:6d00:b550:29b4:d540:fe09 35.168.1.55 ]
+   -> reach_ots_bob=200 connect=0.069418s tls=0.143622s ip=35.168.1.55
+   ots_finney: 200 connect=0.022259s tls=0.055692s ip=51.158.62.115  [resolves: 51.158.62.115 ]
+   -> reach_ots_finney=200 connect=0.022259s tls=0.055692s ip=51.158.62.115
+   -> ipv6_default_route=none
+
+== repo and environment 2026-09-12T16:44:15Z
+   -> clone=ok d1dfb7b
+   -> pip_requirements=ok 15.9s
+   user-agent: ephemera-poller/0.2 (+archive of published ephemerides; contact: kiraryan27@gmail.com)
+
+== 8.2 manifest 2026-09-12T16:44:36Z
+   GET: 200 820999B 0.043656s
+   -> manifest_bytes=820999
+   -> manifest_lines=11131
+   -> manifest_etag="de1ccaae6fd6239c3b0938d692bfb604"
+   -> manifest_sha256=34e224670e92
+   -> manifest_conditional=304
+/home/ubuntu/probe.sh: line 113: w: unbound variable
+== P8 start 2026-09-12T16:46:00Z host=ip-172-31-37-141 kernel=Linux 7.0.0-1012-aws x86_64
+   os: Ubuntu 24.04.4 LTS
+   -> public_ip=34.242.139.192
+   -> os=Ubuntu 24.04.4 LTS
+   -> python=Python 3.12.3
+   -> vcpu=2
+   -> ram_gb=1
+   -> disk_free_gb_work=12
+
+== 8.1 reachability 2026-09-12T16:46:00Z
+   starlink_manifest: 200 connect=0.002195s tls=0.033889s ip=151.101.129.143  [resolves: 151.101.1.143 151.101.129.143 151.101.193.143 151.101.65.143 ]
+   -> reach_starlink_manifest=200 connect=0.002195s tls=0.033889s ip=151.101.129.143
+   spacetrack: 200 connect=0.001872s tls=0.032132s ip=34.107.153.114  [resolves: 34.107.153.114 ]
+   -> reach_spacetrack=200 connect=0.001872s tls=0.032132s ip=34.107.153.114
+   wayback: 200 connect=0.137158s tls=0.291140s ip=207.241.237.3  [resolves: 207.241.237.3 ]
+   -> reach_wayback=200 connect=0.137158s tls=0.291140s ip=207.241.237.3
+   s3_euw1: 307 connect=0.009524s tls=0.185643s ip=3.5.74.4  [resolves: 3.5.66.55 3.5.71.78 3.5.72.111 3.5.74.4 3.5.74.49 52.92.18.16 52.92.19.136 52.92.37.8 ]
+   -> reach_s3_euw1=307 connect=0.009524s tls=0.185643s ip=3.5.74.4
+   sts: 302 connect=0.002895s tls=0.054220s ip=67.220.227.144  [resolves: 67.220.227.144 ]
+   -> reach_sts=302 connect=0.002895s tls=0.054220s ip=67.220.227.144
+   github: 200 connect=0.004853s tls=0.069843s ip=4.208.26.197  [resolves: 4.208.26.197 ]
+   -> reach_github=200 connect=0.004853s tls=0.069843s ip=4.208.26.197
+   cloudflare_api: 400 connect=0.003502s tls=0.082793s ip=104.19.192.29  [resolves: 104.19.192.174 104.19.192.175 104.19.192.176 104.19.192.177 104.19.192.29 104.19.193.29 2606:4700:300a::6813:c01d 2606:4700:300a::6813:c0ae 2606:4700:300a::6813:c0af 2606:4700:300a::6813:c0b0 2606:4700:300a::6813:c0b1 2606:4700:300a::6813:c11d ]
+   -> reach_cloudflare_api=400 connect=0.003502s tls=0.082793s ip=104.19.192.29
+   celestrak: 200 connect=0.147044s tls=0.543409s ip=104.168.149.178  [resolves: 104.168.149.178 ]
+   -> reach_celestrak=200 connect=0.147044s tls=0.543409s ip=104.168.149.178
+   ots_alice: 200 connect=0.094763s tls=0.302031s ip=167.99.188.103  [resolves: 167.99.188.103 2604:a880:cad:d0::ef4:a001 ]
+   -> reach_ots_alice=200 connect=0.094763s tls=0.302031s ip=167.99.188.103
+   ots_bob: 200 connect=0.069067s tls=0.143016s ip=35.168.1.55  [resolves: 2600:1f18:4037:6d00:b550:29b4:d540:fe09 35.168.1.55 ]
+   -> reach_ots_bob=200 connect=0.069067s tls=0.143016s ip=35.168.1.55
+   ots_finney: 200 connect=0.021036s tls=0.054704s ip=51.158.62.115  [resolves: 51.158.62.115 ]
+   -> reach_ots_finney=200 connect=0.021036s tls=0.054704s ip=51.158.62.115
+   -> ipv6_default_route=none
+
+== repo and environment 2026-09-12T16:46:05Z
+   -> clone=ok d1dfb7b
+   -> pip_requirements=ok 1.0s
+   user-agent: ephemera-poller/0.2 (+archive of published ephemerides; contact: kiraryan27@gmail.com)
+
+== 8.2 manifest 2026-09-12T16:46:07Z
+   GET: 200 820999B 0.042286s
+   -> manifest_bytes=820999
+   -> manifest_lines=11131
+   -> manifest_etag="de1ccaae6fd6239c3b0938d692bfb604"
+   -> manifest_sha256=34e224670e92
+   -> manifest_conditional=304
+
+== 8.3 pull 200 files at 16 connections 2026-09-12T16:46:07Z
+   recorded=200 failed=0 bytes_raw=408,070,363 wall=30.7s
+   -> 6.51 files/s, 13.3 MB/s raw, projected full cycle (11,134 files) = 28.5 min
+   http errors in pull log: 1
+      1 WARNING partial slice recorded under /home/ubuntu/p8/spool_w16_n200/partial/cycle_34e224670e92 - no Merkle roo
+   -> pull_w16_n200_rc=3
+
+== 8.3 pull 400 files at 32 connections 2026-09-12T16:46:37Z
+   recorded=400 failed=0 bytes_raw=815,526,636 wall=48.6s
+   -> 8.23 files/s, 16.8 MB/s raw, projected full cycle (11,134 files) = 22.5 min
+   http errors in pull log: 1
+      1 WARNING partial slice recorded under /home/ubuntu/p8/spool_w32_n400/partial/cycle_34e224670e92 - no Merkle roo
+   -> pull_w32_n400_rc=3
+
+== 8.4 S3 upload 2026-09-12T16:47:26Z
+   -> s3_put=skipped (no PRESIGNED_PUT)
+
+== 8.5 native ots 2026-09-12T16:47:26Z
+   -> ots_version=v0.7.2
+   -> ots_stamp=ok 1.5s, proof 735 bytes
+   File sha256 hash: aee080db4177b4f9392207575a7b88415e602e7ab9e25a4effedc88b38058f1e
+   Timestamp:
+   append 64b7a3c8be5c26bee60b41a778ea4dab
+   sha256
+    -> append 0ea9127558360bd2
+       sha256
+
+== 8.6 wayback 2026-09-12T16:47:31Z
+   capture 0: ERROR no capture timestamp in SPN response (HTTP 523, url https://web.archive.org/save/https://a  (8s)
+   capture 1: ok ts=20260912164751  (8s)
+   capture 2: ok ts=20260912164811  (8s)
+
+== P8 end 2026-09-12T16:48:18Z
+== results.txt
+   public_ip=34.242.139.192
+   os=Ubuntu 24.04.4 LTS
+   python=Python 3.12.3
+   vcpu=2
+   ram_gb=1
+   disk_free_gb_work=12
+   reach_starlink_manifest=200 connect=0.002195s tls=0.033889s ip=151.101.129.143
+   reach_spacetrack=200 connect=0.001872s tls=0.032132s ip=34.107.153.114
+   reach_wayback=200 connect=0.137158s tls=0.291140s ip=207.241.237.3
+   reach_s3_euw1=307 connect=0.009524s tls=0.185643s ip=3.5.74.4
+   reach_sts=302 connect=0.002895s tls=0.054220s ip=67.220.227.144
+   reach_github=200 connect=0.004853s tls=0.069843s ip=4.208.26.197
+   reach_cloudflare_api=400 connect=0.003502s tls=0.082793s ip=104.19.192.29
+   reach_celestrak=200 connect=0.147044s tls=0.543409s ip=104.168.149.178
+   reach_ots_alice=200 connect=0.094763s tls=0.302031s ip=167.99.188.103
+   reach_ots_bob=200 connect=0.069067s tls=0.143016s ip=35.168.1.55
+   reach_ots_finney=200 connect=0.021036s tls=0.054704s ip=51.158.62.115
+   ipv6_default_route=none
+   clone=ok d1dfb7b
+   pip_requirements=ok 1.0s
+   manifest_bytes=820999
+   manifest_lines=11131
+   manifest_etag="de1ccaae6fd6239c3b0938d692bfb604"
+   manifest_sha256=34e224670e92
+   manifest_conditional=304
+   pull_w16_n200_files_per_s=6.51
+   pull_w16_n200_MB_per_s=13.3
+   pull_w16_n200_failed=0
+   pull_w16_n200_projected_cycle_min=28.5
+   pull_w16_n200_rc=3
+   pull_w32_n400_files_per_s=8.23
+   pull_w32_n400_MB_per_s=16.8
+   pull_w32_n400_failed=0
+   pull_w32_n400_projected_cycle_min=22.5
+   pull_w32_n400_rc=3
+   s3_put=skipped (no PRESIGNED_PUT)
+   ots_version=v0.7.2
+   ots_stamp=ok 1.5s, proof 735 bytes
+   wayback_first_429_at=none in 3
