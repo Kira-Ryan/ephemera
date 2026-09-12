@@ -2,3 +2,8 @@
 # (the P2 root.txt is CRLF by history - see probes/p2_witnessing/README.md). Never normalise it.
 probes/p2_witnessing/evidence/** -text
 *.ots binary
+
+# Scripts run on Linux hosts must stay LF on every checkout, or bash sees $'' at each line end.
+*.sh text eol=lf
+# P8 evidence is byte-exact like P2 (the root file is 64 hex plus LF, D12).
+probes/p8_vps_bootstrap/evidence/** -text
