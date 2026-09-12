@@ -17,7 +17,7 @@ conditional requests so a poller can resume without re-downloading?
 | Conditional requests | `ETag`, `Last-Modified`, HTTP 304 | 30 Aug 2026 | GET with `If-None-Match` |
 | `HEAD` | 404 | 30 Aug 2026 | use GET for headers |
 | Files per cycle, second sample | **17,861** (11,027 satellites; 6,834 with two files) | 30 Aug 2026 15:28 UTC | manifest sha `72bcd7796b49…`, fetched by the poller |
-| Sustained 11,099-file pull from a datacentre IP | **not yet measured** | — | first full run on the VPS (PLAN.md item 6b) |
+| Sustained full-cycle pull from a datacentre IP | **24 min 3 s, 11,132 files, 0 failed, 22.6 GB raw** (7.7 files/s, 15.7 MB/s), peak RSS 578 MB, 179% of 2 vCPU | 12 Sep 2026 | `poll.py --workers 16` on an AWS t3.small in eu-west-1; probe P8, `probes/p8_vps_bootstrap/README.md` |
 
 **The file count is not constant.** The morning manifest listed 11,099 files; the 15:28 UTC manifest
 listed 17,861 for 11,027 distinct NORAD ids — 6,834 satellites appeared twice, with two different

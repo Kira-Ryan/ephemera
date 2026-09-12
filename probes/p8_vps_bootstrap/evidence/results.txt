@@ -1,0 +1,41 @@
+public_ip=34.242.139.192
+os=Ubuntu 24.04.4 LTS
+python=Python 3.12.3
+vcpu=2
+ram_gb=1
+disk_free_gb_work=12
+reach_starlink_manifest=200 connect=0.002195s tls=0.033889s ip=151.101.129.143
+reach_spacetrack=200 connect=0.001872s tls=0.032132s ip=34.107.153.114
+reach_wayback=200 connect=0.137158s tls=0.291140s ip=207.241.237.3
+reach_s3_euw1=307 connect=0.009524s tls=0.185643s ip=3.5.74.4
+reach_sts=302 connect=0.002895s tls=0.054220s ip=67.220.227.144
+reach_github=200 connect=0.004853s tls=0.069843s ip=4.208.26.197
+reach_cloudflare_api=400 connect=0.003502s tls=0.082793s ip=104.19.192.29
+reach_celestrak=200 connect=0.147044s tls=0.543409s ip=104.168.149.178
+reach_ots_alice=200 connect=0.094763s tls=0.302031s ip=167.99.188.103
+reach_ots_bob=200 connect=0.069067s tls=0.143016s ip=35.168.1.55
+reach_ots_finney=200 connect=0.021036s tls=0.054704s ip=51.158.62.115
+ipv6_default_route=none
+clone=ok d1dfb7b
+pip_requirements=ok 1.0s
+manifest_bytes=820999
+manifest_lines=11131
+manifest_etag="de1ccaae6fd6239c3b0938d692bfb604"
+manifest_sha256=34e224670e92
+manifest_conditional=304
+pull_w16_n200_files_per_s=6.51
+pull_w16_n200_MB_per_s=13.3
+pull_w16_n200_failed=0
+pull_w16_n200_projected_cycle_min=28.5
+pull_w16_n200_rc=3
+pull_w32_n400_files_per_s=8.23
+pull_w32_n400_MB_per_s=16.8
+pull_w32_n400_failed=0
+pull_w32_n400_projected_cycle_min=22.5
+pull_w32_n400_rc=3
+ots_version=v0.7.2
+ots_stamp=ok 1.5s, proof 735 bytes
+wayback_first_429_at=none in 3
+s3_put_http=200
+s3_put_MB_per_s=55.7
+s3_put_total_s=38.520255
