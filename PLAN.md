@@ -327,3 +327,23 @@ document's tracking table, not here.
   D14 with cost a factor (Hetzner class, EUR 15 to 30 a month, unverified), and the host also
   publishes the site. Next: the owner opens the hosting account; day one on the real host repeats
   P8, then the runbook's cutover with both pollers running.
+- 2026-09-13 - The globe packs left git for Cloudflare R2, and the repository went from 97 MB to
+  3.0 MB. A 5.2 MB pack had been committed once per scored cycle, three times a day, and every
+  cloner of a public repository downloads all of it; the projection was about 3 GB a year.
+  infra/r2_packs.py publishes each pack under its own cycle key at packs.ephemera.space, guarded by
+  the same personal allowlist the AWS and Cloudflare scripts use, and it never deletes, so R2 now
+  holds more history than git did: git only ever carried whichever pack was headline at each build.
+  web/build.py takes --pack-base-url and stops copying the pack in when it has one; web/publish.py
+  uploads before it builds and fails loudly rather than falling back to committing the blob. All 40
+  packs verified byte-identical over the public domain with CORS scoped to the site's origin, the
+  live globe checked in a browser, and history rewritten with all 144 commits preserved.
+  Also: archive/restore.py, the restore drill item 8 was missing, resumable across the 12 to 48 hour
+  Bulk wait and checking the whole evidence chain rather than the object hash alone. And the
+  interrupt test's flake was a wall-clock trigger asserting who won a race between the stop event
+  and the queue cancellation; it now fires on the pull's own progress and pins that the remainder is
+  accounted for. Suite 197 -> 227.
+  Outreach: the first ally email went to T.S. Kelso on 13 Sep (DOCS/outreach/kelso-2026-09-13.md),
+  which starts the 7-day clock in the public launch gate.
+  Still open: the cutover section of DOCS/migration-runbook.md failed a third adversarial pass with
+  two blockers, both from re-sync steps specified with skip-existing semantics, so they are no-ops
+  for exactly the files they exist to refresh. It is NOT ready to follow.
