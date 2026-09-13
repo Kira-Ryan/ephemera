@@ -36,3 +36,8 @@ infra/*.env
 # Derived score and globe products written by web/build.py runs done by hand.
 # The spool under Z: is the store of record; nothing here needs committing.
 data/
+# The globe pack is 5.2 MB and a new one is produced per scored cycle, three times a day. It is a
+# rendering input, not a published figure: the ledger carries the summary and a pack is regenerable
+# from its scored report and the archived files. Committing them grew .git to 96 MB in eleven days.
+# infra/r2_packs.py publishes each one to R2 under its own cycle key and the site links it there.
+web/dist/globe/pack.json

@@ -22,6 +22,9 @@ import sys
 from pathlib import Path
 
 REPO = Path(__file__).resolve().parents[1]
+# Where the sibling modules live, resolved once at import. REPO is redirected by the tests to a
+# throwaway repository, and the code to import does not move with it.
+INFRA = Path(__file__).resolve().parents[1] / "infra"
 log = logging.getLogger("ephemera.publish")
 
 
@@ -110,6 +113,33 @@ def sync_with_published() -> tuple[int, str | None]:
     return 0, upstream
 
 
+def publish_packs(spool: Path) -> tuple[int, str | None]:
+    """Put every globe pack in object storage and return the base URL the build should record.
+
+    (0, url) when they are published, (0, None) when no object storage is configured, and non-zero
+    when it is configured and the upload failed. That last case deliberately stops the publish
+    rather than falling back to copying the pack into the site: the fallback would put a 5.2 MB blob
+    back into web/dist and therefore into git, which is the thing moving the packs to R2 removed.
+    The site keeps serving its previous build until the storage comes back, which is loud and
+    recoverable, where a silent 3 GB a year is neither."""
+    sys.path.insert(0, str(INFRA))
+    import r2_packs  # noqa: PLC0415 - optional, and only on the host that publishes
+
+    try:
+        env = r2_packs.settings()
+    except r2_packs.R2Refused as e:
+        log.info("globe packs stay in the site: %s", e)
+        return 0, None
+    r = r2_packs.sync(spool)
+    if r["failed"]:
+        log.error("globe pack upload failed for %d of %d - nothing published", len(r["failed"]), r["local"])
+        for f in r["failed"]:
+            log.error("  %s", f)
+        return 1, None
+    log.info("globe packs: %d uploaded, %d already published", len(r["uploaded"]), len(r["skipped"]))
+    return 0, r2_packs.public_url(env, "").rsplit("/", 1)[0] + "/"
+
+
 def built_cycle_count(dist: Path) -> int:
     return int(json.loads((dist / "ledger.json").read_text(encoding="utf-8"))["totals"]["cycles"])
 
@@ -132,11 +162,18 @@ def main(argv: list[str] | None = None) -> int:
     if rc != 0:
         return rc
 
+    # The packs go up before the build, because the build records their URLs and must never
+    # record a URL for an object that is not there yet.
+    rc, pack_base = publish_packs(args.spool)
+    if rc != 0:
+        return rc
+
     import build  # noqa: PLC0415 - sibling module
     # The output directory is stated, never defaulted: build.py's default is its own repository's
     # web/dist, and a test that pointed this module at a sandbox once let the build write an empty
     # site into the real tree, which was then committed and deployed.
-    rc = build.main(["--spool", str(args.spool), "--out", str(REPO / "web" / "dist")])
+    rc = build.main(["--spool", str(args.spool), "--out", str(REPO / "web" / "dist")]
+                    + (["--pack-base-url", pack_base] if pack_base else []))
     if rc != 0:
         log.error("build failed (rc %s) - nothing published", rc)
         return rc
@@ -152,10 +189,12 @@ def main(argv: list[str] | None = None) -> int:
     # tell the world the archive is gone. Refused unless the operator says the shrink is real.
     # The baseline is the larger of what origin publishes and what this clone has already
     # committed, because a successful push makes both of them public. Reading HEAD alone let a
-    # clone that was behind origin measure itself against a stale published count and pass. The
-    # two counts agree on every path that reaches this line, because the build only runs on a
-    # clone that has taken everything origin published; reading both is what keeps the guard from
-    # depending on that ordering, and no test can tell the two halves apart while it holds.
+    # clone that was behind origin measure itself against a stale published count and pass, and
+    # reading the upstream alone misses a build committed here and not yet pushed. The two halves
+    # can only differ one way: sync_with_published() has already put everything origin published
+    # into HEAD, so HEAD is never the older history, but a commit made here after that can hold
+    # fewer cycles than origin still serves - which is what one --allow-shrink run whose push
+    # failed, or which was told not to push, leaves for the next run to measure itself against.
     counts = [c for c in (ledger_cycle_count(upstream) if upstream else None,
                           ledger_cycle_count("HEAD")) if c is not None]
     before, after = (max(counts) if counts else None), built_cycle_count(REPO / "web" / "dist")

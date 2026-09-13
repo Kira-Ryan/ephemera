@@ -35,7 +35,15 @@ the site's browser tests so a regression cannot ship.
 ## Unverified as of 2026-08-30 (resolve in week one)
 
 - SpaceX public-files terms of use (README states none; it describes the folder as "a mirror of the ephemeris files Starlink uploads to space-track.org"). Request sent: **31 Aug 2026**, to space-safety-onboarding@spacex.com (address confirmed from the space-safety.starlink.com application bundle), from a personal address; sent text in `probes/p5_spacex_terms/email-draft.md`. Answer: *pending*. D06 closes on an answer or on 30 Sep 2026.
-- Whether CelesTrak will share or co-publish a SupGP / ephemeris history archive. Ask: *date*.
+- Whether CelesTrak will share or co-publish a SupGP / ephemeris history archive. Asked: **13 Sep
+  2026**, to TS.Kelso@celestrak.org (address confirmed the same day from celestrak.org/webmaster.php),
+  from the personal address; sent text in `DOCS/outreach/kelso-2026-09-13.md`. Answer: *pending*.
+  This is the first ally contact (PLAN item 11) and it starts the 7-day clock in the public launch
+  gate. The figures quoted in it are from the ledger of 2026-09-13 08:20 UTC and are repeated here
+  so a later correction can find them: 90 percent of scored Starlink satellites within 10 km of the
+  operator-published trajectory at the first instant of each file, median separation 2.0 km, rising
+  to a 32.3 km median where the public element set is 48 to 72 hours old; 44 cycles, all
+  Bitcoin-attested; 991 GB as served, 408 GB stored gzipped.
 - Whether Space-Track's blanket redistribution approval covers bulk `gp_history` pulls at the stated
   rate limits (30 requests/min, 300/hour). Approval covers redistribution, not rate.
 - Whether the header line `ephemeris_source:blend` is the only manoeuvre-content marker (checked on
