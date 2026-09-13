@@ -1,18 +1,18 @@
 {
  "schema": 2,
- "generated_utc": "2026-09-13T12:20:03Z",
+ "generated_utc": "2026-09-13T13:33:22Z",
  "poller": "home (Cape Town, residential; single poller until poller A exists)",
  "method": "built from each cycle's cycle.json, witness.json and ship.json in the poller's spool; coverage is the fraction of the last 24 h's minutes with a watcher heartbeat under 10 minutes old (D18); a cadence hold is a manifest first-seen gap over 9 h; source bytes are the responses as served, stored bytes are the gzipped archive objects the shipper recorded",
  "totals": {
-  "cycles": 44,
-  "complete": 44,
+  "cycles": 45,
+  "complete": 45,
   "attested": 44,
-  "witness_defects": 9,
-  "bytes_raw": 991424695166,
+  "witness_defects": 10,
+  "bytes_raw": 1014022777592,
   "bytes_stored": 407629936640,
-  "bytes_stored_local": 83608913920,
-  "bytes_stored_cold_only": 324021022720,
-  "files": 488476,
+  "bytes_stored_local": 74315499520,
+  "bytes_stored_cold_only": 333314437120,
+  "files": 499606,
   "cadence_holds": 5
  },
  "coverage_24h": 1.0,
@@ -227,7 +227,8 @@
       "lost_fraction": 0.038
      }
     ],
-    "pack": "globe_cb82167ca7de.json"
+    "pack": "globe_cb82167ca7de.json",
+    "pack_url": "https://packs.ephemera.space/globe/cb82167ca7de.json"
    },
    {
     "cycle": "cycle_4315951240b7",
@@ -423,7 +424,8 @@
       "lost_fraction": 0.0477
      }
     ],
-    "pack": "globe_4315951240b7.json"
+    "pack": "globe_4315951240b7.json",
+    "pack_url": "https://packs.ephemera.space/globe/4315951240b7.json"
    },
    {
     "cycle": "cycle_34e224670e92",
@@ -634,7 +636,8 @@
       "lost_fraction": 0.0367
      }
     ],
-    "pack": "globe_34e224670e92.json"
+    "pack": "globe_34e224670e92.json",
+    "pack_url": "https://packs.ephemera.space/globe/34e224670e92.json"
    },
    {
     "cycle": "cycle_e733991c6cf7",
@@ -830,7 +833,8 @@
       "lost_fraction": 0.0374
      }
     ],
-    "pack": "globe_e733991c6cf7.json"
+    "pack": "globe_e733991c6cf7.json",
+    "pack_url": "https://packs.ephemera.space/globe/e733991c6cf7.json"
    },
    {
     "cycle": "cycle_ff4c381634b2",
@@ -1026,7 +1030,8 @@
       "lost_fraction": 0.0448
      }
     ],
-    "pack": "globe_ff4c381634b2.json"
+    "pack": "globe_ff4c381634b2.json",
+    "pack_url": "https://packs.ephemera.space/globe/ff4c381634b2.json"
    },
    {
     "cycle": "cycle_fb35070bc8cc",
@@ -1222,7 +1227,8 @@
       "lost_fraction": 0.0395
      }
     ],
-    "pack": "globe_fb35070bc8cc.json"
+    "pack": "globe_fb35070bc8cc.json",
+    "pack_url": "https://packs.ephemera.space/globe/fb35070bc8cc.json"
    },
    {
     "cycle": "cycle_037b70d571b4",
@@ -1418,7 +1424,8 @@
       "lost_fraction": 0.0406
      }
     ],
-    "pack": "globe_037b70d571b4.json"
+    "pack": "globe_037b70d571b4.json",
+    "pack_url": "https://packs.ephemera.space/globe/037b70d571b4.json"
    },
    {
     "cycle": "cycle_70952566cb20",
@@ -1629,7 +1636,8 @@
       "lost_fraction": 0.0375
      }
     ],
-    "pack": "globe_70952566cb20.json"
+    "pack": "globe_70952566cb20.json",
+    "pack_url": "https://packs.ephemera.space/globe/70952566cb20.json"
    },
    {
     "cycle": "cycle_07dc41f19d80",
@@ -1825,7 +1833,8 @@
       "lost_fraction": 0.0428
      }
     ],
-    "pack": "globe_07dc41f19d80.json"
+    "pack": "globe_07dc41f19d80.json",
+    "pack_url": "https://packs.ephemera.space/globe/07dc41f19d80.json"
    },
    {
     "cycle": "cycle_66a2835fd201",
@@ -2021,7 +2030,8 @@
       "lost_fraction": 0.0433
      }
     ],
-    "pack": "globe_66a2835fd201.json"
+    "pack": "globe_66a2835fd201.json",
+    "pack_url": "https://packs.ephemera.space/globe/66a2835fd201.json"
    },
    {
     "cycle": "cycle_11dcd35c2c44",
@@ -2217,7 +2227,8 @@
       "lost_fraction": 0.0479
      }
     ],
-    "pack": "globe_11dcd35c2c44.json"
+    "pack": "globe_11dcd35c2c44.json",
+    "pack_url": "https://packs.ephemera.space/globe/11dcd35c2c44.json"
    },
    {
     "cycle": "cycle_89a232495ad5",
@@ -2413,7 +2424,8 @@
       "lost_fraction": 0.0474
      }
     ],
-    "pack": "globe_89a232495ad5.json"
+    "pack": "globe_89a232495ad5.json",
+    "pack_url": "https://packs.ephemera.space/globe/89a232495ad5.json"
    },
    {
     "cycle": "cycle_0e700520864b",
@@ -2609,7 +2621,8 @@
       "lost_fraction": 0.0639
      }
     ],
-    "pack": "globe_0e700520864b.json"
+    "pack": "globe_0e700520864b.json",
+    "pack_url": "https://packs.ephemera.space/globe/0e700520864b.json"
    },
    {
     "cycle": "cycle_23a1332e6e3c",
@@ -2805,7 +2818,8 @@
       "lost_fraction": 0.0512
      }
     ],
-    "pack": "globe_23a1332e6e3c.json"
+    "pack": "globe_23a1332e6e3c.json",
+    "pack_url": "https://packs.ephemera.space/globe/23a1332e6e3c.json"
    },
    {
     "cycle": "cycle_1e127b6ea098",
@@ -3016,7 +3030,8 @@
       "lost_fraction": 0.0515
      }
     ],
-    "pack": "globe_1e127b6ea098.json"
+    "pack": "globe_1e127b6ea098.json",
+    "pack_url": "https://packs.ephemera.space/globe/1e127b6ea098.json"
    },
    {
     "cycle": "cycle_1b3b36972d57",
@@ -3212,7 +3227,8 @@
       "lost_fraction": 0.0494
      }
     ],
-    "pack": "globe_1b3b36972d57.json"
+    "pack": "globe_1b3b36972d57.json",
+    "pack_url": "https://packs.ephemera.space/globe/1b3b36972d57.json"
    },
    {
     "cycle": "cycle_f5bbbcd6b2a8",
@@ -3408,7 +3424,8 @@
       "lost_fraction": 0.0473
      }
     ],
-    "pack": "globe_f5bbbcd6b2a8.json"
+    "pack": "globe_f5bbbcd6b2a8.json",
+    "pack_url": "https://packs.ephemera.space/globe/f5bbbcd6b2a8.json"
    },
    {
     "cycle": "cycle_2935545a26e2",
@@ -3604,7 +3621,8 @@
       "lost_fraction": 0.0458
      }
     ],
-    "pack": "globe_2935545a26e2.json"
+    "pack": "globe_2935545a26e2.json",
+    "pack_url": "https://packs.ephemera.space/globe/2935545a26e2.json"
    },
    {
     "cycle": "cycle_4803b98c2e2c",
@@ -3800,7 +3818,8 @@
       "lost_fraction": 0.0443
      }
     ],
-    "pack": "globe_4803b98c2e2c.json"
+    "pack": "globe_4803b98c2e2c.json",
+    "pack_url": "https://packs.ephemera.space/globe/4803b98c2e2c.json"
    },
    {
     "cycle": "cycle_e6c17386d359",
@@ -4011,7 +4030,8 @@
       "lost_fraction": 0.0391
      }
     ],
-    "pack": "globe_e6c17386d359.json"
+    "pack": "globe_e6c17386d359.json",
+    "pack_url": "https://packs.ephemera.space/globe/e6c17386d359.json"
    },
    {
     "cycle": "cycle_d475086e7ca5",
@@ -4207,7 +4227,8 @@
       "lost_fraction": 0.0387
      }
     ],
-    "pack": "globe_d475086e7ca5.json"
+    "pack": "globe_d475086e7ca5.json",
+    "pack_url": "https://packs.ephemera.space/globe/d475086e7ca5.json"
    },
    {
     "cycle": "cycle_035065e7ec46",
@@ -4402,7 +4423,8 @@
       "lost_fraction": 0.0353
      }
     ],
-    "pack": "globe_035065e7ec46.json"
+    "pack": "globe_035065e7ec46.json",
+    "pack_url": "https://packs.ephemera.space/globe/035065e7ec46.json"
    },
    {
     "cycle": "cycle_8c1b1c3f5d69",
@@ -4597,7 +4619,8 @@
       "lost_fraction": 0.0341
      }
     ],
-    "pack": "globe_8c1b1c3f5d69.json"
+    "pack": "globe_8c1b1c3f5d69.json",
+    "pack_url": "https://packs.ephemera.space/globe/8c1b1c3f5d69.json"
    },
    {
     "cycle": "cycle_a68f33d2d2f7",
@@ -4792,7 +4815,8 @@
       "lost_fraction": 0.0376
      }
     ],
-    "pack": "globe_a68f33d2d2f7.json"
+    "pack": "globe_a68f33d2d2f7.json",
+    "pack_url": "https://packs.ephemera.space/globe/a68f33d2d2f7.json"
    },
    {
     "cycle": "cycle_729590130225",
@@ -4987,7 +5011,8 @@
       "lost_fraction": 0.0337
      }
     ],
-    "pack": "globe_729590130225.json"
+    "pack": "globe_729590130225.json",
+    "pack_url": "https://packs.ephemera.space/globe/729590130225.json"
    },
    {
     "cycle": "cycle_5ccb4ed5d13a",
@@ -5197,7 +5222,8 @@
       "lost_fraction": 0.0332
      }
     ],
-    "pack": "globe_5ccb4ed5d13a.json"
+    "pack": "globe_5ccb4ed5d13a.json",
+    "pack_url": "https://packs.ephemera.space/globe/5ccb4ed5d13a.json"
    },
    {
     "cycle": "cycle_03329cf37459",
@@ -5407,7 +5433,8 @@
       "lost_fraction": 0.0389
      }
     ],
-    "pack": "globe_03329cf37459.json"
+    "pack": "globe_03329cf37459.json",
+    "pack_url": "https://packs.ephemera.space/globe/03329cf37459.json"
    },
    {
     "cycle": "cycle_500ae4c3a713",
@@ -5602,7 +5629,8 @@
       "lost_fraction": 0.0402
      }
     ],
-    "pack": "globe_500ae4c3a713.json"
+    "pack": "globe_500ae4c3a713.json",
+    "pack_url": "https://packs.ephemera.space/globe/500ae4c3a713.json"
    },
    {
     "cycle": "cycle_f842b22c4167",
@@ -5812,7 +5840,8 @@
       "lost_fraction": 0.0387
      }
     ],
-    "pack": "globe_f842b22c4167.json"
+    "pack": "globe_f842b22c4167.json",
+    "pack_url": "https://packs.ephemera.space/globe/f842b22c4167.json"
    },
    {
     "cycle": "cycle_a39dfdfee0fd",
@@ -6007,7 +6036,8 @@
       "lost_fraction": 0.0515
      }
     ],
-    "pack": "globe_a39dfdfee0fd.json"
+    "pack": "globe_a39dfdfee0fd.json",
+    "pack_url": "https://packs.ephemera.space/globe/a39dfdfee0fd.json"
    },
    {
     "cycle": "cycle_1e726fe006d9",
@@ -6201,7 +6231,8 @@
       "lost_fraction": 0.0692
      }
     ],
-    "pack": "globe_1e726fe006d9.json"
+    "pack": "globe_1e726fe006d9.json",
+    "pack_url": "https://packs.ephemera.space/globe/1e726fe006d9.json"
    },
    {
     "cycle": "cycle_b37c74c03907",
@@ -6410,7 +6441,8 @@
       "lost_fraction": 0.0605
      }
     ],
-    "pack": "globe_b37c74c03907.json"
+    "pack": "globe_b37c74c03907.json",
+    "pack_url": "https://packs.ephemera.space/globe/b37c74c03907.json"
    },
    {
     "cycle": "cycle_3572d8775913",
@@ -6604,7 +6636,8 @@
       "lost_fraction": 0.0572
      }
     ],
-    "pack": "globe_3572d8775913.json"
+    "pack": "globe_3572d8775913.json",
+    "pack_url": "https://packs.ephemera.space/globe/3572d8775913.json"
    },
    {
     "cycle": "cycle_f5112bb77a2a",
@@ -6813,7 +6846,8 @@
       "lost_fraction": 0.0466
      }
     ],
-    "pack": "globe_f5112bb77a2a.json"
+    "pack": "globe_f5112bb77a2a.json",
+    "pack_url": "https://packs.ephemera.space/globe/f5112bb77a2a.json"
    },
    {
     "cycle": "cycle_0a85a65d5dbe",
@@ -7022,7 +7056,8 @@
       "lost_fraction": 0.0364
      }
     ],
-    "pack": "globe_0a85a65d5dbe.json"
+    "pack": "globe_0a85a65d5dbe.json",
+    "pack_url": "https://packs.ephemera.space/globe/0a85a65d5dbe.json"
    },
    {
     "cycle": "cycle_51d5c047650a",
@@ -7231,7 +7266,8 @@
       "lost_fraction": 0.0311
      }
     ],
-    "pack": "globe_51d5c047650a.json"
+    "pack": "globe_51d5c047650a.json",
+    "pack_url": "https://packs.ephemera.space/globe/51d5c047650a.json"
    },
    {
     "cycle": "cycle_7414ea02eac1",
@@ -7440,7 +7476,8 @@
       "lost_fraction": 0.0305
      }
     ],
-    "pack": "globe_7414ea02eac1.json"
+    "pack": "globe_7414ea02eac1.json",
+    "pack_url": "https://packs.ephemera.space/globe/7414ea02eac1.json"
    },
    {
     "cycle": "cycle_7be3c2c6fc2c",
@@ -7649,7 +7686,8 @@
       "lost_fraction": 0.0306
      }
     ],
-    "pack": "globe_7be3c2c6fc2c.json"
+    "pack": "globe_7be3c2c6fc2c.json",
+    "pack_url": "https://packs.ephemera.space/globe/7be3c2c6fc2c.json"
    },
    {
     "cycle": "cycle_d03dc522da18",
@@ -7858,7 +7896,8 @@
       "lost_fraction": 0.0382
      }
     ],
-    "pack": "globe_d03dc522da18.json"
+    "pack": "globe_d03dc522da18.json",
+    "pack_url": "https://packs.ephemera.space/globe/d03dc522da18.json"
    },
    {
     "cycle": "cycle_513b92c4683e",
@@ -8067,7 +8106,8 @@
       "lost_fraction": 0.0448
      }
     ],
-    "pack": "globe_513b92c4683e.json"
+    "pack": "globe_513b92c4683e.json",
+    "pack_url": "https://packs.ephemera.space/globe/513b92c4683e.json"
    }
   ],
   "latest": "cycle_cb82167ca7de"
@@ -8136,6 +8176,102 @@
   }
  ],
  "cycles": [
+  {
+   "cycle": "cycle_bf78e9220854",
+   "manifest_sha256": "bf78e9220854b846955f637485093cd20d4cd484351f3a604fcd6c910624378e",
+   "first_seen_utc": "2026-09-13T12:37:15Z",
+   "status": "complete",
+   "files_listed": 11130,
+   "files_recorded": 11130,
+   "files_failed": 0,
+   "bytes_raw": 22598082426,
+   "wall_seconds": 2792.7,
+   "merkle_root": "adc6c0537eaa0ffed6245576f2e16dc915810b7d41648b3ff01f27c2a2fdd8e8",
+   "ots": {
+    "stamped": true,
+    "attested_block": null
+   },
+   "wayback": {
+    "attempted": true,
+    "manifest_verified": false,
+    "manifest_captured": false,
+    "manifest_error": "no capture timestamp in SPN response (HTTP 500, url https://web.archive.org/save/https://api.starlink.com/public-files/ephemerides/MANIFEST.txt?cycle=bf78e9220854)",
+    "samples_verified": 0,
+    "samples_total": 10,
+    "losses": 0,
+    "skipped": null,
+    "manifest_copy_url": null,
+    "manifest_copy_sha256": null,
+    "samples": [
+     {
+      "name": "MEME_57337_STARLINK-6322_2561112_Operational_1473592380_UNCLASSIFIED.txt",
+      "copy_url": null,
+      "sha256_of_copy": null,
+      "verified": false
+     },
+     {
+      "name": "MEME_57361_STARLINK-6340_2561116_Operational_1473592620_UNCLASSIFIED.txt",
+      "copy_url": null,
+      "sha256_of_copy": null,
+      "verified": false
+     },
+     {
+      "name": "MEME_57376_STARLINK-6367_2561108_Operational_1473592140_UNCLASSIFIED.txt",
+      "copy_url": null,
+      "sha256_of_copy": null,
+      "verified": false
+     },
+     {
+      "name": "MEME_57614_STARLINK-30244_2561055_Operational_1473591360_UNCLASSIFIED.txt",
+      "copy_url": null,
+      "sha256_of_copy": null,
+      "verified": false
+     },
+     {
+      "name": "MEME_57814_STARLINK-30413_2561058_Operational_1473591540_UNCLASSIFIED.txt",
+      "copy_url": null,
+      "sha256_of_copy": null,
+      "verified": false
+     },
+     {
+      "name": "MEME_62427_STARLINK-32659_2561012_Operational_1473588780_UNCLASSIFIED.txt",
+      "copy_url": null,
+      "sha256_of_copy": null,
+      "verified": false
+     },
+     {
+      "name": "MEME_63590_STARLINK-33805_2561003_Operational_1473588240_UNCLASSIFIED.txt",
+      "copy_url": null,
+      "sha256_of_copy": null,
+      "verified": false
+     },
+     {
+      "name": "MEME_64489_STARLINK-34307_2560953_Operational_1473587640_UNCLASSIFIED.txt",
+      "copy_url": null,
+      "sha256_of_copy": null,
+      "verified": false
+     },
+     {
+      "name": "MEME_65018_STARLINK-34623_2560953_Operational_1473587640_UNCLASSIFIED.txt",
+      "copy_url": null,
+      "sha256_of_copy": null,
+      "verified": false
+     },
+     {
+      "name": "MEME_66535_STARLINK-35514_2560932_Operational_1473586380_UNCLASSIFIED.txt",
+      "copy_url": null,
+      "sha256_of_copy": null,
+      "verified": false
+     }
+    ]
+   },
+   "storage": {
+    "bytes_stored": 0,
+    "storage_class": null,
+    "local_files": true,
+    "deleted_locally_utc": null
+   }
+  },
   {
    "cycle": "cycle_cb82167ca7de",
    "manifest_sha256": "cb82167ca7dedc55a4482a5f0eb043e264eefc1c5ff87087701a222654a7a201",
@@ -8996,8 +9132,8 @@
    "storage": {
     "bytes_stored": 9293414400,
     "storage_class": "DEEP_ARCHIVE",
-    "local_files": true,
-    "deleted_locally_utc": null
+    "local_files": false,
+    "deleted_locally_utc": "2026-09-13T13:06:52Z"
    }
   },
   {
