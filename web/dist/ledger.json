@@ -1,6 +1,6 @@
 {
  "schema": 2,
- "generated_utc": "2026-09-13T08:20:00Z",
+ "generated_utc": "2026-09-13T12:20:03Z",
  "poller": "home (Cape Town, residential; single poller until poller A exists)",
  "method": "built from each cycle's cycle.json, witness.json and ship.json in the poller's spool; coverage is the fraction of the last 24 h's minutes with a watcher heartbeat under 10 minutes old (D18); a cadence hold is a manifest first-seen gap over 9 h; source bytes are the responses as served, stored bytes are the gzipped archive objects the shipper recorded",
  "totals": {
@@ -227,7 +227,7 @@
       "lost_fraction": 0.038
      }
     ],
-    "pack": "Z:\\ephemera\\spool\\score\\globe_cb82167ca7de.json"
+    "pack": "globe_cb82167ca7de.json"
    },
    {
     "cycle": "cycle_4315951240b7",
@@ -423,7 +423,7 @@
       "lost_fraction": 0.0477
      }
     ],
-    "pack": "Z:\\ephemera\\spool\\score\\globe_4315951240b7.json"
+    "pack": "globe_4315951240b7.json"
    },
    {
     "cycle": "cycle_34e224670e92",
@@ -634,7 +634,7 @@
       "lost_fraction": 0.0367
      }
     ],
-    "pack": "Z:\\ephemera\\spool\\score\\globe_34e224670e92.json"
+    "pack": "globe_34e224670e92.json"
    },
    {
     "cycle": "cycle_e733991c6cf7",
@@ -830,7 +830,7 @@
       "lost_fraction": 0.0374
      }
     ],
-    "pack": "Z:\\ephemera\\spool\\score\\globe_e733991c6cf7.json"
+    "pack": "globe_e733991c6cf7.json"
    },
    {
     "cycle": "cycle_ff4c381634b2",
@@ -1026,7 +1026,7 @@
       "lost_fraction": 0.0448
      }
     ],
-    "pack": "Z:\\ephemera\\spool\\score\\globe_ff4c381634b2.json"
+    "pack": "globe_ff4c381634b2.json"
    },
    {
     "cycle": "cycle_fb35070bc8cc",
@@ -1222,7 +1222,7 @@
       "lost_fraction": 0.0395
      }
     ],
-    "pack": "Z:\\ephemera\\spool\\score\\globe_fb35070bc8cc.json"
+    "pack": "globe_fb35070bc8cc.json"
    },
    {
     "cycle": "cycle_037b70d571b4",
@@ -1418,7 +1418,7 @@
       "lost_fraction": 0.0406
      }
     ],
-    "pack": "Z:\\ephemera\\spool\\score\\globe_037b70d571b4.json"
+    "pack": "globe_037b70d571b4.json"
    },
    {
     "cycle": "cycle_70952566cb20",
@@ -1629,7 +1629,7 @@
       "lost_fraction": 0.0375
      }
     ],
-    "pack": "Z:\\ephemera\\spool\\score\\globe_70952566cb20.json"
+    "pack": "globe_70952566cb20.json"
    },
    {
     "cycle": "cycle_07dc41f19d80",
@@ -1825,7 +1825,7 @@
       "lost_fraction": 0.0428
      }
     ],
-    "pack": "Z:\\ephemera\\spool\\score\\globe_07dc41f19d80.json"
+    "pack": "globe_07dc41f19d80.json"
    },
    {
     "cycle": "cycle_66a2835fd201",
@@ -2021,7 +2021,7 @@
       "lost_fraction": 0.0433
      }
     ],
-    "pack": "Z:\\ephemera\\spool\\score\\globe_66a2835fd201.json"
+    "pack": "globe_66a2835fd201.json"
    },
    {
     "cycle": "cycle_11dcd35c2c44",
@@ -2217,7 +2217,7 @@
       "lost_fraction": 0.0479
      }
     ],
-    "pack": "Z:\\ephemera\\spool\\score\\globe_11dcd35c2c44.json"
+    "pack": "globe_11dcd35c2c44.json"
    },
    {
     "cycle": "cycle_89a232495ad5",
@@ -2413,7 +2413,7 @@
       "lost_fraction": 0.0474
      }
     ],
-    "pack": "Z:\\ephemera\\spool\\score\\globe_89a232495ad5.json"
+    "pack": "globe_89a232495ad5.json"
    },
    {
     "cycle": "cycle_0e700520864b",
@@ -2609,7 +2609,7 @@
       "lost_fraction": 0.0639
      }
     ],
-    "pack": "Z:\\ephemera\\spool\\score\\globe_0e700520864b.json"
+    "pack": "globe_0e700520864b.json"
    },
    {
     "cycle": "cycle_23a1332e6e3c",
@@ -2805,7 +2805,7 @@
       "lost_fraction": 0.0512
      }
     ],
-    "pack": "Z:\\ephemera\\spool\\score\\globe_23a1332e6e3c.json"
+    "pack": "globe_23a1332e6e3c.json"
    },
    {
     "cycle": "cycle_1e127b6ea098",
@@ -3016,7 +3016,7 @@
       "lost_fraction": 0.0515
      }
     ],
-    "pack": "Z:\\ephemera\\spool\\score\\globe_1e127b6ea098.json"
+    "pack": "globe_1e127b6ea098.json"
    },
    {
     "cycle": "cycle_1b3b36972d57",
@@ -3212,7 +3212,7 @@
       "lost_fraction": 0.0494
      }
     ],
-    "pack": "Z:\\ephemera\\spool\\score\\globe_1b3b36972d57.json"
+    "pack": "globe_1b3b36972d57.json"
    },
    {
     "cycle": "cycle_f5bbbcd6b2a8",
@@ -3408,7 +3408,7 @@
       "lost_fraction": 0.0473
      }
     ],
-    "pack": "Z:\\ephemera\\spool\\score\\globe_f5bbbcd6b2a8.json"
+    "pack": "globe_f5bbbcd6b2a8.json"
    },
    {
     "cycle": "cycle_2935545a26e2",
@@ -3604,7 +3604,7 @@
       "lost_fraction": 0.0458
      }
     ],
-    "pack": "Z:\\ephemera\\spool\\score\\globe_2935545a26e2.json"
+    "pack": "globe_2935545a26e2.json"
    },
    {
     "cycle": "cycle_4803b98c2e2c",
@@ -3800,7 +3800,7 @@
       "lost_fraction": 0.0443
      }
     ],
-    "pack": "Z:\\ephemera\\spool\\score\\globe_4803b98c2e2c.json"
+    "pack": "globe_4803b98c2e2c.json"
    },
    {
     "cycle": "cycle_e6c17386d359",
@@ -4011,7 +4011,7 @@
       "lost_fraction": 0.0391
      }
     ],
-    "pack": "Z:\\ephemera\\spool\\score\\globe_e6c17386d359.json"
+    "pack": "globe_e6c17386d359.json"
    },
    {
     "cycle": "cycle_d475086e7ca5",
@@ -4207,7 +4207,7 @@
       "lost_fraction": 0.0387
      }
     ],
-    "pack": "Z:\\ephemera\\spool\\score\\globe_d475086e7ca5.json"
+    "pack": "globe_d475086e7ca5.json"
    },
    {
     "cycle": "cycle_035065e7ec46",
@@ -4402,7 +4402,7 @@
       "lost_fraction": 0.0353
      }
     ],
-    "pack": "Z:\\ephemera\\spool\\score\\globe_035065e7ec46.json"
+    "pack": "globe_035065e7ec46.json"
    },
    {
     "cycle": "cycle_8c1b1c3f5d69",
@@ -4597,7 +4597,7 @@
       "lost_fraction": 0.0341
      }
     ],
-    "pack": "Z:\\ephemera\\spool\\score\\globe_8c1b1c3f5d69.json"
+    "pack": "globe_8c1b1c3f5d69.json"
    },
    {
     "cycle": "cycle_a68f33d2d2f7",
@@ -4792,7 +4792,7 @@
       "lost_fraction": 0.0376
      }
     ],
-    "pack": "Z:\\ephemera\\spool\\score\\globe_a68f33d2d2f7.json"
+    "pack": "globe_a68f33d2d2f7.json"
    },
    {
     "cycle": "cycle_729590130225",
@@ -4987,7 +4987,7 @@
       "lost_fraction": 0.0337
      }
     ],
-    "pack": "Z:\\ephemera\\spool\\score\\globe_729590130225.json"
+    "pack": "globe_729590130225.json"
    },
    {
     "cycle": "cycle_5ccb4ed5d13a",
@@ -5197,7 +5197,7 @@
       "lost_fraction": 0.0332
      }
     ],
-    "pack": "Z:\\ephemera\\spool\\score\\globe_5ccb4ed5d13a.json"
+    "pack": "globe_5ccb4ed5d13a.json"
    },
    {
     "cycle": "cycle_03329cf37459",
@@ -5407,7 +5407,7 @@
       "lost_fraction": 0.0389
      }
     ],
-    "pack": "Z:\\ephemera\\spool\\score\\globe_03329cf37459.json"
+    "pack": "globe_03329cf37459.json"
    },
    {
     "cycle": "cycle_500ae4c3a713",
@@ -5602,7 +5602,7 @@
       "lost_fraction": 0.0402
      }
     ],
-    "pack": "Z:\\ephemera\\spool\\score\\globe_500ae4c3a713.json"
+    "pack": "globe_500ae4c3a713.json"
    },
    {
     "cycle": "cycle_f842b22c4167",
@@ -5812,7 +5812,7 @@
       "lost_fraction": 0.0387
      }
     ],
-    "pack": "Z:\\ephemera\\spool\\score\\globe_f842b22c4167.json"
+    "pack": "globe_f842b22c4167.json"
    },
    {
     "cycle": "cycle_a39dfdfee0fd",
@@ -6007,7 +6007,7 @@
       "lost_fraction": 0.0515
      }
     ],
-    "pack": "Z:\\ephemera\\spool\\score\\globe_a39dfdfee0fd.json"
+    "pack": "globe_a39dfdfee0fd.json"
    },
    {
     "cycle": "cycle_1e726fe006d9",
@@ -6201,7 +6201,7 @@
       "lost_fraction": 0.0692
      }
     ],
-    "pack": "Z:\\ephemera\\spool\\score\\globe_1e726fe006d9.json"
+    "pack": "globe_1e726fe006d9.json"
    },
    {
     "cycle": "cycle_b37c74c03907",
@@ -6410,7 +6410,7 @@
       "lost_fraction": 0.0605
      }
     ],
-    "pack": "Z:\\ephemera\\spool\\score\\globe_b37c74c03907.json"
+    "pack": "globe_b37c74c03907.json"
    },
    {
     "cycle": "cycle_3572d8775913",
@@ -6604,7 +6604,7 @@
       "lost_fraction": 0.0572
      }
     ],
-    "pack": "Z:\\ephemera\\spool\\score\\globe_3572d8775913.json"
+    "pack": "globe_3572d8775913.json"
    },
    {
     "cycle": "cycle_f5112bb77a2a",
@@ -6813,7 +6813,7 @@
       "lost_fraction": 0.0466
      }
     ],
-    "pack": "Z:\\ephemera\\spool\\score\\globe_f5112bb77a2a.json"
+    "pack": "globe_f5112bb77a2a.json"
    },
    {
     "cycle": "cycle_0a85a65d5dbe",
@@ -7022,7 +7022,7 @@
       "lost_fraction": 0.0364
      }
     ],
-    "pack": "Z:\\ephemera\\spool\\score\\globe_0a85a65d5dbe.json"
+    "pack": "globe_0a85a65d5dbe.json"
    },
    {
     "cycle": "cycle_51d5c047650a",
@@ -7231,7 +7231,7 @@
       "lost_fraction": 0.0311
      }
     ],
-    "pack": "Z:\\ephemera\\spool\\score\\globe_51d5c047650a.json"
+    "pack": "globe_51d5c047650a.json"
    },
    {
     "cycle": "cycle_7414ea02eac1",
@@ -7440,7 +7440,7 @@
       "lost_fraction": 0.0305
      }
     ],
-    "pack": "Z:\\ephemera\\spool\\score\\globe_7414ea02eac1.json"
+    "pack": "globe_7414ea02eac1.json"
    },
    {
     "cycle": "cycle_7be3c2c6fc2c",
@@ -7649,7 +7649,7 @@
       "lost_fraction": 0.0306
      }
     ],
-    "pack": "Z:\\ephemera\\spool\\score\\globe_7be3c2c6fc2c.json"
+    "pack": "globe_7be3c2c6fc2c.json"
    },
    {
     "cycle": "cycle_d03dc522da18",
@@ -7858,7 +7858,7 @@
       "lost_fraction": 0.0382
      }
     ],
-    "pack": "Z:\\ephemera\\spool\\score\\globe_d03dc522da18.json"
+    "pack": "globe_d03dc522da18.json"
    },
    {
     "cycle": "cycle_513b92c4683e",
@@ -8067,13 +8067,23 @@
       "lost_fraction": 0.0448
      }
     ],
-    "pack": "Z:\\ephemera\\spool\\score\\globe_513b92c4683e.json"
+    "pack": "globe_513b92c4683e.json"
    }
   ],
   "latest": "cycle_cb82167ca7de"
  },
- "catalogue_snapshots": 115,
+ "catalogue_snapshots": 117,
  "catalogue": [
+  {
+   "fetched_utc": "2026-09-13T12:10:13Z",
+   "records": 12865,
+   "sha12": "4fdd44f68d9e"
+  },
+  {
+   "fetched_utc": "2026-09-13T10:10:11Z",
+   "records": 12865,
+   "sha12": "3822b3e87bb0"
+  },
   {
    "fetched_utc": "2026-09-13T08:10:12Z",
    "records": 12865,
@@ -8123,16 +8133,6 @@
    "fetched_utc": "2026-09-12T12:10:15Z",
    "records": 12865,
    "sha12": "143c3966f9d8"
-  },
-  {
-   "fetched_utc": "2026-09-12T10:10:11Z",
-   "records": 12865,
-   "sha12": "708ae80d2b7f"
-  },
-  {
-   "fetched_utc": "2026-09-12T08:10:11Z",
-   "records": 12865,
-   "sha12": "fecf9807ee5b"
   }
  ],
  "cycles": [
