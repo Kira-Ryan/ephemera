@@ -42,12 +42,16 @@ class Feed:
     k-th GET gets manifests[min(k, last)]); None serves the file on disk."""
 
     def __init__(self, site: Path, names: list[str], *, etag=True, honour_ims=True, delay=0.0, delays=None,
-                 manifests=None, no_validators=False, bogus_304=False):
+                 manifests=None, no_validators=False, bogus_304=False, interrupt_after=None):
         """delays: per-file-name seconds (overrides delay). no_validators: send neither ETag nor
         Last-Modified. bogus_304: answer 304 to a repeat GET that carries no validator at all (a
-        protocol violation the poller must not trust)."""
+        protocol violation the poller must not trust). interrupt_after: raise KeyboardInterrupt in
+        the main thread once this many file GETs have been served, which ties the interrupt to the
+        pull's progress rather than to the wall clock."""
         self.site, self.names = site, names
         self.requests: list[str] = []
+        self.files_served = 0
+        self.interrupted = threading.Event()
         self.manifest_gets = 0
         served: set[str] = set()
         feed = self
@@ -76,6 +80,14 @@ class Feed:
                         self.end_headers()
                         return
                     served.add(self.path)
+                    feed.files_served += 1
+                    # Fire on progress, never on a timer: a wall-clock interrupt lands wherever the
+                    # machine's load puts it, and on a busy machine it arrived after every future
+                    # had already been handed to a worker, so nothing was left to cancel and the
+                    # test failed on files_not_attempted.
+                    if interrupt_after and feed.files_served == interrupt_after and not feed.interrupted.is_set():
+                        feed.interrupted.set()
+                        _thread.interrupt_main()
                 super().do_GET()
 
             def send_header(self, keyword, value):
@@ -440,26 +452,33 @@ def test_interrupt_writes_record_and_cache_without_root(tmp_path):
     """Ctrl-C mid-cycle: the record says 'interrupted', lists what was recorded, the ETag cache is on
     disk for the resume, and no root exists. Mutation: remove the KeyboardInterrupt handler -> the
     exception escapes main() and this test errors; remove flush_cache() -> etag_cache.json missing."""
-    # 12 files, 2 workers, 0.5 s each: the interrupt (fired at 0.7 s) is seen by the main thread
-    # when the second pair completes at ~1.0 s; whichever of the main thread or the workers wins the
-    # race for the next pair, at least six files are still queued and get cancelled.
-    site, names = build_site(tmp_path, 12)
-    f = Feed(site, names, delay=0.5)
+    # 24 files, 2 workers, and the interrupt fires from the feed itself once the fourth file has
+    # been served, so the pull is provably still in progress when it arrives and the rest of the
+    # manifest is still queued. The delay keeps the workers slow enough that the main thread reaches
+    # its next bytecode, and therefore the KeyboardInterrupt, while work remains.
+    site, names = build_site(tmp_path, 24)
+    f = Feed(site, names, delay=0.2, interrupt_after=4)
     try:
         spool = tmp_path / "spool"
-        timer = threading.Timer(0.7, _thread.interrupt_main)
-        timer.start()
         rc = poll.main(["--base", f.base, "--spool", str(spool), "--workers", "2",
                         "--contact", CONTACT, "--min-free-gb", "0"])
-        timer.cancel()
+        assert f.interrupted.is_set(), "the feed never fired the interrupt, so this proves nothing"
         assert rc == 4
         cycles = list(spool.glob("cycle_*"))
         assert len(cycles) == 1
         rec = json.loads((cycles[0] / "cycle.json").read_text())
         assert rec["status"] == "interrupted" and rec["merkle_root"] is None
         assert not (cycles[0] / "root.txt").exists()
-        assert 1 <= rec["files_recorded"] < 12 and rec["files_not_attempted"] >= 1
-        assert rec["files_recorded"] + rec["files_failed"] + rec["files_not_attempted"] == 12
+        assert 1 <= rec["files_recorded"] < 24, "the pull either did not start or was not interrupted"
+        # What is pinned is that the unfinished remainder is ACCOUNTED FOR, not how it is labelled.
+        # Whether a given queued file ends up cancelled (files_not_attempted) or failed fast is a
+        # race with no bearing on the archive: poll.py:378 sets the stop event and poll.py:386 then
+        # cancels the queue, and in the gap a free worker that picks up a queued file raises at
+        # poll.py:182-183 instead, which records it as a failure. Under load the workers can empty
+        # the whole queue that way, so asserting files_not_attempted >= 1 asserted who won that
+        # race. What must always hold is that nothing is silently dropped and the totals reconcile.
+        assert rec["files_failed"] + rec["files_not_attempted"] >= 1, "no file was left unpulled"
+        assert rec["files_recorded"] + rec["files_failed"] + rec["files_not_attempted"] == 24
         cache = json.loads((cycles[0] / "etag_cache.json").read_text())
         assert set(cache) == {r["name"] for r in rec["files"]}
         # the resume completes the cycle with 304s for what was already stored

@@ -134,17 +134,23 @@ def load_dailies(spool: Path, cycles: list[dict]) -> list[dict]:
     return dailies
 
 
-def load_scores(spool: Path) -> list[dict]:
+def load_scores(spool: Path, pack_base_url: str | None = None) -> list[dict]:
     """One entry per scored cycle, newest first: inputs, counts and the summary cuts the page shows.
 
     "pack" is the pack file's name, never its path: this list is published verbatim in the public
     ledger.json, and the spool's absolute location is the poller machine's filesystem layout.
-    main() rejoins the name to the spool's score directory to find the file it copies."""
+    main() rejoins the name to the spool's score directory to find the file itself.
+
+    "pack_url" is where that pack is readable from, and it is present only when this build was told
+    a base URL (infra/r2_packs.py publishes the objects; web/publish.py passes the base). Without
+    one the field is None and the pack is copied into the site instead, which is what a build with
+    no object storage configured, including every test, does."""
     out = []
     for rp in sorted((spool / "score").glob("visibility_*.json")):
         r = json.loads(rp.read_text(encoding="utf-8"))
         sha12 = rp.stem.removeprefix("visibility_")
         pack = spool / "score" / f"globe_{sha12}.json"
+        pack_url = f"{pack_base_url.rstrip('/')}/{sha12}.json" if pack_base_url and pack.exists() else None
         s = r["summary"]
         out.append({"cycle": r["inputs"]["cycle"], "first_seen_utc": r["inputs"].get("first_seen_utc"),
                     "as_of": r["as_of"], "method": r["method"], "eval_step_min": r["eval_step_min"],
@@ -154,7 +160,7 @@ def load_scores(spool: Path) -> list[dict]:
                     "catalogue_sets": r["inputs"].get("catalogue_sets"),
                     "counts": r["counts"], "overall": s["overall"], "at_file_start": s.get("at_file_start"),
                     "catalogue_age": s.get("catalogue_age"), "by_age": s["by_age"], "by_shell": s.get("by_shell", []),
-                    "pack": pack.name if pack.exists() else None})
+                    "pack": pack.name if pack.exists() else None, "pack_url": pack_url})
     out.sort(key=lambda x: x["first_seen_utc"] or "", reverse=True)
     return out
 
@@ -168,7 +174,7 @@ def load_catalogue(spool: Path) -> list[dict]:
     return out
 
 
-def load_spool(spool: Path) -> dict:
+def load_spool(spool: Path, pack_base_url: str | None = None) -> dict:
     cycles = load_cycles(spool)
     ticks = []
     hb_hist = spool / "heartbeats.jsonl"
@@ -179,7 +185,7 @@ def load_spool(spool: Path) -> dict:
             except (ValueError, KeyError):
                 continue
     return {"cycles": cycles, "dailies": load_dailies(spool, cycles), "ticks": ticks,
-            "scores": load_scores(spool), "catalogue": load_catalogue(spool)}
+            "scores": load_scores(spool, pack_base_url), "catalogue": load_catalogue(spool)}
 
 
 def coverage_24h(ticks: list[datetime], now: datetime) -> float | None:
@@ -229,8 +235,8 @@ def witness_defect(c: dict) -> str | None:
     return None
 
 
-def build_ledger(spool: Path, now: datetime) -> dict:
-    data = load_spool(spool)
+def build_ledger(spool: Path, now: datetime, pack_base_url: str | None = None) -> dict:
+    data = load_spool(spool, pack_base_url)
     cycles = data["cycles"]
     complete = [c for c in cycles if c["merkle_root"]]
     stored = sum(c["storage"]["bytes_stored"] for c in cycles)
@@ -279,12 +285,20 @@ def render(ledger: dict) -> str:
     return pages.home(ledger, None)
 
 
-def inject_globe_chrome(source: str, ledger: dict, pack_bytes: int | None) -> str:
+def inject_globe_chrome(source: str, ledger: dict, pack_bytes: int | None,
+                        pack_url: str | None = None) -> str:
     """The globe page keeps its own full-screen layout and borrows the masthead and tab bar through
     a marker comment, so the tab list has one source. The source file keeps working standalone
-    because the marker is a comment."""
+    because the marker is a comment and the pack URL it ships with is a working relative default.
+
+    When the pack is published to object storage, the whole PACK_URL line is replaced rather than
+    the string inside it, so a build that did not know a URL cannot leave a half-edited line."""
     block, status = pages.globe_chrome(ledger, pack_bytes)
     out = source.replace("<!-- ephemera:chrome -->", block, 1)
+    if pack_url:
+        marker = '  const PACK_URL = "pack.json";  // ephemera:pack-url'
+        assert marker in out, "the globe page has no pack-url marker to replace"
+        out = out.replace(marker, f'  const PACK_URL = {json.dumps(pack_url)};  // ephemera:pack-url', 1)
     # The source file's own link home is for the standalone page; with the tab bar present it
     # would print "front page" twice in the same small panel.
     out = out.replace(' <a href="../">front page</a>', "", 1)
@@ -295,33 +309,49 @@ def main(argv: list[str] | None = None) -> int:
     ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     ap.add_argument("--spool", type=Path, required=True)
     ap.add_argument("--out", type=Path, default=REPO / "web" / "dist")
+    ap.add_argument("--pack-base-url", default=None,
+                    help="where the globe packs are published (infra/r2_packs.py). Given one, the "
+                         "ledger records each pack's URL and the pack is NOT copied into the site; "
+                         "without one the pack is copied, which is what a build with no object "
+                         "storage does")
     args = ap.parse_args(argv)
     if not args.spool.is_dir():
         # A missing spool must not become an empty site. glob() over a path that is not there
         # returns nothing, and nothing renders as "the archive holds 0 cycles", which is a lie.
         print(f"build: spool {args.spool} is not a directory - refusing to build an empty site", file=sys.stderr)
         return 2
-    ledger = build_ledger(args.spool, utc_now())
+    ledger = build_ledger(args.spool, utc_now(), args.pack_base_url)
     args.out.mkdir(parents=True, exist_ok=True)
     (args.out / "ledger.json").write_text(json.dumps(ledger, indent=1), encoding="utf-8")
     brand.write_all(args.out, "An archive of the public Starlink\nephemerides, kept and witnessed.",
                     "Hashed per cycle, anchored in Bitcoin, measured daily.")
 
     # The globe shows the cycle the page describes, not whichever pack is newest, or the text and
-    # the picture are about different cycles. When there is nothing to publish the previous pack is
-    # removed rather than left serving figures the page no longer stands behind.
+    # the picture are about different cycles.
     globe_out = args.out / "globe"
     globe_out.mkdir(exist_ok=True)
     head = headline_report(ledger["visibility"]["reports"])
-    # The ledger carries the pack's name only (load_scores), so the file to copy is the name
-    # rejoined to the spool this build read, not a path taken from the ledger.
+    # The ledger carries the pack's name only (load_scores), so the file itself is that name
+    # rejoined to the spool this build read, never a path taken from the ledger.
     pack = args.spool / "score" / head["pack"] if head and head["pack"] else None
     published = globe_out / "pack.json"
-    if pack:
-        shutil.copyfile(pack, published)
-    elif published.exists():
-        published.unlink()
-    pack_bytes = published.stat().st_size if published.exists() else None
+    pack_url = head.get("pack_url") if head else None
+    if pack_url:
+        # Published to object storage, so the site links it rather than carrying it: a 5.2 MB blob
+        # committed once per scored cycle grew the repository by about 3 GB a year. Any copy left
+        # by an earlier build goes, or the globe would keep loading a stale local file.
+        if published.exists():
+            published.unlink()
+        pack_bytes = pack.stat().st_size if pack and pack.exists() else None
+    else:
+        # No object storage configured: copy it in, which is the behaviour every test exercises.
+        # When there is nothing to publish the previous pack is removed rather than left serving
+        # figures the page no longer stands behind.
+        if pack:
+            shutil.copyfile(pack, published)
+        elif published.exists():
+            published.unlink()
+        pack_bytes = published.stat().st_size if published.exists() else None
 
     written = set()
     for rel, html_text in render_site(ledger, pack_bytes).items():
@@ -330,7 +360,8 @@ def main(argv: list[str] | None = None) -> int:
         target.write_text(html_text, encoding="utf-8")
         written.add(target.resolve())
     globe_src = (REPO / "web" / "globe" / "index.html").read_text(encoding="utf-8")
-    (globe_out / "index.html").write_text(inject_globe_chrome(globe_src, ledger, pack_bytes), encoding="utf-8")
+    (globe_out / "index.html").write_text(
+        inject_globe_chrome(globe_src, ledger, pack_bytes, pack_url), encoding="utf-8")
     written.add((globe_out / "index.html").resolve())
     shutil.copyfile(args.out / "icon.svg", globe_out / "icon.svg")
 

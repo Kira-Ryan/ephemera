@@ -75,6 +75,14 @@ def month_label(ym: str) -> str:
     return datetime.strptime(ym, "%Y-%m").strftime("%B %Y")
 
 
+def pack_link(ledger: dict, rel: str) -> str:
+    """Where the newest scored cycle's globe pack is readable from, as an href. It is the published
+    object URL when the build was given one (infra/r2_packs.py), and the copy beside the site when
+    it was not. Both link sites use this so they can never disagree about where the pack is."""
+    head = headline_report(ledger["visibility"]["reports"])
+    return (head or {}).get("pack_url") or f"{rel}globe/pack.json"
+
+
 def headline_report(reports: list[dict]) -> dict | None:
     """The newest report whose catalogue snapshot was fetched before the cycle, with rows scored.
 
@@ -881,7 +889,7 @@ def home(ledger: dict, pack_mb: float | None) -> str:
     <h2>Data, licence and citation</h2>
     <p><a href="ledger.json">ledger.json</a> carries every cycle, its root, its attestation, its witness state and
     every scored summary, as the JSON the pages are built from. The globe's per-cycle pack is at
-    <a href="globe/pack.json">globe/pack.json</a>{f" ({pack_mb:.1f} MB)" if pack_mb else ""}. The full per-comparison
+    <a href="{esc(pack_link(ledger, ""))}">the newest cycle's pack</a>{f" ({pack_mb:.1f} MB)" if pack_mb else ""}. The full per-comparison
     rows, about 140,000 per cycle, are available on request.</p>
     <p>Code is MIT and the <a href="https://github.com/Kira-Ryan/ephemera">repository is public</a>, including
     the propagation and the scoring behind every figure here. Figures derived by this project are intended for
@@ -1113,7 +1121,8 @@ def check(ledger: dict, pack_mb: float | None) -> str:
       <li><a href="../ledger.json">ledger.json</a> carries every cycle, its root, its attestation, its witness state and
       every scored summary on this site, as machine-readable JSON. It is the same file the pages are built from.</li>
       <li>The globe's per-cycle pack, with the element sets and the scored separations, is at
-      <a href="../globe/pack.json">globe/pack.json</a>{f" ({pack_mb:.1f} MB)" if pack_mb else ""} for the newest scored cycle.</li>
+      <a href="{esc(pack_link(ledger, "../"))}">the newest cycle's pack</a>{f" ({pack_mb:.1f} MB)" if pack_mb else ""}.
+      Every scored cycle keeps its own, named by the cycle, so an older globe can be replayed.</li>
       <li>The full per-comparison rows, about 140,000 per cycle, are kept in the archive and are available on request.
       They move to public object storage once the storage layer is finished.</li>
       <li>The raw operator files are held as published, hashed and witnessed. They are not re-published here while the

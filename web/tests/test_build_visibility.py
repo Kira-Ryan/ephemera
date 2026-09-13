@@ -495,6 +495,51 @@ def test_the_ledger_never_publishes_a_path_from_the_build_machine(tmp_path):
     assert [r["pack"] for r in reports] == ["globe_cccccccccccc.json"]
 
 
+def test_a_published_pack_is_linked_not_copied_into_the_site(tmp_path):
+    """The pack is 5.2 MB and a new one lands three times a day. Once it is in object storage the
+    site must link it and stop carrying it, or the repository keeps growing for nothing. The ledger
+    records the URL, the site links that URL in both places it mentions the pack, the globe fetches
+    it, and no pack.json is written into the build at all.
+
+    Mutation: keep the shutil.copyfile in build.main's published branch, or drop the pack_url from
+    load_scores, and this goes red."""
+    spool = make_spool(tmp_path, NOW)
+    add_catalogue(spool)
+    add_score(spool)
+    out = tmp_path / "dist"
+    base = "https://packs.example.test/globe/"
+    assert build.main(["--spool", str(spool), "--out", str(out), "--pack-base-url", base]) == 0
+
+    url = base + "cccccccccccc.json"
+    reports = json.loads((out / "ledger.json").read_text(encoding="utf-8"))["visibility"]["reports"]
+    assert [r["pack_url"] for r in reports] == [url]
+    assert not (out / "globe" / "pack.json").exists(), "the pack was copied into the site as well"
+    assert f'const PACK_URL = "{url}"' in (out / "globe" / "index.html").read_text(encoding="utf-8")
+    for page in ((out / "index.html").read_text(encoding="utf-8"), page_at(out, "check")):
+        assert url in page
+        assert "globe/pack.json" not in page, "a page still links the copy that is no longer written"
+
+
+def test_without_object_storage_the_pack_is_still_copied_in(tmp_path):
+    """Every build that has no R2 configured, which is every test and any fresh checkout, must keep
+    working exactly as before: the pack copied beside the site and linked relatively. The published
+    path is the exception, not the default.
+
+    Mutation: make the published branch unconditional in build.main and this goes red."""
+    spool = make_spool(tmp_path, NOW)
+    add_catalogue(spool)
+    add_score(spool)
+    out = tmp_path / "dist"
+    assert build.main(["--spool", str(spool), "--out", str(out)]) == 0
+    reports = json.loads((out / "ledger.json").read_text(encoding="utf-8"))["visibility"]["reports"]
+    assert [r["pack_url"] for r in reports] == [None]
+    published = out / "globe" / "pack.json"
+    assert published.exists()
+    assert published.read_bytes() == (spool / "score" / "globe_cccccccccccc.json").read_bytes()
+    assert 'const PACK_URL = "pack.json"' in (out / "globe" / "index.html").read_text(encoding="utf-8")
+    assert 'href="globe/pack.json"' in (out / "index.html").read_text(encoding="utf-8")
+
+
 def test_the_build_finds_the_headline_pack_from_any_working_directory(tmp_path, monkeypatch):
     """The ledger names the pack; the file to copy is that name rejoined to the spool the build
     read. Copying the published field as if it were a path resolves it against the process working

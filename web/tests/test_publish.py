@@ -13,7 +13,9 @@ onto a branch nobody can push, and the shrink guard, reading that clone's own st
 the build against a count the world stopped seeing days ago and waves it through.
 
 Every test here runs against a throwaway repository and a throwaway spool, and where a test needs
-an origin it is a bare repository on disk, so nothing here touches a network. The real tree is
+an origin it is a bare repository on disk. Nothing here touches a network, which now also means
+the object storage the publisher uploads packs to: no_real_object_storage below empties that config
+for every test, so none of them can reach the owner's live bucket. The real tree is
 checked afterwards to make sure it was not touched.
 """
 from __future__ import annotations
@@ -30,6 +32,18 @@ sys.path.insert(0, str(REPO / "web"))
 import publish  # noqa: E402
 
 REAL_DIST = REPO / "web" / "dist" / "ledger.json"
+
+
+@pytest.fixture(autouse=True)
+def no_real_object_storage(monkeypatch):
+    """The publisher uploads the globe packs to R2 before it builds, and R2 settings come from the
+    owner's real infra/personal.env, which a sandboxed repository does not shadow. Without this,
+    every test in this file would authenticate against the live bucket and upload to it. Emptying
+    the config makes r2_packs refuse, which is the same path a machine with no object storage takes,
+    so the tests exercise the fallback and reach no network."""
+    sys.path.insert(0, str(REPO / "infra"))
+    import guard_cf
+    monkeypatch.setattr(guard_cf, "_load_personal_env", dict)
 
 
 def git(repo: Path, *args: str) -> subprocess.CompletedProcess:
@@ -192,6 +206,27 @@ def test_a_build_that_shrinks_against_an_unpushed_local_commit_is_refused(with_o
 
     assert publish.main(["--spool", str(spool), "--no-push"]) == 1
     assert head(repo) == before
+
+
+def test_a_shrink_committed_here_but_not_pushed_is_still_measured_against_origin(with_origin, tmp_path):
+    """The other half of the same baseline, and the one case where the two halves differ. HEAD
+    holds everything origin published, because sync_with_published() ran first, but a local commit
+    made after that can hold FEWER cycles than origin still serves: an --allow-shrink run that
+    committed without pushing, which is --no-push here and unattended is a push that failed, whose
+    commit web/publish.py:187 leaves for the next run. Origin is still serving 24, so the next run,
+    which does not say --allow-shrink, is refused. Mutation: drop ledger_cycle_count(upstream) from
+    the baseline in main() and that run measures its zero against this clone's own zero and
+    publishes over a published 24."""
+    repo, spool, origin = with_origin
+    publish_from_another_host(tmp_path, origin, 24)
+
+    assert publish.main(["--spool", str(spool), "--no-push", "--allow-shrink"]) == 0
+    shrunk = head(repo)
+    assert publish.ledger_cycle_count("HEAD") == 0, "the premise: a local commit under what origin serves"
+    assert publish.ledger_cycle_count(publish.upstream_ref()) == 24, "the premise: origin still serves 24"
+
+    assert publish.main(["--spool", str(spool), "--no-push"]) == 1
+    assert head(repo) == shrunk, "a second zero-cycle build was committed over a published 24"
 
 
 def test_a_second_publisher_is_refused_rather_than_merged(with_origin, tmp_path):
