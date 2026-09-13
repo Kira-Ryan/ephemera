@@ -23,6 +23,13 @@ probes/**/*.gz
 infra/*.env
 *.secret
 
+# The VPS runbook (DOCS/migration-runbook.md) now keeps credentials outside the checkout, but
+# these are the paths a reader following an older draft, or anyone working by hand on the host,
+# would reach for first. This repository is public, so an AWS credentials file or an SSH private
+# key landing here must never be offerable to git in the first place.
+/.aws/
+/.ssh/
+
 # Wrangler's isolated home for guarded deploys (never the machine-level OAuth config)
 .wrangler-home/
 

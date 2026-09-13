@@ -135,7 +135,11 @@ def load_dailies(spool: Path, cycles: list[dict]) -> list[dict]:
 
 
 def load_scores(spool: Path) -> list[dict]:
-    """One entry per scored cycle, newest first: inputs, counts and the summary cuts the page shows."""
+    """One entry per scored cycle, newest first: inputs, counts and the summary cuts the page shows.
+
+    "pack" is the pack file's name, never its path: this list is published verbatim in the public
+    ledger.json, and the spool's absolute location is the poller machine's filesystem layout.
+    main() rejoins the name to the spool's score directory to find the file it copies."""
     out = []
     for rp in sorted((spool / "score").glob("visibility_*.json")):
         r = json.loads(rp.read_text(encoding="utf-8"))
@@ -150,7 +154,7 @@ def load_scores(spool: Path) -> list[dict]:
                     "catalogue_sets": r["inputs"].get("catalogue_sets"),
                     "counts": r["counts"], "overall": s["overall"], "at_file_start": s.get("at_file_start"),
                     "catalogue_age": s.get("catalogue_age"), "by_age": s["by_age"], "by_shell": s.get("by_shell", []),
-                    "pack": str(pack) if pack.exists() else None})
+                    "pack": pack.name if pack.exists() else None})
     out.sort(key=lambda x: x["first_seen_utc"] or "", reverse=True)
     return out
 
@@ -309,7 +313,9 @@ def main(argv: list[str] | None = None) -> int:
     globe_out = args.out / "globe"
     globe_out.mkdir(exist_ok=True)
     head = headline_report(ledger["visibility"]["reports"])
-    pack = head["pack"] if head else None
+    # The ledger carries the pack's name only (load_scores), so the file to copy is the name
+    # rejoined to the spool this build read, not a path taken from the ledger.
+    pack = args.spool / "score" / head["pack"] if head and head["pack"] else None
     published = globe_out / "pack.json"
     if pack:
         shutil.copyfile(pack, published)

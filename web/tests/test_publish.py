@@ -7,7 +7,13 @@ locally, so a real build ran with a sandbox spool that did not exist and wrote a
 the real web/dist, which was then committed and deployed. Publish a shrinking archive: that empty
 site claimed the archive held zero cycles, and nothing stopped it.
 
-Every test here runs against a throwaway repository and a throwaway spool. The real tree is
+A fourth arrived with the second host: build and commit on a clone that is behind what origin
+publishes. Every push from such a clone is rejected non-fast-forward, so it stacks local commits
+onto a branch nobody can push, and the shrink guard, reading that clone's own stale HEAD, compares
+the build against a count the world stopped seeing days ago and waves it through.
+
+Every test here runs against a throwaway repository and a throwaway spool, and where a test needs
+an origin it is a bare repository on disk, so nothing here touches a network. The real tree is
 checked afterwards to make sure it was not touched.
 """
 from __future__ import annotations
@@ -63,6 +69,39 @@ def sandbox(tmp_path, monkeypatch):
     assert real_after == real_before, "a publisher test wrote into the real web/dist"
 
 
+@pytest.fixture
+def with_origin(sandbox, tmp_path):
+    """The sandbox repository given an origin and a branch that tracks it, the way the VPS clone
+    tracks GitHub. The origin is a bare repository on disk, so fetch and push are file operations
+    and no test needs a network."""
+    repo, spool = sandbox
+    origin = tmp_path / "origin.git"
+    git(repo.parent, "init", "--bare", str(origin))
+    branch = git(repo, "rev-parse", "--abbrev-ref", "HEAD").stdout.strip()
+    git(repo, "remote", "add", "origin", str(origin))
+    git(repo, "push", "-u", "origin", branch)
+    return repo, spool, origin
+
+
+def head(repo: Path) -> str:
+    return git(repo, "rev-parse", "HEAD").stdout.strip()
+
+
+def publish_from_another_host(tmp_path: Path, origin: Path, cycles: int) -> str:
+    """A second publisher's build, pushed to origin: what the Windows Ledger kept doing every four
+    hours while the VPS clone sat at the commit it was cloned from. Returns the pushed commit."""
+    other = tmp_path / f"other_host_{cycles}"
+    git(tmp_path, "clone", str(origin), str(other))
+    git(other, "config", "user.email", "other@example.invalid")
+    git(other, "config", "user.name", "Other")
+    (other / "web" / "dist" / "ledger.json").write_text(json.dumps({"totals": {"cycles": cycles}}),
+                                                        encoding="utf-8")
+    (other / "web" / "dist" / "index.html").write_text(f"<p>{cycles} cycles</p>", encoding="utf-8")
+    git(other, "commit", "-q", "-m", "ledger build", "--", "web/dist")
+    git(other, "push", "-q", "origin", "HEAD")
+    return head(other)
+
+
 def test_publish_commits_only_web_dist(sandbox):
     """Mutation: drop the pathspec from the commit and this goes red."""
     repo, spool = sandbox
@@ -113,6 +152,74 @@ def test_nothing_is_committed_when_the_site_did_not_change(sandbox):
     assert publish.main(["--spool", str(spool), "--no-push"]) in (0, 1)
     assert git(repo, "status", "--porcelain", "--", "README.md").stdout == ""
     assert head  # the first publish did commit
+
+
+def test_a_clone_behind_origin_builds_on_what_is_published(with_origin, tmp_path):
+    """The migration case: the VPS clone is made early and another host keeps publishing into it.
+    Mutation: delete the sync_with_published() call in main() and the new commit hangs off the
+    commit this clone was made at instead of the published one, so HEAD^ is not what was pushed."""
+    repo, spool, origin = with_origin
+    published = publish_from_another_host(tmp_path, origin, 0)
+
+    assert publish.main(["--spool", str(spool), "--no-push"]) == 0
+    assert git(repo, "rev-parse", "HEAD^").stdout.strip() == published, \
+        "the build was committed beside what origin publishes, not on top of it"
+
+
+def test_the_shrink_guard_measures_the_build_against_what_origin_publishes(with_origin, tmp_path):
+    """The stale-HEAD hole: this clone's own HEAD says zero cycles, so a zero-cycle build passes a
+    guard that only reads HEAD, while origin has been publishing 24 for days. Mutation: delete the
+    sync_with_published() call in main() and this goes red on the return code if the baseline is
+    left reading HEAD alone, and on the commit check otherwise, since nothing then brings what
+    origin published into this clone."""
+    repo, spool, origin = with_origin
+    assert publish.ledger_cycle_count("HEAD") == 0, "the premise: a stale local count of zero"
+    published = publish_from_another_host(tmp_path, origin, 24)
+
+    assert publish.main(["--spool", str(spool), "--no-push"]) == 1
+    assert head(repo) == published, "a zero-cycle build was committed over a published 24"
+
+
+def test_a_build_that_shrinks_against_an_unpushed_local_commit_is_refused(with_origin):
+    """Ahead of origin, not behind it: the count to beat is this clone's own last build, which a
+    push would make public. Mutation: drop ledger_cycle_count("HEAD") from the baseline in main()
+    and the zero-cycle build passes, measured against an origin that still says zero."""
+    repo, spool, origin = with_origin
+    (repo / "web" / "dist" / "ledger.json").write_text(json.dumps({"totals": {"cycles": 24}}),
+                                                       encoding="utf-8")
+    git(repo, "commit", "-q", "-m", "ledger build", "--", "web/dist")
+    before = head(repo)
+
+    assert publish.main(["--spool", str(spool), "--no-push"]) == 1
+    assert head(repo) == before
+
+
+def test_a_second_publisher_is_refused_rather_than_merged(with_origin, tmp_path):
+    """Two hosts building the same spool is a fault to settle by hand, not a merge: web/dist is a
+    build product and a rebase would publish an interleaving neither host built. Mutation: delete
+    the sync_with_published() call in main() and this clone commits onto the divergent branch every
+    run, which is the wedge itself."""
+    repo, spool, origin = with_origin
+    assert publish.main(["--spool", str(spool), "--no-push"]) == 0     # this host's build, unpushed
+    mine = head(repo)
+    publish_from_another_host(tmp_path, origin, 0)                     # the other host's, published
+
+    assert publish.main(["--spool", str(spool), "--no-push"]) == 1
+    assert head(repo) == mine, "the divergent branch grew a commit, or was merged"
+
+
+def test_a_clone_that_cannot_reach_origin_does_not_build(with_origin, tmp_path):
+    """Not knowing what is published is not the same as knowing nothing changed. Mutation: delete
+    the sync_with_published() call in main() and the build runs and commits while this clone has no
+    idea what the world is being served."""
+    repo, spool, origin = with_origin
+    git(repo, "remote", "set-url", "origin", str(tmp_path / "not_a_repository.git"))
+    before = head(repo)
+
+    assert publish.main(["--spool", str(spool), "--no-push"]) == 1
+    assert head(repo) == before
+    assert (repo / "web" / "dist" / "index.html").read_text(encoding="utf-8") == "<p>first</p>", \
+        "the build ran before the clone had established what is published"
 
 
 def test_a_missing_spool_is_refused_by_the_build_itself(tmp_path):

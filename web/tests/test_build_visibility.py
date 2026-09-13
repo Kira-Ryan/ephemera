@@ -461,6 +461,63 @@ def test_the_published_globe_pack_is_the_cycle_the_page_describes(tmp_path):
     assert pack["inputs"]["cycle"] == "cycle_aaaaaaaaaaaa", "the globe shows a different cycle from the page"
 
 
+def paths_in(value, trail: str = "report") -> list[str]:
+    """Every string inside value that reads as a filesystem path: a drive letter, a backslash
+    separator, or a leading slash. Recursive, so a field added inside a summary cut is covered
+    too."""
+    if isinstance(value, str):
+        looks_like_a_path = (re.match(r"^[A-Za-z]:[\\/]", value) or "\\" in value
+                             or value.startswith("/"))
+        return [f"{trail} = {value!r}"] if looks_like_a_path else []
+    if isinstance(value, dict):
+        return [hit for k, v in value.items() for hit in paths_in(v, f"{trail}.{k}")]
+    if isinstance(value, list):
+        return [hit for i, v in enumerate(value) for hit in paths_in(v, f"{trail}[{i}]")]
+    return []
+
+
+def test_the_ledger_never_publishes_a_path_from_the_build_machine(tmp_path):
+    """ledger.json is committed and served, so a report field holding the pack's absolute path
+    published the poller machine's filesystem layout: every one of the 40 reports in the ledger
+    committed on 13 September 2026 read Z:\\ephemera\\spool\\score\\globe_<sha12>.json. The field
+    still says which pack the report refers to, by name.
+
+    Mutation: publish str(pack) instead of pack.name in build.load_scores and this goes red."""
+    spool = make_spool(tmp_path, NOW)
+    add_catalogue(spool)
+    add_score(spool)
+    out = tmp_path / "dist"
+    assert build.main(["--spool", str(spool), "--out", str(out)]) == 0
+    reports = json.loads((out / "ledger.json").read_text(encoding="utf-8"))["visibility"]["reports"]
+    assert reports, "the fixture scored nothing, so this test would pass vacuously"
+    for r in reports:
+        assert not paths_in(r), f"the published ledger leaks a path: {paths_in(r)}"
+    assert [r["pack"] for r in reports] == ["globe_cccccccccccc.json"]
+
+
+def test_the_build_finds_the_headline_pack_from_any_working_directory(tmp_path, monkeypatch):
+    """The ledger names the pack; the file to copy is that name rejoined to the spool the build
+    read. Copying the published field as if it were a path resolves it against the process working
+    directory instead, which under the site publisher's service unit is not the spool: the copy
+    raises FileNotFoundError, nothing in build.main or web/publish.py catches it, and the 4-hourly
+    publish dies with the site frozen at whatever it last held.
+
+    Mutation: copy head["pack"] directly in build.main and this goes red."""
+    spool = make_spool(tmp_path, NOW)
+    add_catalogue(spool)
+    add_score(spool)
+    out = tmp_path / "dist"
+    elsewhere = tmp_path / "elsewhere"
+    elsewhere.mkdir()
+    monkeypatch.chdir(elsewhere)                   # a working directory that holds no pack at all
+    assert build.main(["--spool", str(spool), "--out", str(out)]) == 0
+    published = out / "globe" / "pack.json"
+    assert published.read_bytes() == (spool / "score" / "globe_cccccccccccc.json").read_bytes()
+    head = build.headline_report(json.loads((out / "ledger.json").read_text(encoding="utf-8"))
+                                 ["visibility"]["reports"])
+    assert (spool / "score" / head["pack"]).is_file(), "the published name cannot find the pack again"
+
+
 def test_a_rebuild_with_nothing_to_publish_removes_a_stale_pack(tmp_path):
     """A build with no scored cycle left the previous pack in place, so the globe went on serving
     figures the page no longer mentions and no longer stands behind."""
