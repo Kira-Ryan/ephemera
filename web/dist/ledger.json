@@ -1,10 +1,10 @@
 {
  "schema": 2,
- "generated_utc": "2026-09-16T08:20:22Z",
+ "generated_utc": "2026-09-16T12:20:21Z",
  "poller": "home (Cape Town, residential; single poller until poller A exists)",
  "method": "built from each cycle's cycle.json, witness.json and ship.json in the poller's spool; coverage is the fraction of the last 24 h's minutes with a watcher heartbeat under 10 minutes old (D18); a cadence hold is a manifest first-seen gap over 9 h; source bytes are the responses as served, stored bytes are the gzipped archive objects the shipper recorded",
  "totals": {
-  "cycles": 53,
+  "cycles": 54,
   "complete": 53,
   "attested": 53,
   "witness_defects": 18,
@@ -15,7 +15,7 @@
   "files": 600874,
   "cadence_holds": 7
  },
- "coverage_24h": 0.9777777777777777,
+ "coverage_24h": 1.0,
  "visibility": {
   "reports": [
    {
@@ -9491,8 +9491,18 @@
   ],
   "latest": "cycle_480217a325b4"
  },
- "catalogue_snapshots": 145,
+ "catalogue_snapshots": 147,
  "catalogue": [
+  {
+   "fetched_utc": "2026-09-16T12:10:11Z",
+   "records": 12865,
+   "sha12": "30767454542e"
+  },
+  {
+   "fetched_utc": "2026-09-16T10:10:11Z",
+   "records": 12865,
+   "sha12": "3abaa1d48771"
+  },
   {
    "fetched_utc": "2026-09-16T08:10:11Z",
    "records": 12865,
@@ -9542,19 +9552,44 @@
    "fetched_utc": "2026-09-15T14:10:13Z",
    "records": 12865,
    "sha12": "c5f2b773c12e"
-  },
-  {
-   "fetched_utc": "2026-09-15T12:10:16Z",
-   "records": 12865,
-   "sha12": "3dc9f83020e9"
-  },
-  {
-   "fetched_utc": "2026-09-15T10:10:13Z",
-   "records": 12865,
-   "sha12": "d75d8d9f4d68"
   }
  ],
  "cycles": [
+  {
+   "cycle": "cycle_a020ad8e7512",
+   "manifest_sha256": "a020ad8e7512df56174c1117ffe64f38f9095098e4f6f1ebb72abbc26923412d",
+   "first_seen_utc": "2026-09-16T12:17:50Z",
+   "status": "in-progress",
+   "files_listed": 11124,
+   "files_recorded": 0,
+   "files_failed": 0,
+   "bytes_raw": 0,
+   "wall_seconds": null,
+   "merkle_root": null,
+   "ots": {
+    "stamped": false,
+    "attested_block": null
+   },
+   "wayback": {
+    "attempted": false,
+    "manifest_verified": false,
+    "manifest_captured": false,
+    "manifest_error": null,
+    "samples_verified": 0,
+    "samples_total": 0,
+    "losses": 0,
+    "skipped": null,
+    "manifest_copy_url": null,
+    "manifest_copy_sha256": null,
+    "samples": []
+   },
+   "storage": {
+    "bytes_stored": 0,
+    "storage_class": null,
+    "local_files": true,
+    "deleted_locally_utc": null
+   }
+  },
   {
    "cycle": "cycle_480217a325b4",
    "manifest_sha256": "480217a325b40b261405ce60177f9c1b5df7a7c4c276ec94fe3c6b46b69faa27",
