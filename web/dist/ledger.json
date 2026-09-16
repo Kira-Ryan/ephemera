@@ -1,12 +1,12 @@
 {
  "schema": 2,
- "generated_utc": "2026-09-16T00:20:19Z",
+ "generated_utc": "2026-09-16T04:20:18Z",
  "poller": "home (Cape Town, residential; single poller until poller A exists)",
  "method": "built from each cycle's cycle.json, witness.json and ship.json in the poller's spool; coverage is the fraction of the last 24 h's minutes with a watcher heartbeat under 10 minutes old (D18); a cadence hold is a manifest first-seen gap over 9 h; source bytes are the responses as served, stored bytes are the gzipped archive objects the shipper recorded",
  "totals": {
   "cycles": 52,
   "complete": 52,
-  "attested": 51,
+  "attested": 52,
   "witness_defects": 17,
   "bytes_raw": 1197151802216,
   "bytes_stored": 492150773760,
@@ -15,7 +15,7 @@
   "files": 589749,
   "cadence_holds": 7
  },
- "coverage_24h": 0.6986111111111111,
+ "coverage_24h": 0.8111111111111111,
  "visibility": {
   "reports": [
    {
@@ -9294,8 +9294,18 @@
   ],
   "latest": "cycle_5b65cceebd5d"
  },
- "catalogue_snapshots": 141,
+ "catalogue_snapshots": 143,
  "catalogue": [
+  {
+   "fetched_utc": "2026-09-16T04:10:11Z",
+   "records": 12865,
+   "sha12": "0418efd13b6d"
+  },
+  {
+   "fetched_utc": "2026-09-16T02:10:12Z",
+   "records": 12865,
+   "sha12": "4829b16a0d34"
+  },
   {
    "fetched_utc": "2026-09-16T00:10:11Z",
    "records": 12865,
@@ -9345,16 +9355,6 @@
    "fetched_utc": "2026-09-14T22:10:10Z",
    "records": 12865,
    "sha12": "bf252bfce989"
-  },
-  {
-   "fetched_utc": "2026-09-14T20:10:10Z",
-   "records": 12865,
-   "sha12": "d694df31cd10"
-  },
-  {
-   "fetched_utc": "2026-09-14T18:10:11Z",
-   "records": 12865,
-   "sha12": "d0e780d9b30d"
   }
  ],
  "cycles": [
@@ -9371,7 +9371,7 @@
    "merkle_root": "ce4e491e37d3f493edff34988a3f6a824714f41fcb2e315562b6325f64943942",
    "ots": {
     "stamped": true,
-    "attested_block": null
+    "attested_block": 967198
    },
    "wayback": {
     "attempted": true,
@@ -14175,7 +14175,7 @@
    "built_utc": "2026-09-16T00:01:21Z",
    "leaves": 3,
    "excluded": [],
-   "attested_block": null
+   "attested_block": 967207
   },
   {
    "date": "2026-09-14",
