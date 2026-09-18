@@ -1,16 +1,16 @@
 {
  "schema": 2,
- "generated_utc": "2026-09-18T00:20:22Z",
+ "generated_utc": "2026-09-18T04:20:24Z",
  "poller": "home (Cape Town, residential; single poller until poller A exists)",
  "method": "built from each cycle's cycle.json, witness.json and ship.json in the poller's spool; coverage is the fraction of the last 24 h's minutes with a watcher heartbeat under 10 minutes old (D18); a cadence hold is a manifest first-seen gap over 9 h; source bytes are the responses as served, stored bytes are the gzipped archive objects the shipper recorded",
  "totals": {
   "cycles": 58,
   "complete": 58,
-  "attested": 57,
+  "attested": 58,
   "witness_defects": 23,
   "bytes_raw": 1332566456297,
-  "bytes_stored": 538527856640,
-  "bytes_stored_local": 78031585280,
+  "bytes_stored": 547812669440,
+  "bytes_stored_local": 87316398080,
   "bytes_stored_cold_only": 460496271360,
   "files": 656448,
   "cadence_holds": 8
@@ -18,6 +18,203 @@
  "coverage_24h": 1.0,
  "visibility": {
   "reports": [
+   {
+    "cycle": "cycle_571d8be2c73b",
+    "first_seen_utc": "2026-09-17T22:48:42Z",
+    "as_of": "2026-09-18T00:31:11Z",
+    "method": "Public element set (Space-Track gp snapshot) propagated with SGP4 (skyfield 1.55, python-sgp4 2.27; TEME to GCRS by Skyfield, taken as J2000) and differenced against the operator-published trajectory (EME2000) at the file's own record epochs every 360 min. Distance in km; components in the operator's radial/in-track/cross-track frame; altitude is geocentric radius minus 6378.137 km; element age is evaluation epoch minus element-set epoch, signed. A comparison beyond 1000 km is counted as lost: the public set is not on the file's trajectory at all. at_file_start takes each satellite once, at the first epoch of its own file, which is the only cut comparable between cycles. Both inputs are predictions; the operator's includes planned trajectory changes the public set cannot know about.",
+    "eval_step_min": 360.0,
+    "snapshot": "20260917T221011Z_82bb7253d61b",
+    "snapshot_fetched_utc": "2026-09-17T22:10:11Z",
+    "snapshot_relation": "before_cycle",
+    "catalogue_sets": 12865,
+    "counts": {
+     "files": 11123,
+     "scored": 11123,
+     "no_public_set": 0,
+     "uncatalogued": 0,
+     "decayed_set": 0,
+     "propagation_failed": 0,
+     "unreadable": 0,
+     "corrupt": 0
+    },
+    "overall": {
+     "n": 143663,
+     "median_km": 18.146,
+     "p90_km": 161.987,
+     "mean_age_h": 53.54,
+     "median_age_h": 53.17,
+     "within_km": {
+      "1": 0.0551,
+      "10": 0.3789,
+      "30": 0.5956
+     },
+     "lost": 3388,
+     "lost_fraction": 0.0236
+    },
+    "at_file_start": {
+     "median_km": 4.699,
+     "p90_km": 27.375,
+     "mean_age_h": 17.65,
+     "median_age_h": 14.99,
+     "within_km": {
+      "1": 0.1524,
+      "10": 0.6982,
+      "30": 0.9128
+     },
+     "lost": 62,
+     "lost_fraction": 0.0056,
+     "satellites": 11123
+    },
+    "catalogue_age": {
+     "sets": 11123,
+     "mean_h": 19.01,
+     "median_h": 16.42,
+     "p90_h": 33.65,
+     "over_72h": 54
+    },
+    "by_age": [
+     {
+      "bin": "0-6 h",
+      "n": 595,
+      "median_km": 1.542,
+      "p90_km": 23.054,
+      "mean_age_h": 5.15,
+      "median_age_h": 5.49,
+      "within_km": {
+       "1": 0.3849,
+       "10": 0.7815,
+       "30": 0.9513
+      },
+      "lost": 0,
+      "lost_fraction": 0.0
+     },
+     {
+      "bin": "6-12 h",
+      "n": 3138,
+      "median_km": 2.426,
+      "p90_km": 18.311,
+      "mean_age_h": 9.61,
+      "median_age_h": 9.93,
+      "within_km": {
+       "1": 0.2505,
+       "10": 0.8279,
+       "30": 0.95
+      },
+      "lost": 0,
+      "lost_fraction": 0.0
+     },
+     {
+      "bin": "12-24 h",
+      "n": 16922,
+      "median_km": 5.571,
+      "p90_km": 25.491,
+      "mean_age_h": 18.39,
+      "median_age_h": 18.59,
+      "within_km": {
+       "1": 0.1226,
+       "10": 0.6828,
+       "30": 0.9149
+      },
+      "lost": 9,
+      "lost_fraction": 0.0005
+     },
+     {
+      "bin": "24-48 h",
+      "n": 41806,
+      "median_km": 14.018,
+      "p90_km": 69.786,
+      "mean_age_h": 36.17,
+      "median_age_h": 36.34,
+      "within_km": {
+       "1": 0.0615,
+       "10": 0.4237,
+       "30": 0.7165
+      },
+      "lost": 343,
+      "lost_fraction": 0.0082
+     },
+     {
+      "bin": "48-72 h",
+      "n": 43653,
+      "median_km": 33.351,
+      "p90_km": 148.559,
+      "mean_age_h": 59.92,
+      "median_age_h": 59.99,
+      "within_km": {
+       "1": 0.0354,
+       "10": 0.3104,
+       "30": 0.4817
+      },
+      "lost": 1155,
+      "lost_fraction": 0.0265
+     },
+     {
+      "bin": "over 72 h",
+      "n": 37549,
+      "median_km": 63.781,
+      "p90_km": 263.67,
+      "mean_age_h": 85.73,
+      "median_age_h": 82.22,
+      "within_km": {
+       "1": 0.0189,
+       "10": 0.2278,
+       "30": 0.4141
+      },
+      "lost": 1881,
+      "lost_fraction": 0.0501
+     }
+    ],
+    "by_shell": [
+     {
+      "bin": "under 400 km",
+      "n": 12382,
+      "median_km": 88.873,
+      "p90_km": 898.362,
+      "mean_age_h": 49.97,
+      "median_age_h": 48.98,
+      "within_km": {
+       "1": 0.0342,
+       "10": 0.2144,
+       "30": 0.3814
+      },
+      "lost": 1017,
+      "lost_fraction": 0.0821
+     },
+     {
+      "bin": "400-500 km",
+      "n": 122429,
+      "median_km": 17.328,
+      "p90_km": 122.606,
+      "mean_age_h": 54.18,
+      "median_age_h": 53.84,
+      "within_km": {
+       "1": 0.0529,
+       "10": 0.3848,
+       "30": 0.6083
+      },
+      "lost": 1585,
+      "lost_fraction": 0.0129
+     },
+     {
+      "bin": "500-600 km",
+      "n": 8852,
+      "median_km": 8.698,
+      "p90_km": 869.08,
+      "mean_age_h": 49.63,
+      "median_age_h": 49.4,
+      "within_km": {
+       "1": 0.1147,
+       "10": 0.5267,
+       "30": 0.7186
+      },
+      "lost": 786,
+      "lost_fraction": 0.0888
+     }
+    ],
+    "pack": "globe_571d8be2c73b.json",
+    "pack_url": "https://packs.ephemera.space/globe/571d8be2c73b.json"
+   },
    {
     "cycle": "cycle_764fb17cd429",
     "first_seen_utc": "2026-09-17T12:41:37Z",
@@ -10277,10 +10474,20 @@
     "pack_url": "https://packs.ephemera.space/globe/513b92c4683e.json"
    }
   ],
-  "latest": "cycle_764fb17cd429"
+  "latest": "cycle_571d8be2c73b"
  },
- "catalogue_snapshots": 163,
+ "catalogue_snapshots": 165,
  "catalogue": [
+  {
+   "fetched_utc": "2026-09-18T04:10:11Z",
+   "records": 12865,
+   "sha12": "e0a48742f105"
+  },
+  {
+   "fetched_utc": "2026-09-18T02:10:11Z",
+   "records": 12865,
+   "sha12": "8c1ee56c9eff"
+  },
   {
    "fetched_utc": "2026-09-18T00:10:12Z",
    "records": 12865,
@@ -10330,16 +10537,6 @@
    "fetched_utc": "2026-09-17T04:10:11Z",
    "records": 12865,
    "sha12": "26f577bed93f"
-  },
-  {
-   "fetched_utc": "2026-09-17T02:10:11Z",
-   "records": 12865,
-   "sha12": "7a024c8c384e"
-  },
-  {
-   "fetched_utc": "2026-09-17T00:10:12Z",
-   "records": 12865,
-   "sha12": "c2677ddb51b1"
   }
  ],
  "cycles": [
@@ -10356,7 +10553,7 @@
    "merkle_root": "a770aa3d14c148a227e0bb465c2489dd9e0476fc7773d191cb39a46c8af823a2",
    "ots": {
     "stamped": true,
-    "attested_block": null
+    "attested_block": 967483
    },
    "wayback": {
     "attempted": true,
@@ -10365,7 +10562,7 @@
     "manifest_error": "no capture timestamp in SPN response (HTTP 500, url https://web.archive.org/save/https://api.starlink.com/public-files/ephemerides/MANIFEST.txt?cycle=571d8be2c73b)",
     "samples_verified": 0,
     "samples_total": 10,
-    "losses": 0,
+    "losses": 10,
     "skipped": null,
     "manifest_copy_url": null,
     "manifest_copy_sha256": null,
@@ -10433,8 +10630,8 @@
     ]
    },
    "storage": {
-    "bytes_stored": 0,
-    "storage_class": null,
+    "bytes_stored": 9284812800,
+    "storage_class": "DEEP_ARCHIVE",
     "local_files": true,
     "deleted_locally_utc": null
    }
@@ -15736,7 +15933,7 @@
    "built_utc": "2026-09-18T00:07:15Z",
    "leaves": 3,
    "excluded": [],
-   "attested_block": null
+   "attested_block": 967483
   },
   {
    "date": "2026-09-16",
