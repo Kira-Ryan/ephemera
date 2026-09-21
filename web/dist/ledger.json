@@ -1,10 +1,10 @@
 {
  "schema": 2,
- "generated_utc": "2026-09-21T08:20:25Z",
+ "generated_utc": "2026-09-21T12:20:25Z",
  "poller": "home (Cape Town, residential; single poller until poller A exists)",
  "method": "built from each cycle's cycle.json, witness.json and ship.json in the poller's spool; coverage is the fraction of the last 24 h's minutes with a watcher heartbeat under 10 minutes old (D18); a cadence hold is a manifest first-seen gap over 9 h; source bytes are the responses as served, stored bytes are the gzipped archive objects the shipper recorded",
  "totals": {
-  "cycles": 68,
+  "cycles": 69,
   "complete": 68,
   "attested": 68,
   "witness_defects": 33,
@@ -12491,8 +12491,13 @@
   ],
   "latest": "cycle_4c398cb101b9"
  },
- "catalogue_snapshots": 196,
+ "catalogue_snapshots": 197,
  "catalogue": [
+  {
+   "fetched_utc": "2026-09-21T10:10:11Z",
+   "records": 12865,
+   "sha12": "dbe259843982"
+  },
   {
    "fetched_utc": "2026-09-21T08:10:14Z",
    "records": 12865,
@@ -12547,14 +12552,44 @@
    "fetched_utc": "2026-09-20T06:10:12Z",
    "records": 12865,
    "sha12": "211f7dd1e366"
-  },
-  {
-   "fetched_utc": "2026-09-20T04:10:11Z",
-   "records": 12865,
-   "sha12": "8de4735243de"
   }
  ],
  "cycles": [
+  {
+   "cycle": "cycle_df400063b469",
+   "manifest_sha256": "df400063b4699163c406f7717ba6dbe128732f95da1c1ca7ee8e2e13bd7063f4",
+   "first_seen_utc": "2026-09-21T12:18:01Z",
+   "status": "in-progress",
+   "files_listed": 11138,
+   "files_recorded": 0,
+   "files_failed": 0,
+   "bytes_raw": 0,
+   "wall_seconds": null,
+   "merkle_root": null,
+   "ots": {
+    "stamped": false,
+    "attested_block": null
+   },
+   "wayback": {
+    "attempted": false,
+    "manifest_verified": false,
+    "manifest_captured": false,
+    "manifest_error": null,
+    "samples_verified": 0,
+    "samples_total": 0,
+    "losses": 0,
+    "skipped": null,
+    "manifest_copy_url": null,
+    "manifest_copy_sha256": null,
+    "samples": []
+   },
+   "storage": {
+    "bytes_stored": 0,
+    "storage_class": null,
+    "local_files": true,
+    "deleted_locally_utc": null
+   }
+  },
   {
    "cycle": "cycle_4c398cb101b9",
    "manifest_sha256": "4c398cb101b9cbe5a3a9e49a16c7c0c5213f0d32a99868581b2f63fa153724a5",
