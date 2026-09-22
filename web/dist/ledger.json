@@ -1,17 +1,17 @@
 {
  "schema": 2,
- "generated_utc": "2026-09-22T04:20:24Z",
+ "generated_utc": "2026-09-22T08:20:25Z",
  "poller": "home (Cape Town, residential; single poller until poller A exists)",
  "method": "built from each cycle's cycle.json, witness.json and ship.json in the poller's spool; coverage is the fraction of the last 24 h's minutes with a watcher heartbeat under 10 minutes old (D18); a cadence hold is a manifest first-seen gap over 9 h; source bytes are the responses as served, stored bytes are the gzipped archive objects the shipper recorded",
  "totals": {
   "cycles": 71,
   "complete": 71,
-  "attested": 70,
+  "attested": 71,
   "witness_defects": 36,
   "bytes_raw": 1626288075537,
   "bytes_stored": 668565647360,
-  "bytes_stored_local": 92899727360,
-  "bytes_stored_cold_only": 575665920000,
+  "bytes_stored_local": 83618457600,
+  "bytes_stored_cold_only": 584947189760,
   "files": 801104,
   "cadence_holds": 9
  },
@@ -13112,8 +13112,18 @@
   ],
   "latest": "cycle_444b844a9ffc"
  },
- "catalogue_snapshots": 202,
+ "catalogue_snapshots": 204,
  "catalogue": [
+  {
+   "fetched_utc": "2026-09-22T08:10:12Z",
+   "records": 12865,
+   "sha12": "7ed794c7271c"
+  },
+  {
+   "fetched_utc": "2026-09-22T06:10:16Z",
+   "records": 12865,
+   "sha12": "22bc711cefe5"
+  },
   {
    "fetched_utc": "2026-09-22T04:10:14Z",
    "records": 12865,
@@ -13163,16 +13173,6 @@
    "fetched_utc": "2026-09-21T00:10:12Z",
    "records": 12865,
    "sha12": "083573eec095"
-  },
-  {
-   "fetched_utc": "2026-09-20T22:10:12Z",
-   "records": 12865,
-   "sha12": "1b14386e0aa0"
-  },
-  {
-   "fetched_utc": "2026-09-20T18:10:11Z",
-   "records": 12865,
-   "sha12": "e8191346f4a5"
   }
  ],
  "cycles": [
@@ -13189,7 +13189,7 @@
    "merkle_root": "db0876cf6a54281a875ea722656258ca3371ba7b9f39d4f1a6a08eed645ec2e8",
    "ots": {
     "stamped": true,
-    "attested_block": null
+    "attested_block": 968085
    },
    "wayback": {
     "attempted": true,
@@ -14132,8 +14132,8 @@
    "storage": {
     "bytes_stored": 9281269760,
     "storage_class": "DEEP_ARCHIVE",
-    "local_files": true,
-    "deleted_locally_utc": null
+    "local_files": false,
+    "deleted_locally_utc": "2026-09-22T07:07:06Z"
    }
   },
   {
