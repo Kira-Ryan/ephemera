@@ -25,11 +25,17 @@ REPO = Path(__file__).resolve().parents[1]
 # Where the sibling modules live, resolved once at import. REPO is redirected by the tests to a
 # throwaway repository, and the code to import does not move with it.
 INFRA = Path(__file__).resolve().parents[1] / "infra"
+# These run under pythonw as scheduled tasks, which has no console of its own but does not stop a
+# child process from opening one: every docker, ots or git call flashed a black window on the
+# owner's desktop. CREATE_NO_WINDOW exists only on Windows; elsewhere the flag is 0 and a no-op.
+NO_WINDOW = getattr(subprocess, "CREATE_NO_WINDOW", 0)
+
 log = logging.getLogger("ephemera.publish")
 
 
 def git(*args: str) -> subprocess.CompletedProcess:
-    return subprocess.run(["git", "-C", str(REPO), *args], capture_output=True, text=True, errors="replace")
+    return subprocess.run(["git", "-C", str(REPO), *args], capture_output=True, text=True, errors="replace",
+                          creationflags=NO_WINDOW)
 
 
 def ledger_cycle_count(ref: str) -> int | None:
@@ -179,7 +185,7 @@ def main(argv: list[str] | None = None) -> int:
         return rc
 
     lint = subprocess.run([sys.executable, str(REPO / "tools" / "claims_lint.py"), str(REPO / "web" / "dist")],
-                          capture_output=True, text=True)
+                          capture_output=True, text=True, creationflags=NO_WINDOW)
     if lint.returncode != 0:
         log.error("claims lint FAILED on the built page - refusing to publish:\n%s", lint.stdout[-800:])
         return 1

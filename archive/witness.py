@@ -46,6 +46,11 @@ HEARTBEAT_FRESH_S = 900
 ATTESTATION_RE = re.compile(r"BitcoinBlockHeaderAttestation\((\d+)\)")
 SCHEMA = 1
 
+# These run under pythonw as scheduled tasks, which has no console of its own but does not stop a
+# child process from opening one: every docker, ots or git call flashed a black window on the
+# owner's desktop. CREATE_NO_WINDOW exists only on Windows; elsewhere the flag is 0 and a no-op.
+NO_WINDOW = getattr(subprocess, "CREATE_NO_WINDOW", 0)
+
 log = logging.getLogger("ephemera.witness")
 
 
@@ -78,11 +83,12 @@ class OtsRunner:
     def _run(self, cycle_dir: Path, *ots_args: str) -> subprocess.CompletedProcess:
         if self.mode == "ots":
             cmd = ["ots", *ots_args]
-            return subprocess.run(cmd, cwd=cycle_dir, capture_output=True, text=True, errors="replace", timeout=600)
+            return subprocess.run(cmd, cwd=cycle_dir, capture_output=True, text=True, errors="replace", timeout=600,
+                                  creationflags=NO_WINDOW)
         volume = f"{cycle_dir.resolve()}:/w"
         shell = f"pip install -q opentimestamps-client && cd /w && ots {' '.join(ots_args)}"
         return subprocess.run(["docker", "run", "--rm", "-v", volume, "python:3.12-slim", "sh", "-c", shell],
-                              capture_output=True, text=True, errors="replace", timeout=900)
+                              capture_output=True, text=True, errors="replace", timeout=900, creationflags=NO_WINDOW)
 
     def _check(self, r: subprocess.CompletedProcess, what: str) -> None:
         if r.returncode != 0:
