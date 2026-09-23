@@ -429,3 +429,24 @@ def test_a_cycle_whose_root_changed_after_stamping_is_stamped_again(tmp_path, st
     finally:
         feed.close()
         wb.close()
+
+
+def test_every_child_process_is_started_without_a_console(monkeypatch, tmp_path):
+    """The witness runs under pythonw as a scheduled task. pythonw has no console, but a child
+    process opens its own unless told not to, and every docker or ots call was flashing a black
+    window on the owner's desktop several times a day. Both modes must pass the flag; on Linux it
+    is 0 and harmless. Mutation: drop creationflags from either subprocess.run in OtsRunner._run."""
+    import subprocess
+    seen = []
+
+    def fake_run(cmd, **kw):
+        seen.append(kw)
+        return subprocess.CompletedProcess(cmd, 0, "", "")
+
+    monkeypatch.setattr(witness.subprocess, "run", fake_run)
+    for mode in ("ots", "docker"):
+        witness.OtsRunner(mode)._run(tmp_path, "info", "root.txt.ots")
+    assert len(seen) == 2
+    for kw in seen:
+        assert kw.get("creationflags") == witness.NO_WINDOW
+    assert witness.NO_WINDOW == getattr(subprocess, "CREATE_NO_WINDOW", 0)

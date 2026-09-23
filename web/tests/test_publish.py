@@ -264,3 +264,19 @@ def test_a_missing_spool_is_refused_by_the_build_itself(tmp_path):
     out = tmp_path / "dist"
     assert build.main(["--spool", str(tmp_path / "nowhere"), "--out", str(out)]) == 2
     assert not (out / "index.html").exists()
+
+
+def test_git_and_the_lint_are_started_without_a_console(monkeypatch, tmp_path):
+    """Same reason as the witness: the publisher runs under pythonw every four hours and each git
+    call opened a console window on the desktop. Mutation: drop creationflags from publish.git or
+    from the lint subprocess."""
+    seen = []
+
+    def fake_run(cmd, **kw):
+        seen.append((cmd[0], kw))
+        return subprocess.CompletedProcess(cmd, 0, "", "")
+
+    monkeypatch.setattr(publish.subprocess, "run", fake_run)
+    publish.git("status")
+    assert seen and seen[-1][0] == "git" and seen[-1][1].get("creationflags") == publish.NO_WINDOW
+    assert publish.NO_WINDOW == getattr(subprocess, "CREATE_NO_WINDOW", 0)
