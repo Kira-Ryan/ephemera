@@ -12,7 +12,7 @@ import json
 import re
 import subprocess
 import sys
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
 import pytest
@@ -119,7 +119,15 @@ def test_headline_is_the_comparable_figure_and_carries_its_provenance(tmp_path):
         assert "scored 2026-09-01 11:30 UTC against the public catalogue snapshot fetched 2026-09-01 03:00 UTC" in doc
         assert "Feed health for this cycle." in doc
         assert "8,897 of 8,900 operator files scored" in doc
-        assert "27 have no entry in the public catalogue, of which 27 are new satellites" in doc
+        # When every uncatalogued file is the whole no-public-set count, "of which 27 are" was a
+        # tautology; the count and the reason are both still disclosed.
+        assert "27 have no entry in the public catalogue, all of them new satellites the catalogue has not numbered yet" in doc
+        # Only the failure modes that occurred are named. The fixture has one decayed set and no
+        # other drops, so exactly that clause appears and the three empty ones do not.
+        assert "; 1 marked decayed." in doc
+        for absent in ("0 marked decayed", "0 failed to propagate", "0 unreadable",
+                       "0 no longer matching the record"):
+            assert absent not in doc, f"the page printed an empty failure bucket: {absent}"
         assert "mean of <b>15.1 h</b> old when the snapshot was taken" in doc
         assert "element age is 51.2 h: the difference is the file's own prediction horizon" in doc
         assert "Space-Track: 1 snapshots held" in doc
@@ -133,6 +141,49 @@ def test_headline_is_the_comparable_figure_and_carries_its_provenance(tmp_path):
     assert "<table" not in page
     assert 'href="globe/"' in page and "See it on the globe" in page
     assert 'href="../globe/"' in finding and "See it on the globe" in finding
+
+
+def test_a_clean_cycle_says_nothing_was_dropped_rather_than_listing_zeroes(tmp_path):
+    """The truth-health line used to print "0 marked decayed; 0 failed to propagate; 0 unreadable;
+    0 no longer matching the record" whenever a cycle was clean, which was four clauses asserting
+    that nothing happened and the most obviously machine-written sentence on the site. The register
+    requires gapped and lost items to be printed; an empty bucket is neither, and the absence is
+    still asserted in one clause rather than dropped silently.
+
+    Mutation: restore the unconditional clauses in pages.health_line and this fails."""
+    spool = make_spool(tmp_path, NOW)
+    add_catalogue(spool)
+    add_score(spool)
+    rp = spool / "score" / "visibility_cccccccccccc.json"
+    r = json.loads(rp.read_text())
+    r["counts"].update({"decayed_set": 0, "propagation_failed": 0, "unreadable": 0, "corrupt": 0})
+    rp.write_text(json.dumps(r))
+    out = tmp_path / "dist"
+    assert build.main(["--spool", str(spool), "--out", str(out)]) == 0
+    flat = " ".join((out / "index.html").read_text(encoding="utf-8").split())
+    assert "8,897 of 8,900 operator files scored." in flat
+    assert "Nothing else was dropped." in flat
+    for absent in ("0 marked decayed", "0 failed to propagate", "0 unreadable", "0 no longer matching the record"):
+        assert absent not in flat, f"the page printed an empty failure bucket: {absent}"
+
+
+def test_a_partly_uncatalogued_cycle_still_gives_the_breakdown(tmp_path):
+    """The "all of them" wording is only correct when the uncatalogued count IS the whole
+    no-public-set count. When it is a subset the reader gets the number.
+
+    Mutation: make the uncat branch unconditional either way and this fails."""
+    spool = make_spool(tmp_path, NOW)
+    add_catalogue(spool)
+    add_score(spool)
+    rp = spool / "score" / "visibility_cccccccccccc.json"
+    r = json.loads(rp.read_text())
+    r["counts"]["uncatalogued"] = 11          # 11 of the 27 are new; the rest are unexplained
+    rp.write_text(json.dumps(r))
+    out = tmp_path / "dist"
+    assert build.main(["--spool", str(spool), "--out", str(out)]) == 0
+    flat = " ".join((out / "index.html").read_text(encoding="utf-8").split())
+    assert "27 have no entry in the public catalogue, of which 11 are new satellites" in flat
+    assert "all of them new satellites" not in flat
 
 
 def test_hindsight_pairing_is_marked_not_comparable(tmp_path):
@@ -618,3 +669,97 @@ def test_a_name_from_the_pack_cannot_run_script_in_the_page(tmp_path):
     verdict = re.search(r'<div id="?probe"?>(.*?)</div>', dom)
     assert verdict, dom[-400:]
     assert verdict.group(1) == "clean|imgs=0", f"a catalogue name reached the DOM as markup: {verdict.group(1)}"
+
+
+def _with_failing_copies(spool: Path, n: int) -> list[str]:
+    """Add n complete, rooted, attested cycles NEWER than the fixture's, each with an attempted
+    Wayback capture that produced nothing. Returns their sha12s, newest first. This is the shape
+    the live archive was in from 13 Sep 2026: an unbroken run of failures on the most recent
+    cycles, with the healthy ones stranded behind them."""
+    base = NOW + timedelta(hours=1)
+    shas = []
+    for i in range(n):
+        sha = f"{i:02d}" * 6
+        d = spool / f"cycle_{sha}"
+        (d / "files").mkdir(parents=True)
+        seen = base + timedelta(hours=8 * i)
+        (d / "cycle.json").write_text(json.dumps({
+            "cycle": f"cycle_{sha}", "manifest_sha256": sha * 5 + "00",
+            "first_seen_utc": seen.strftime("%Y-%m-%dT%H:%M:%SZ"), "status": "complete",
+            "files_listed": 9000, "files_recorded": 9000, "files_failed": 0, "files_not_attempted": 0,
+            "bytes_raw": 18_000_000_000, "wall_seconds": 2400.0, "merkle_root": sha[:2] * 32, "files": []}))
+        (d / "witness.json").write_text(json.dumps({
+            "ots": {"stamped_utc": seen.strftime("%Y-%m-%dT%H:%M:%SZ"), "attested": {"block_height": 967000 + i}},
+            "wayback": {"manifest": {"error": "no capture timestamp in SPN response (HTTP 500)"},
+                        "samples": {str(k): {"name": f"f{k}", "verified": False, "gave_up": "x",
+                                             "error": "HTTP 500"} for k in range(10)}}}))
+        shas.append(sha)
+    return list(reversed(shas))
+
+
+def test_a_run_of_failing_independent_copies_is_named_not_just_counted(tmp_path):
+    """A defect count presents an outage as historical blemish. On 24 Sep 2026 the 35 most recent
+    cycles had no verified Wayback copy in an unbroken run since 12 Sep, and no prose anywhere said
+    so: the page printed "43 with a defect" and left the reader to notice.
+
+    Mutation: delete the copy_gap() call from archive_asof and this fails."""
+    spool = make_spool(tmp_path, NOW)
+    add_catalogue(spool)
+    add_score(spool)
+    _with_failing_copies(spool, 4)
+    out = tmp_path / "dist"
+    assert build.main(["--spool", str(spool), "--out", str(out)]) == 0
+    for doc in (text((out / "index.html").read_text(encoding="utf-8")), text(page_at(out, "archive"))):
+        assert "The independent copies have been failing since" in doc
+        assert "the 4 cycles caught since then have no verified copy of their file list" in doc
+        assert "Why is not diagnosed yet." in doc
+
+
+def test_healthy_copies_say_nothing_at_all(tmp_path):
+    """The sentence must disappear by itself when the copies recover, and a run of one or two is
+    ordinary throttling rather than an outage.
+
+    Mutation: drop the `if run < 3` guard and the one-failure case starts announcing an outage."""
+    spool = make_spool(tmp_path, NOW)
+    add_catalogue(spool)
+    add_score(spool)
+    out = tmp_path / "dist"
+    assert build.main(["--spool", str(spool), "--out", str(out)]) == 0
+    assert "The independent copies have been failing" not in (out / "index.html").read_text(encoding="utf-8")
+
+
+def test_a_stale_worked_example_says_which_cycle_it_is(tmp_path):
+    """verify_kit takes the newest cycle with a root, an attestation AND an independent copy, so
+    when the copies are failing the front page shows its best remaining case. That is innocent and
+    indistinguishable from choosing the flattering one, which is what /check exists to rule out.
+
+    Mutation: drop the kit_is_stale call from home() or check() and this fails."""
+    spool = make_spool(tmp_path, NOW)
+    add_catalogue(spool)
+    add_score(spool)
+    _with_failing_copies(spool, 4)
+    out = tmp_path / "dist"
+    assert build.main(["--spool", str(spool), "--out", str(out)]) == 0
+    front = text((out / "index.html").read_text(encoding="utf-8"))
+    assert "the newest one whose independent copy verified" in front
+    check = text(page_at(out, "check"))
+    assert "is not the newest one" in check
+    assert "It is the most recent cycle whose independent copy verified" in check
+
+
+def test_the_finding_page_does_not_reprint_the_front_page(tmp_path):
+    """/finding/ opened with three paragraphs byte-identical to the front page's, in the same
+    order, so a reader arriving from the front page met them twice. It keeps the headline figures
+    and the lost-category line, which the tables below depend on, and says what the page is for
+    instead of repeating the explainer.
+
+    Mutation: put EXPLAINER back in finding() and this fails."""
+    ledger, page, out = build_site(tmp_path)
+    finding = text(page_at(out, "finding"))
+    assert "Everyone outside SpaceX sees Starlink through the public catalogue" in text(page)
+    assert "Everyone outside SpaceX sees Starlink through the public catalogue" not in finding
+    assert "The front page gives the headline. This page is the shape behind it" in finding
+    # what EXPLAINER was carrying that the tables need is still here
+    assert "It is not an error of the satellite, and it is not a statement about which side is right" in finding
+    assert "At the first instant of each operator file" in finding          # the headline cut
+    assert "does not label any separation as a manoeuvre" in finding        # the lost category
