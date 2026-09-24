@@ -41,7 +41,7 @@ CAVEATS = ("Operator ephemerides are predictions, not observations. Starlink is 
            "to test sub-metre covariance; the self-consistency scoreboard measures "
            "prediction-versus-later-prediction. That scoreboard is not built yet. Inputs are archived by this "
            "project and witnessed by OpenTimestamps and the Wayback Machine; they are not re-fetchable from the "
-           "source after one cycle. Every figure above carries the build time it was true at. Gapped or lost "
+           "source after one cycle. Gapped or lost "
            "items are printed, never hidden.")
 
 
@@ -406,10 +406,10 @@ def masthead(gen: str, rel: str, standfirst: bool) -> str:
 
 def colophon(ledger: dict, rel: str, full: bool) -> str:
     gen = utc_min(ledger["generated_utc"])
-    who = (f"<p>{esc(CONTACT_NAME)}, on my own time, on a home computer in Cape Town, with no funding and no "
+    who = (f"<p>{esc(CONTACT_NAME)}, on my own time, on a home computer, with no funding and no "
            "affiliation to any operator or agency. If a figure here is wrong I want to know, and corrections get "
            "published rather than quietly fixed.</p>" if full else
-           f"<p>{esc(CONTACT_NAME)}, on my own time, on a home computer in Cape Town, with no funding and no "
+           f"<p>{esc(CONTACT_NAME)}, on my own time, on a home computer, with no funding and no "
            "affiliation to any operator or agency.</p>")
     return f"""  <footer class="z-full colophon">
     <div class="who">
@@ -619,10 +619,20 @@ def health_line(ledger: dict, r: dict) -> str:
     age = (f"Averaged over every comparison, which run out to three days into the operator file, element age is "
            f"{o['mean_age_h']:.1f} h: the difference is the file's own prediction horizon, not catalogue staleness. "
            if o else "No comparison was made for this cycle. ")
+    # Only the failure modes that actually occurred are named, and their absence is asserted once
+    # rather than as four clauses of zeroes: printing "0 marked decayed; 0 failed to propagate; 0
+    # unreadable; 0 no longer matching the record" was the clearest machine-written sentence on the
+    # site. The register requires gapped and lost items to be printed, and an empty bucket is
+    # neither, so "Nothing else was dropped." carries the same claim in one clause.
+    uncat_txt = ("" if not uncat
+                 else ", all of them new satellites the catalogue has not numbered yet" if uncat == c["no_public_set"]
+                 else f", of which {uncat:,} are new satellites the catalogue has not numbered yet")
+    drops = [(c["decayed_set"], "marked decayed"), (c["propagation_failed"], "failed to propagate"),
+             (c["unreadable"], "unreadable"), (c.get("corrupt", 0), "no longer matching the record")]
+    shown = "; ".join(f"{n:,} {label}" for n, label in drops if n)
     return (f"{c['scored']:,} of {c['files']:,} operator files scored. {c['no_public_set']:,} have no entry in the "
-            f"public catalogue" + (f", of which {uncat:,} are new satellites the catalogue has not numbered yet" if uncat else "")
-            + f"; {c['decayed_set']:,} marked decayed; {c['propagation_failed']:,} failed to propagate; "
-            f"{c['unreadable']:,} unreadable; {c.get('corrupt', 0):,} no longer matching the record. "
+            f"public catalogue{uncat_txt}"
+            + (f"; {shown}. " if shown else ". Nothing else was dropped. ")
             + (f"Public element sets were a mean of <b>{cage['mean_h']:.1f} h</b> old when the snapshot was taken "
                f"(median {cage['median_h']:.1f} h, 90th percentile {cage['p90_h']:.1f} h, {cage['over_72h']} over 72 h). "
                if cage else "")
@@ -665,13 +675,51 @@ ARCHIVE_PROSE = ("<p>The operator side of every comparison comes from files this
                  "control.</p>")
 
 
+# /finding/ used to open with EXPLAINER verbatim, so a reader arriving from the front page met the
+# same three paragraphs twice in a row. This says what the page is for instead, and keeps the two
+# things EXPLAINER was carrying that the tables below depend on: that both sides are predictions of
+# the same satellite at the same instant, and that the measurement is not an accusation (D04).
+FINDING_EXPLAINER = ("<p>The front page gives the headline. This page is the shape behind it: the same distance "
+                     "broken out by how old the public catalogue's information was, and by altitude shell. Both "
+                     "sides are predictions of the same satellite at the same instant, one from the public element "
+                     "set propagated with SGP4, one from the operator's own published trajectory. It is not an "
+                     "error of the satellite, and it is not a statement about which side is right.</p>")
+
+
+def copy_gap(ledger: dict) -> str:
+    """The trailing run of cycles with no verified independent copy, as a sentence.
+
+    Counting 43 defects across 78 cycles reads as historical blemish. On 24 Sep 2026 the 35 most
+    recent cycles had failed in an unbroken run since 12 Sep, which is a thing that broke on a date
+    and is still broken, and no prose anywhere said so. Cycles arrive newest first (build.py sorts
+    reverse on first_seen_utc). A cycle the witness has not attempted yet claims nothing either way,
+    so it is skipped rather than counted. A run of one or two is ordinary throttling, not an outage.
+    Returns "" when the copies are healthy, so this disappears by itself when they recover."""
+    run = 0
+    for c in ledger["cycles"]:
+        wb = c["wayback"]
+        if not wb.get("attempted"):
+            continue
+        # The run breaks on a verified MANIFEST copy, not on a perfect one. A cycle whose file list
+        # was copied and verified has an independent copy even if one of its ten sampled files was
+        # lost, and counting it as a failure would make the sentence below untrue.
+        if wb.get("manifest_verified"):
+            if run < 3:
+                return ""
+            return (f' The independent copies have been failing since {esc(utc_min(c["first_seen_utc"]))} UTC: '
+                    f'the {run} cycles caught since then have no verified copy of their file list. Their rows '
+                    f'say so. Why is not diagnosed yet.')
+        run += 1
+    return ""
+
+
 def archive_asof(ledger: dict) -> str:
     t = ledger["totals"]
     cov = (f"{100 * ledger['coverage_24h']:.1f}%" if ledger["coverage_24h"] is not None
            else "not yet measured, the heartbeat history is shorter than 24 hours")
     return (f'<p class="fine">As of <b>{esc(utc_min(ledger["generated_utc"]))} UTC</b>: <b>{t["cycles"]}</b> cycles, '
             f'<b>{t["complete"]}</b> complete with roots, <b>{t["attested"]}</b> anchored in Bitcoin, '
-            f'<b>{t["witness_defects"]}</b> with a defect in the independent copy. Source bytes archived: '
+            f'<b>{t["witness_defects"]}</b> with a defect in the independent copy.{copy_gap(ledger)} Source bytes archived: '
             f'<b>{gb(t["bytes_raw"])} GB</b> across {t["files"]:,} files as served. Stored gzipped as '
             f'<b>{gb(t["bytes_stored"])} GB</b>, of which {gb(t["bytes_stored_local"])} GB is on the poller\'s disk and '
             f'{gb(t["bytes_stored_cold_only"])} GB exists only in cold object storage. Cadence holds, meaning a set '
@@ -697,6 +745,21 @@ def verify_kit(ledger: dict) -> dict | None:
     latest = next((c for c in ledger["cycles"]
                    if c["merkle_root"] and c["ots"]["attested_block"] and c["wayback"]["manifest_copy_url"]), None)
     return latest
+
+
+def kit_is_stale(ledger: dict, kit: dict) -> str:
+    """Why the worked example is not the newest cycle, or "" when it is.
+
+    verify_kit takes the newest cycle that has a root, an attestation AND an independent copy. When
+    the copies are failing, that is mechanically an older cycle, so the page shows its best
+    remaining case. That is innocent and it is also indistinguishable from choosing the flattering
+    one, which is the single thing this page exists to rule out. So it is said out loud."""
+    newest = next((c for c in ledger["cycles"] if c["first_seen_utc"]), None)
+    if not newest or newest["cycle"] == kit["cycle"]:
+        return ""
+    return (f' Cycle {esc(kit["cycle"][6:])} was first seen {esc(utc_min(kit["first_seen_utc"]))} UTC and is not the '
+            f'newest one. It is the most recent cycle whose independent copy verified, and the copies have been '
+            f'failing since then.')
 
 
 def scored_row(r: dict, rel: str) -> str:
@@ -842,8 +905,11 @@ def home(ledger: dict, pack_mb: float | None) -> str:
     kit = verify_kit(ledger)
     if kit:
         wb = kit["wayback"]
+        # When the worked example is not the newest cycle, the front page says which cycle it is
+        # instead of letting the reader assume it is current. check() gives the fuller reason.
+        which = (', the newest one whose independent copy verified' if kit_is_stale(ledger, kit) else "")
         check = (f'<p>None of this is worth anything if you have to take my word for it. Three things you can run right '
-                 f'now, for cycle <span class="mono">{esc(kit["cycle"][6:])}</span>:</p><ol>'
+                 f'now, for cycle <span class="mono">{esc(kit["cycle"][6:])}</span>{which}:</p><ol>'
                  f'<li>Fetch the <a href="{esc(wb["manifest_copy_url"])}">independent copy</a> of the file list and hash '
                  f'it. SHA-256 <code>{esc(wb["manifest_copy_sha256"] or "")}</code>.</li>'
                  f'<li>Recompute which ten files were copied: <code>int(sha256(root + ":" + k), 16) mod n</code> for k from 0 to 9.</li>'
@@ -937,7 +1003,7 @@ def finding(ledger: dict, pack_mb: float | None) -> str:
     {esc(utc_min(head["as_of"]))} UTC against the public catalogue snapshot fetched {esc(utc_min(head["snapshot_fetched_utc"]))}
     UTC ({head["catalogue_sets"]:,} element sets).{esc(newer_not_comparable(reports, head))}</p>
   </header>
-  <div class="z-prose">{lede(start, far)}{EXPLAINER}{lost_line(start)}</div>
+  <div class="z-prose">{lede(start, far)}{FINDING_EXPLAINER}{lost_line(start)}</div>
   {visibility_curve(head, cls="z-full")}
   <div class="tablewrap"><table>
     <caption>The same curve as numbers, for cycle {esc(head["cycle"][6:])}. Scored {esc(utc_min(head["as_of"]))} UTC.</caption>
@@ -1071,7 +1137,7 @@ def check(ledger: dict, pack_mb: float | None) -> str:
         wb = kit["wayback"]
         prose = f"""  <div class="z-prose">
     <p>None of this is worth anything if you have to take my word for it. Here is what you can run right now, and
-    what still needs data this site does not publish yet. I would rather say which is which.</p>
+    what still needs data this site does not publish yet. I would rather say which is which.{esc(kit_is_stale(ledger, kit)) if kit else ""}</p>
     <p><b>Fetch an independent copy and hash it.</b> Each cycle's file list is pushed into the Wayback Machine the
     moment it is caught, so a copy exists that I do not control. For cycle <span class="mono">{esc(kit["cycle"][6:])}</span>
     that copy is <a href="{esc(wb["manifest_copy_url"])}">here</a>, and its SHA-256 is
