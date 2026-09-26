@@ -1,10 +1,10 @@
 {
  "schema": 2,
- "generated_utc": "2026-09-26T16:20:27Z",
+ "generated_utc": "2026-09-26T20:20:29Z",
  "poller": "home (residential; single poller until poller A exists)",
  "method": "built from each cycle's cycle.json, witness.json and ship.json in the poller's spool; coverage is the fraction of the last 24 h's minutes with a watcher heartbeat under 10 minutes old (D18); a cadence hold is a manifest first-seen gap over 9 h; source bytes are the responses as served, stored bytes are the gzipped archive objects the shipper recorded",
  "totals": {
-  "cycles": 84,
+  "cycles": 85,
   "complete": 84,
   "attested": 84,
   "witness_defects": 46,
@@ -15718,8 +15718,18 @@
   ],
   "latest": "cycle_f91c62acebbb"
  },
- "catalogue_snapshots": 248,
+ "catalogue_snapshots": 250,
  "catalogue": [
+  {
+   "fetched_utc": "2026-09-26T20:10:11Z",
+   "records": 12892,
+   "sha12": "c1c9adfb7502"
+  },
+  {
+   "fetched_utc": "2026-09-26T18:10:11Z",
+   "records": 12892,
+   "sha12": "1647404f802f"
+  },
   {
    "fetched_utc": "2026-09-26T16:10:11Z",
    "records": 12892,
@@ -15769,19 +15779,44 @@
    "fetched_utc": "2026-09-25T22:10:12Z",
    "records": 12892,
    "sha12": "62e3a464e119"
-  },
-  {
-   "fetched_utc": "2026-09-25T20:10:12Z",
-   "records": 12892,
-   "sha12": "5677f67ae413"
-  },
-  {
-   "fetched_utc": "2026-09-25T18:10:18Z",
-   "records": 12892,
-   "sha12": "bfc1918b0658"
   }
  ],
  "cycles": [
+  {
+   "cycle": "cycle_0927096e9f13",
+   "manifest_sha256": "0927096e9f13c5fb9a6d127e82747d954499f227c9564afefb25cb9badafa8e0",
+   "first_seen_utc": "2026-09-26T20:17:15Z",
+   "status": "in-progress",
+   "files_listed": 11133,
+   "files_recorded": 0,
+   "files_failed": 0,
+   "bytes_raw": 0,
+   "wall_seconds": null,
+   "merkle_root": null,
+   "ots": {
+    "stamped": false,
+    "attested_block": null
+   },
+   "wayback": {
+    "attempted": false,
+    "manifest_verified": false,
+    "manifest_captured": false,
+    "manifest_error": null,
+    "samples_verified": 0,
+    "samples_total": 0,
+    "losses": 0,
+    "skipped": null,
+    "manifest_copy_url": null,
+    "manifest_copy_sha256": null,
+    "samples": []
+   },
+   "storage": {
+    "bytes_stored": 0,
+    "storage_class": null,
+    "local_files": true,
+    "deleted_locally_utc": null
+   }
+  },
   {
    "cycle": "cycle_f91c62acebbb",
    "manifest_sha256": "f91c62acebbb095d170b07c63c3f46e2ca9405be7f1ec5c0585e4e593709450b",
