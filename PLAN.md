@@ -397,7 +397,10 @@ document's tracking table, not here.
   uploads at the key before packing and again seconds before its own first part (packing takes
   minutes on the home disk): a live one (begun within three hours) defers the cycle to a later
   pass, which adopts what lands and removes the tar this host packed; an older one is a killed
-  pass and is ignored. Four tests, the two checks red under mutation; moto dates every upload
+  pass and is ignored. Measured the same afternoon on the real bucket: Windows began uploading
+  at 13:52:17 UTC, the VPS pass at 13:52:57 deferred by name, Windows's tar landed at 14:13:59
+  and the VPS pass at 14:23:02 adopted it with the same sha256; one version at the key.
+  Four tests, the two checks red under mutation; moto dates every upload
   2010-11-10, which the tests say out loud. Suite 253 -> 257.
 - 2026-09-26, later still - The retry that could not succeed. On the first shared cycle both
   witnesses sampled the same ten files and both failed the same two: SPN2 answered every

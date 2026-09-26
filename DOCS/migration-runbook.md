@@ -605,7 +605,10 @@ VPS watcher keeps pulling, so the archive never stops.
   same root. Whichever finishes first ships it; when the other reaches it, `adopt_remote()` finds
   the tar with this root already at the key and adopts it, and if it reaches it while the first
   is still uploading, `upload_in_progress()` sees the live multipart upload and defers to a later
-  pass. No second upload either way. Measured on 26
+  pass. No second upload either way. Measured on the first shared cycle, 26 September: Windows
+  began uploading `f91c62acebbb` at 13:52:17 UTC; the VPS pass at 13:52:57 deferred by name;
+  Windows's tar landed at 14:13:59 (9.29 GB, about 7 MB/s on the home uplink that day); the VPS
+  pass at 14:23:02 adopted it, same sha256, and the key holds exactly one version. Measured on 26
   September: the Hetzner host pulls a full cycle in about a quarter of the home link's time, so in
   practice the VPS ships and Windows adopts.
 - **Stamps.** Both hosts stamp the same root. Two proofs of one root are both valid; the earlier
