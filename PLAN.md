@@ -360,3 +360,14 @@ document's tracking table, not here.
   the newest manifest verified, which is what it was written to do. Suite 236 -> 243.
   Also today: the D06 wording flips itself on 1 Oct, tested a minute either side; the owner's city
   is off the site.
+- 2026-09-26, later - The host exists and the cutover has a shape that cannot double-ship. The
+  owner bought ephemera-a (Hetzner CPX22 with a 150 GB volume, Helsinki, about USD 40 a month) with
+  the first verified VPS prices in the repository; P8 rerun there: a full cycle in 13 min 59 s at
+  32 connections with 0 failures, S3 at 65.4 MB/s, native OTS in 1.7 s, no Wayback throttling.
+  archive/ship.py adopt_remote() makes a second tar over the same root impossible and refuses a
+  foreign root; archive/witness.py --daily-from makes a partial-day daily root impossible; both
+  tested, both red under mutation. DOCS/migration-runbook.md section 6 rewritten around them: one
+  overlap phase (VPS runs watcher, witness without daily roots, shipper with one-day retention),
+  then one records copy with Windows stopped under a per-file ownership table, then the rest. Kelso
+  did not reply; the gate elapsed on 20 Sep. Suite 243 -> 247. Next: phase A on the host, which
+  needs an IAM user scoped to the bucket for the VPS shipper and the VPS's own personal.env.
