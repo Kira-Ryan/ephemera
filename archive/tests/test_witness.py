@@ -21,6 +21,7 @@ import witness  # noqa: E402
 from test_poll import CONTACT, Feed, build_site, make_file, run  # noqa: E402
 
 TS = "20260831120000"
+TS_STALE = "20260101000000"   # a timestamp SPN2 may answer with that the fake, like Wayback on 26 Sep 2026, does not serve
 
 
 class FakeWayback:
@@ -32,9 +33,12 @@ class FakeWayback:
     is wrong. limit_once: url suffixes that 429 one time."""
 
     def __init__(self, origin: dict[str, bytes], corrupt: set | None = None, limit_once: set | None = None,
-                 gzip_no_header: set | None = None, spn2_fail_once: set | None = None, pending_polls: int = 0):
+                 gzip_no_header: set | None = None, spn2_fail_once: set | None = None, pending_polls: int = 0,
+                 stale_within_window: set | None = None):
         """spn2_fail_once: url suffixes whose first SPN2 job reports status "error". pending_polls:
-        how many status polls answer "pending" before "success", to exercise the polling loop."""
+        how many status polls answer "pending" before "success", to exercise the polling loop.
+        stale_within_window: url suffixes whose SPN2 job, unless the submission carried
+        if_not_archived_within, reports success with TS_STALE, a capture the fake does not serve."""
         self.origin, self.corrupt = origin, corrupt or set()
         self.gzip_no_header = gzip_no_header or set()
         self.limited = dict.fromkeys(limit_once or set(), 1)
@@ -46,6 +50,8 @@ class FakeWayback:
         self.jobs: dict[str, str] = {}
         self.spn2_fail = dict.fromkeys(spn2_fail_once or set(), 1)
         self.pending_polls = pending_polls
+        self.stale = stale_within_window or set()
+        self.job_fresh: dict[str, bool] = {}
         fake = self
 
         class Handler(http.server.BaseHTTPRequestHandler):
@@ -68,13 +74,15 @@ class FakeWayback:
                 form = dict(p.split("=", 1) for p in self.rfile.read(n).decode().split("&") if "=" in p)
                 url = urllib.parse.unquote_plus(form.get("url", ""))
                 fake.posts.append({"url": url, "authorization": self.headers.get("Authorization"),
-                                   "accept": self.headers.get("Accept")})
+                                   "accept": self.headers.get("Accept"),
+                                   "fresh": form.get("if_not_archived_within")})
                 if not (self.headers.get("Authorization") or "").startswith("LOW "):
                     self._send(401, json.dumps({"message": "You need to be logged in"}).encode(),
                                [("Content-Type", "application/json")])
                     return
                 job = f"spn2-{len(fake.jobs):04d}"
                 fake.jobs[job] = url
+                fake.job_fresh[job] = "if_not_archived_within" in form
                 self._send(200, json.dumps({"url": url, "job_id": job}).encode(),
                            [("Content-Type", "application/json")])
 
@@ -95,6 +103,8 @@ class FakeWayback:
                                 fake.spn2_fail[s] -= 1
                         body = {"status": "error", "job_id": job, "status_ext": "error:no-access",
                                 "message": "The requested URL could not be captured"}
+                    elif any(url.endswith(s) for s in fake.stale) and not fake.job_fresh.get(job):
+                        body = {"status": "success", "job_id": job, "timestamp": TS_STALE, "original_url": url}
                     else:
                         body = {"status": "success", "job_id": job, "timestamp": TS, "original_url": url}
                     self._send(200, json.dumps(body).encode(), [("Content-Type", "application/json")])
@@ -710,6 +720,36 @@ def test_daily_roots_before_daily_from_belong_to_another_host_and_are_not_built(
         assert wmain(feed, spool, wb, "--daily-from", "2026-09-20") == 0
         assert (spool / "daily" / "2026-09-20" / "root.txt").exists(), "a day on --daily-from was not built"
         assert wmain(feed, spool, wb) == 0                          # no flag: everything, as before
+    finally:
+        feed.close()
+        wb.close()
+
+
+def test_a_retry_after_an_unusable_spn2_answer_asks_for_a_capture_made_now(tmp_path, monkeypatch):
+    """SPN2 answers a URL captured within the last 45 minutes with that capture's timestamp rather
+    than making another. On 26 Sep 2026 two such answers, on both hosts, named captures Wayback did
+    not hold (id_ 404, no CDX row), and five retries five minutes apart all got the same answer, so
+    the loss was certain. A retry submits with if_not_archived_within; a first attempt does not,
+    because the other host's capture of the same bytes minutes earlier is exactly what it wants.
+
+    Mutation: pass fresh=False from either capture call in witness_cycle and the second pass 404s."""
+    with_keys(monkeypatch)
+    feed, spool, rec, cycle, origin = build_cycle(tmp_path)
+    wb = FakeWayback(origin, stale_within_window={feed.names[0]})
+    try:
+        set_current(spool, rec["manifest_sha256"])
+        assert wmain(feed, spool, wb) == 1
+        w = json.loads((cycle / "witness.json").read_text())
+        hit = [s for s in w["wayback"]["samples"].values() if s["name"] == feed.names[0]][0]
+        assert hit["error"] == "id_ fetch HTTP 404" and hit["timestamp"] == TS_STALE and hit["attempts"] == 1
+        assert all(p["fresh"] is None for p in wb.posts), "a first attempt must take the existing capture"
+        assert wmain(feed, spool, wb) == 0
+        w = json.loads((cycle / "witness.json").read_text())
+        hit = [s for s in w["wayback"]["samples"].values() if s["name"] == feed.names[0]][0]
+        assert hit["verified"] and hit["attempts"] == 2 and hit["fresh"] is True and hit["timestamp"] == TS
+        retries = [p for p in wb.posts if p["url"].endswith(feed.names[0])]
+        assert [p["fresh"] for p in retries] == [None, "60"]
+        assert all(s["verified"] for s in w["wayback"]["samples"].values())
     finally:
         feed.close()
         wb.close()

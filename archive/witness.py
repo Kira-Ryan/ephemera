@@ -165,14 +165,23 @@ def spn2_credentials() -> tuple[str, str] | None:
     return (ak, sk) if ak and sk else None
 
 
-def _spn2_submit(session: requests.Session, wayback: str, url: str, auth: tuple[str, str]) -> tuple[str | None, str | None]:
+def _spn2_submit(session: requests.Session, wayback: str, url: str, auth: tuple[str, str],
+                 fresh: bool = False) -> tuple[str | None, str | None]:
     """Submit a capture job and wait for it. Returns (timestamp, None) on success or (None, error).
 
     POST /save answers with a job id; GET /save/status/<id> reports pending, success or error.
     Both carry the Authorization header, and both ask for JSON, which the unauthenticated endpoint
-    never offered: it only ever answered with a redirect to scrape."""
+    never offered: it only ever answered with a redirect to scrape.
+
+    `fresh` asks for a capture made now. Without it SPN2 answers a URL captured within the last 45
+    minutes with that capture's timestamp instead of making another, which is right the first time
+    (the other host captured the same bytes minutes earlier) and wrong on a retry: on 26 Sep 2026
+    two such answers named captures Wayback did not hold, and every retry got the same answer."""
     headers = {"Accept": "application/json", "Authorization": f"LOW {auth[0]}:{auth[1]}"}
-    r = session.post(f"{wayback}/save", data={"url": url}, headers=headers, timeout=120)
+    data = {"url": url}
+    if fresh:
+        data["if_not_archived_within"] = "60"
+    r = session.post(f"{wayback}/save", data=data, headers=headers, timeout=120)
     if r.status_code == 429:
         return None, "429 rate limited by Save-Page-Now"
     try:
@@ -203,7 +212,7 @@ def _spn2_submit(session: requests.Session, wayback: str, url: str, auth: tuple[
 
 
 def capture(session: requests.Session, wayback: str, url: str, expected_sha: str,
-            auth: tuple[str, str] | None = None) -> dict:
+            auth: tuple[str, str] | None = None, fresh: bool = False) -> dict:
     """One Save-Page-Now round trip: submit, read the capture timestamp, fetch the id_ copy back,
     re-hash. Returns the witness entry; an entry with an `error` key is a recorded failure.
 
@@ -212,8 +221,10 @@ def capture(session: requests.Session, wayback: str, url: str, expected_sha: str
     the same either way, so `verified` means the same thing on both paths."""
     entry: dict = {"url": url, "submitted_utc": poll.utc_now()}
     if auth:
-        ts, err = _spn2_submit(session, wayback, url, auth)
+        ts, err = _spn2_submit(session, wayback, url, auth, fresh=fresh)
         entry["via"] = "spn2"
+        if fresh:
+            entry["fresh"] = True
         if err:
             entry["error"] = err
             return entry
@@ -399,6 +410,12 @@ def witness_cycle(cycle_dir: Path, session: requests.Session, runner: OtsRunner 
                                     cycle_dir.name, label, entry["attempts"], entry.get("error", "?"))
                 return entry
 
+            def is_retry(prev: dict | None) -> bool:
+                """A retry asks SPN2 for a capture made now (see _spn2_submit); a first attempt
+                takes the other host's capture of the same bytes, which is what de-duplication
+                is for."""
+                return bool((prev or {}).get("attempts"))
+
             try:
                 if pending_manifest:
                     # MANIFEST.txt is the one URL that never changes, and Wayback de-duplicates
@@ -408,16 +425,17 @@ def witness_cycle(cycle_dir: Path, session: requests.Session, runner: OtsRunner 
                     # identical bytes with or without it (verified), and the copy is still
                     # re-hashed against this cycle's recorded manifest sha.
                     manifest_url = f"{args.base}/MANIFEST.txt?cycle={rec['manifest_sha256'][:12]}"
-                    wb["manifest"] = attempt(wb.get("manifest"),
-                                             capture(session, args.wayback, manifest_url,
-                                                     rec["manifest_sha256"], auth=args.spn2), "MANIFEST.txt")
+                    prev = wb.get("manifest")
+                    wb["manifest"] = attempt(prev, capture(session, args.wayback, manifest_url, rec["manifest_sha256"],
+                                                           auth=args.spn2, fresh=is_retry(prev)), "MANIFEST.txt")
                 for i in pending_files:
                     pause(args.capture_gap)
                     f = rec["files"][i]
-                    samples[str(i)] = attempt(samples.get(str(i)), {
+                    prev = samples.get(str(i))
+                    samples[str(i)] = attempt(prev, {
                         "name": f["name"],
                         **capture(session, args.wayback, f"{args.base}/{f['name']}", f["sha256"],
-                                  auth=args.spn2)}, f["name"])
+                                  auth=args.spn2, fresh=is_retry(prev))}, f["name"])
             except requests.RequestException as e:
                 wb["last_error"] = f"{poll.utc_now()}: {e}"[:400]
                 log.error("%s: Wayback step failed: %s", cycle_dir.name, e)

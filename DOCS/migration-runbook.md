@@ -410,6 +410,14 @@ and stays there; every earlier day's root arrives by copy. Captures go through a
 because the VPS's `personal.env` carries the archive.org keys; without them the witness falls back
 to the redirect endpoint by itself.
 
+Observed on the first shared cycle, 26 September: both hosts sample the same ten files (the choice
+is deterministic per cycle), and for two of them SPN2 answered every submission with the timestamp
+of a capture made minutes earlier that Wayback did not hold (`id_` 404, no CDX row). SPN2
+de-duplicates against any capture of the URL within 45 minutes, so five retries five minutes apart
+could only fail, on both hosts. Retries now submit with `if_not_archived_within=60` and the entry
+records `fresh: true`; a first attempt still takes the other host's capture, which is the
+de-duplication doing its job.
+
 A service, not a timer. The loop at `archive/witness.py:381-404` ends in `pause(args.interval)` with `--interval` defaulting to 300.0 at line 360; `--once` and `--ticks` exist as seams for `Makefile:46` and the tests. Three reasons a timer is wrong: a pass has no upper bound, since one cycle submits a manifest plus ten samples at a 12 s gap with two 300 s-timeout HTTP calls each, so a bad pass exceeds an hour and a five-minute timer would spend its life skipping. The pass returns 1 whenever any step recorded an error (line 399), and permanent already-recorded losses are normal, so a timer would show the unit failed more or less forever. And all cadence state is on disk anyway: the hourly upgrade backoff is persisted as `last_upgrade_attempt_utc` against `--upgrade-every` default 3600.0, and daily roots are keyed by UTC date with a build-once guard.
 
 300 s against an 8 hour feed cadence gives roughly 96 chances to capture inside a cycle's live window, which is the only window that exists.
@@ -454,7 +462,7 @@ Do **not** add `SuccessExitStatus=1`. A pass that recorded an error should show 
 
 `TimeoutStartSec=2h` mirrors PT2H, and accepts that the timeout kills mid-upload. Edit 3.6 is what makes that acceptable, because without it every such kill orphans another 9.3 GB tar.
 
-Two things this unit does not solve. First, the in-flight S3 multipart upload is abandoned on any kill; D15's amendment says stale multipart uploads abort after 7 days, but I made no AWS call and did not verify that lifecycle rule exists on `ephemera-space-raw`. Check it. Second, `archive/ship.py`'s retention deletes `files/` at `--keep-days` without checking whether a visibility report exists, so a cycle not scored within 3 days becomes permanently unscoreable. At 48 score passes a day against 3 cycles a day the margin is enormous, but during a backlog drain raise `--keep-days` to 5.
+Two things this unit does not solve. First, the in-flight S3 multipart upload is abandoned on any kill; D15's amendment says stale multipart uploads abort after 7 days, but I made no AWS call and did not verify that lifecycle rule exists on `ephemera-space-raw`. Check it. Checked 26 September under the guard: rule `abort-stale-multipart`, Enabled, empty prefix, `AbortIncompleteMultipartUpload` after 7 days. That rule is also what bounds `upload_in_progress()`'s worst case (section 6): an upload a killed pass left behind is ignored after three hours and gone after seven days. Second, `archive/ship.py`'s retention deletes `files/` at `--keep-days` without checking whether a visibility report exists, so a cycle not scored within 3 days becomes permanently unscoreable. At 48 score passes a day against 3 cycles a day the margin is enormous, but during a backlog drain raise `--keep-days` to 5.
 
 ### 5.4 `ephemera-catalogue.timer` plus `.service`, oneshot
 

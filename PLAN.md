@@ -398,5 +398,14 @@ document's tracking table, not here.
   minutes on the home disk): a live one (begun within three hours) defers the cycle to a later
   pass, which adopts what lands and removes the tar this host packed; an older one is a killed
   pass and is ignored. Four tests, the two checks red under mutation; moto dates every upload
-  2010-11-10, which the tests say out loud. Suite 253 -> 257. Next: phase B, earliest 28 Sep, once
-  27 Sep is whole on both hosts.
+  2010-11-10, which the tests say out loud. Suite 253 -> 257.
+- 2026-09-26, later still - The retry that could not succeed. On the first shared cycle both
+  witnesses sampled the same ten files and both failed the same two: SPN2 answered every
+  submission with the timestamp of a capture made minutes earlier that Wayback did not hold
+  (id_ 404, no CDX row), because it de-duplicates against any capture within 45 minutes, so five
+  retries five minutes apart could only fail. archive/witness.py retries now submit with
+  if_not_archived_within=60 (a capture made now) and record fresh: true; a first attempt still
+  takes the other host's capture. The fake Wayback learned the stale answer; one test, red under
+  mutation. Also: the host's make test ran on Linux, green after one test stopped assuming Docker
+  exists; the bucket's 7-day abort-incomplete-multipart rule verified under the guard. Suite 257
+  -> 258. Next: phase B, earliest 28 Sep, once 27 Sep is whole on both hosts.
