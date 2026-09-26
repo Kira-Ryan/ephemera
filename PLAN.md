@@ -388,4 +388,15 @@ document's tracking table, not here.
   clean. D10 cross-check held again: the home root of f91c62acebbb equals the Hetzner root, 51
   minutes against 14. Runbook corrected where it described a flag that does not exist (--ots-bin;
   ots resolves through PATH in the EnvironmentFile) and extended with what the host holds. Suite
-  247 -> 253. Next: phase B, earliest 28 Sep, once 27 Sep is whole on both hosts.
+  247 -> 253.
+- 2026-09-26, later still - The overlap's third refusal. Watching the first shared cycle showed a
+  gap in "nothing can double-ship": the Windows shipper fires at :36 and takes about 45 minutes
+  to upload; the VPS timer fires at :41 and would HEAD the key while that multipart upload was
+  still in flight, find nothing, and put a second tar over the same root. The VPS timer was
+  disabled at 13:24 UTC, before its first real pass, and archive/ship.py now lists the multipart
+  uploads at the key before packing and again seconds before its own first part (packing takes
+  minutes on the home disk): a live one (begun within three hours) defers the cycle to a later
+  pass, which adopts what lands and removes the tar this host packed; an older one is a killed
+  pass and is ignored. Four tests, the two checks red under mutation; moto dates every upload
+  2010-11-10, which the tests say out loud. Suite 253 -> 257. Next: phase B, earliest 28 Sep, once
+  27 Sep is whole on both hosts.

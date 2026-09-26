@@ -540,6 +540,16 @@ to be perfect:
   is adopted as this host's shipped state; a different root is a conflict, refused loudly, never
   overwritten; an empty key uploads as before. Two pollers pulling the same manifest produce the
   same cycle id and the same root (D10; observed twice in P8, on AWS and on the Hetzner host).
+- `archive/ship.py` `upload_in_progress()`, added 26 September when the first overlap day showed
+  the gap: between the other host's first part and its last there is no object at the key, so
+  `adopt_remote()` sees nothing, and the home uplink takes about 45 minutes per cycle against the
+  VPS's three with the two timers five minutes apart. Before packing, and again after packing
+  and hashing (minutes on the home disk), seconds before its own first part, the shipper lists the
+  multipart uploads at the key; a live one (begun within three hours, the two hosts' pass limits)
+  defers this cycle to a later pass, which then adopts what landed and removes any tar this host
+  had packed for it. An older upload is a killed pass and is ignored, so a stale one never holds
+  the cold copy back for the seven days the bucket's lifecycle gives it. The window that remains
+  is the seconds between the second check and the first part.
 - `archive/witness.py --daily-from YYYY-MM-DD`: a host builds daily roots only for days on or
   after that date. A future date builds none. A daily root is built once and never rebuilt, so the
   host that held all of a day builds it and the other host receives it by copy.
@@ -578,7 +588,9 @@ VPS watcher keeps pulling, so the archive never stops.
 
 - **Pulls.** Both hosts see each manifest within two minutes of each other and pull it. Same id,
   same root. Whichever finishes first ships it; when the other reaches it, `adopt_remote()` finds
-  the tar with this root already at the key and adopts it. No second upload. Measured on 26
+  the tar with this root already at the key and adopts it, and if it reaches it while the first
+  is still uploading, `upload_in_progress()` sees the live multipart upload and defers to a later
+  pass. No second upload either way. Measured on 26
   September: the Hetzner host pulls a full cycle in about a quarter of the home link's time, so in
   practice the VPS ships and Windows adopts.
 - **Stamps.** Both hosts stamp the same root. Two proofs of one root are both valid; the earlier
