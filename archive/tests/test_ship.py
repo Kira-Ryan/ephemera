@@ -402,3 +402,91 @@ def test_an_empty_key_still_uploads_as_before(s3, cycle):
     state = json.loads((cyc / "ship.json").read_text())
     assert state["shipped"]["key"] and "adopted_from_remote_utc" not in state["shipped"]
     assert s3.head_object(Bucket=BUCKET, Key=state["shipped"]["key"])["ContentLength"] == state["shipped"]["bytes"]
+
+
+def test_a_key_another_host_is_still_uploading_is_deferred_not_raced(s3, cycle, monkeypatch):
+    """Between the other host's first part and its last, no object exists at the key, so
+    adopt_remote() sees nothing. Measured 26 Sep 2026: the home uplink takes about 45 minutes per
+    cycle, the VPS three, and their timers fire five minutes apart, so this is the ordinary case,
+    not a corner. The shipper must see the live multipart upload and wait for it.
+
+    Mutation: drop the upload_in_progress call from ship_cycle and this fails on the object
+    appearing at the key."""
+    _, spool, rec, cyc = cycle
+    key = f"cycles/{cyc.name[6:]}/files.tar"
+    s3.put_bucket_versioning(Bucket=BUCKET, VersioningConfiguration={"Status": "Enabled"})
+    other = s3.create_multipart_upload(Bucket=BUCKET, Key=key, StorageClass="DEEP_ARCHIVE",
+                                       Metadata={"merkle_root": rec["merkle_root"]})
+    # moto dates every multipart upload 2010-11-10; real S3 reports when it began. Widen the live
+    # window so the placeholder date counts as live, which is what a real upload begun minutes ago is.
+    monkeypatch.setattr(ship, "UPLOAD_LIVE_S", 10 ** 10)
+    assert smain(spool) == 0
+    state = json.loads((cyc / "ship.json").read_text())
+    assert state["shipped"] is None and state["error"] is None
+    assert s3.list_object_versions(Bucket=BUCKET, Prefix=key).get("Versions", []) == []
+    uploads = s3.list_multipart_uploads(Bucket=BUCKET, Prefix=key).get("Uploads", [])
+    assert [u["UploadId"] for u in uploads] == [other["UploadId"]], "this host started an upload of its own"
+    assert not list((spool / "outbox").glob("*.tar")), "packed a tar it was not going to send"
+    # the other host lands its tar; the next pass adopts it
+    s3.abort_multipart_upload(Bucket=BUCKET, Key=key, UploadId=other["UploadId"])
+    s3.put_object(Bucket=BUCKET, Key=key, Body=b"the other host's tar", StorageClass="DEEP_ARCHIVE",
+                  Metadata={"sha256": "cd" * 32, "cycle": cyc.name, "merkle_root": rec["merkle_root"]})
+    assert smain(spool) == 0
+    state = json.loads((cyc / "ship.json").read_text())
+    assert state["shipped"]["adopted_from_remote_utc"] and state["shipped"]["sha256"] == "cd" * 32
+    assert len(s3.list_object_versions(Bucket=BUCKET, Prefix=key).get("Versions", [])) == 1
+
+
+def test_an_abandoned_upload_older_than_the_live_window_does_not_block_shipping(s3, cycle, monkeypatch):
+    """A pass killed mid-upload leaves its multipart upload behind for up to seven days, when the
+    bucket lifecycle aborts it. That must not hold the cold copy back for a week: past the window
+    in which a live pass can still be running, it is ignored and this host ships."""
+    _, spool, rec, cyc = cycle
+    key = f"cycles/{cyc.name[6:]}/files.tar"
+    stale = s3.create_multipart_upload(Bucket=BUCKET, Key=key)
+    monkeypatch.setattr(ship, "UPLOAD_LIVE_S", -1)     # past the window whatever date moto gives the upload
+    assert smain(spool) == 0
+    state = json.loads((cyc / "ship.json").read_text())
+    assert state["shipped"] and not state["shipped"].get("adopted_from_remote_utc")
+    assert s3.head_object(Bucket=BUCKET, Key=key)["Metadata"]["merkle_root"] == rec["merkle_root"]
+    s3.abort_multipart_upload(Bucket=BUCKET, Key=key, UploadId=stale["UploadId"])
+
+
+def test_an_upload_that_begins_while_this_host_is_packing_is_still_seen(s3, cycle, monkeypatch):
+    """Packing a 22 GB cycle takes minutes on the home disk, and the first check runs before it.
+    The other host can begin in that time. The check runs again after packing, seconds before this
+    host's first part, and a live upload found then leaves the tar in the outbox for the next pass.
+
+    Mutation: drop the second upload_in_progress call and this fails on the object appearing."""
+    _, spool, rec, cyc = cycle
+    key = f"cycles/{cyc.name[6:]}/files.tar"
+    monkeypatch.setattr(ship, "UPLOAD_LIVE_S", 10 ** 10)   # moto's 2010 placeholder date, see above
+    real_pack = ship.pack
+
+    def pack_then_other_host_begins(cycle_dir, outbox, rec_):
+        path = real_pack(cycle_dir, outbox, rec_)
+        s3.create_multipart_upload(Bucket=BUCKET, Key=key)
+        return path
+
+    monkeypatch.setattr(ship, "pack", pack_then_other_host_begins)
+    assert smain(spool) == 0
+    state = json.loads((cyc / "ship.json").read_text())
+    assert state["shipped"] is None and state["error"] is None
+    assert s3.list_object_versions(Bucket=BUCKET, Prefix=key).get("Versions", []) == []
+    assert len(s3.list_multipart_uploads(Bucket=BUCKET, Prefix=key).get("Uploads", [])) == 1
+    assert [p.name for p in (spool / "outbox").glob("*.tar")] == [f"{cyc.name}.tar"], "the tar is kept for the next pass"
+
+
+def test_adopting_a_cycle_removes_the_tar_this_host_had_packed(s3, cycle):
+    """A pass that packed, deferred, and then finds the other host's tar landed must not leave its
+    own nine gigabytes in the outbox forever: adopted means this tar is never sent."""
+    _, spool, rec, cyc = cycle
+    key = f"cycles/{cyc.name[6:]}/files.tar"
+    (spool / "outbox").mkdir(exist_ok=True)
+    (spool / "outbox" / f"{cyc.name}.tar").write_bytes(b"packed earlier, never sent")
+    s3.put_object(Bucket=BUCKET, Key=key, Body=b"the other host's tar", StorageClass="DEEP_ARCHIVE",
+                  Metadata={"sha256": "cd" * 32, "cycle": cyc.name, "merkle_root": rec["merkle_root"]})
+    assert smain(spool) == 0
+    state = json.loads((cyc / "ship.json").read_text())
+    assert state["shipped"]["adopted_from_remote_utc"]
+    assert not (spool / "outbox" / f"{cyc.name}.tar").exists()

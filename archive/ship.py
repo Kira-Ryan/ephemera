@@ -172,6 +172,22 @@ def needs_upload(state: dict, rec: dict) -> str | None:
             "the cold copy is missing files the record now names")
 
 
+UPLOAD_LIVE_S = 3 * 3600   # both hosts kill a shipper pass at two hours; an upload older than this is abandoned
+
+
+def upload_in_progress(s3, bucket: str, key: str, now: datetime | None = None) -> str | None:
+    """When another shipper is part-way through a multipart upload of this key, no object exists
+    yet, so adopt_remote() sees nothing and this host would put a second tar over the same root the
+    moment the other one lands. Returns when the live upload was initiated, or None. An upload
+    initiated more than UPLOAD_LIVE_S ago is a killed pass, not a live one (the bucket's lifecycle
+    aborts it after seven days), and does not count."""
+    now = now or datetime.now(timezone.utc)
+    for u in s3.list_multipart_uploads(Bucket=bucket, Prefix=key).get("Uploads") or []:
+        if u.get("Key") == key and (now - u["Initiated"]).total_seconds() < UPLOAD_LIVE_S:
+            return u["Initiated"].strftime("%Y-%m-%dT%H:%M:%SZ")
+    return None
+
+
 class RemoteConflict(RuntimeError):
     """An object already sits at this cycle's key and it is NOT this archive. Never overwritten."""
 
@@ -216,6 +232,7 @@ def ship_cycle(cycle_dir: Path, s3, args) -> tuple[bool, bool]:
         return True, False
     state = load_state(cycle_dir)
     prefix = f"cycles/{cycle_dir.name[6:]}"
+    key = f"{prefix}/files.tar"
     ok = True
     uploaded = False
     try:
@@ -224,16 +241,27 @@ def ship_cycle(cycle_dir: Path, s3, args) -> tuple[bool, bool]:
             # Before packing nine gigabytes: is this cycle already in cold storage from another
             # host? Only the never-shipped case asks; a fingerprint mismatch on a cycle THIS host
             # shipped is a heal and must re-upload as before.
-            adopted = adopt_remote(s3, args.bucket, f"{prefix}/files.tar", rec)
+            adopted = adopt_remote(s3, args.bucket, key, rec)
             if adopted:
                 state["shipped"] = adopted
                 state["error"] = None
                 poll.write_json_atomic(cycle_dir / "ship.json", state)
                 log.info("%s: already in cold storage with this root (uploaded %s); adopted, not re-uploaded",
                          cycle_dir.name, adopted["uploaded_utc"])
+                leftover = args.spool / "outbox" / f"{cycle_dir.name}.tar"
+                if leftover.exists():
+                    leftover.unlink()
+                    log.info("%s: removed the tar this host had packed for it", cycle_dir.name)
                 why = None
         if why:
-            key = f"{prefix}/files.tar"
+            # The other host may be mid-upload: no object yet, so adopt_remote() saw nothing. Wait
+            # for it rather than race it; the next pass adopts what it put there.
+            since = upload_in_progress(s3, args.bucket, key)
+            if since:
+                log.info("%s: another shipper has been uploading this key since %s; deferred, to be adopted "
+                         "once it lands", cycle_dir.name, since)
+                why = None
+        if why:
             tar_path = args.spool / "outbox" / f"{cycle_dir.name}.tar"
             log.info("%s: %s", cycle_dir.name, why)
             if not tar_path.exists():
@@ -244,6 +272,14 @@ def ship_cycle(cycle_dir: Path, s3, args) -> tuple[bool, bool]:
                 tar_path = pack(cycle_dir, args.spool / "outbox", rec)
             size = tar_path.stat().st_size
             digest = sha256_file(tar_path)
+            # Packing and hashing took minutes; the other host may have begun in the meantime. Asked
+            # again here, seconds before this host's first part, so the window is seconds, not minutes.
+            since = upload_in_progress(s3, args.bucket, key)
+            if since:
+                log.info("%s: packed, but another shipper began uploading this key at %s; deferred, the tar "
+                         "waits in the outbox for the next pass", cycle_dir.name, since)
+                why = None
+        if why:
             log.info("%s: uploading %.2f GB tar (sha256 %s...) to s3://%s/%s", cycle_dir.name, size / 1e9,
                      digest[:12], args.bucket, key)
             cfg = TransferConfig(multipart_threshold=args.part_size_mb * 1024 * 1024,

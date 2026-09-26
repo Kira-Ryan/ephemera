@@ -512,6 +512,9 @@ def test_every_child_process_is_started_without_a_console(monkeypatch, tmp_path)
         return subprocess.CompletedProcess(cmd, 0, "", "")
 
     monkeypatch.setattr(witness.subprocess, "run", fake_run)
+    # The flag is the subject, not what the machine has installed: the VPS has ots and no docker
+    # (the gate failed there on 26 Sep on the docker branch), the home PC has both.
+    monkeypatch.setattr(witness.shutil, "which", lambda name: f"/usr/bin/{name}")
     for mode in ("ots", "docker"):
         witness.OtsRunner(mode)._run(tmp_path, "info", "root.txt.ots")
     assert len(seen) == 2
