@@ -416,7 +416,14 @@ of a capture made minutes earlier that Wayback did not hold (`id_` 404, no CDX r
 de-duplicates against any capture of the URL within 45 minutes, so five retries five minutes apart
 could only fail, on both hosts. Retries now submit with `if_not_archived_within=60` and the entry
 records `fresh: true`; a first attempt still takes the other host's capture, which is the
-de-duplication doing its job.
+de-duplication doing its job. Measured straight after, that did not change SPN2's answer for
+these two: it hands back the same job id for the same URL, and that job reports the same capture
+(`status: success`, `http_status: 200`, `first_archive: true`, the same timestamp) while the
+availability API and CDX show nothing archived for the URL at all. So the loss is a capture
+Wayback recorded and does not hold, and no request shape inside the job's cache window changes
+it; both hosts recorded the loss after five attempts, 25 minutes. Open, and worth measuring:
+whether such a job resolves hours later, in which case the five attempts should spread over the
+cycle's live window rather than the first 25 minutes of it.
 
 A service, not a timer. The loop at `archive/witness.py:381-404` ends in `pause(args.interval)` with `--interval` defaulting to 300.0 at line 360; `--once` and `--ticks` exist as seams for `Makefile:46` and the tests. Three reasons a timer is wrong: a pass has no upper bound, since one cycle submits a manifest plus ten samples at a 12 s gap with two 300 s-timeout HTTP calls each, so a bad pass exceeds an hour and a five-minute timer would spend its life skipping. The pass returns 1 whenever any step recorded an error (line 399), and permanent already-recorded losses are normal, so a timer would show the unit failed more or less forever. And all cadence state is on disk anyway: the hourly upgrade backoff is persisted as `last_upgrade_attempt_utc` against `--upgrade-every` default 3600.0, and daily roots are keyed by UTC date with a build-once guard.
 

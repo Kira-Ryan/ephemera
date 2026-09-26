@@ -406,6 +406,11 @@ document's tracking table, not here.
   retries five minutes apart could only fail. archive/witness.py retries now submit with
   if_not_archived_within=60 (a capture made now) and record fresh: true; a first attempt still
   takes the other host's capture. The fake Wayback learned the stale answer; one test, red under
-  mutation. Also: the host's make test ran on Linux, green after one test stopped assuming Docker
+  mutation. Then measured: it does not reach this case. SPN2 returns the same job id for the same
+  URL and that job reports the same capture (success, http_status 200, first_archive true, same
+  timestamp) while the availability API and CDX hold nothing for the URL: a capture Wayback
+  recorded and does not have. Both hosts recorded the two losses after five attempts. Open:
+  whether such a job resolves hours later; if so the attempts should spread over the cycle's
+  live window. Also: the host's make test ran on Linux, green after one test stopped assuming Docker
   exists; the bucket's 7-day abort-incomplete-multipart rule verified under the guard. Suite 257
   -> 258. Next: phase B, earliest 28 Sep, once 27 Sep is whole on both hosts.
