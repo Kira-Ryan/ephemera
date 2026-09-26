@@ -371,3 +371,21 @@ document's tracking table, not here.
   then one records copy with Windows stopped under a per-file ownership table, then the rest. Kelso
   did not reply; the gate elapsed on 20 Sep. Suite 243 -> 247. Next: phase A on the host, which
   needs an IAM user scoped to the bucket for the VPS shipper and the VPS's own personal.env.
+- 2026-09-26, later still - Phase A is live on ephemera-a since 13:09 UTC: the VPS pulls, stamps
+  and ships beside Windows, and nothing on it can remove from the archive. infra/iam_shipper.py
+  made the host's IAM user under the guard (ephemera-shipper-a: put, get and list on the bucket,
+  no delete of any kind; key created once, only into a 0600 profile file, never printed; six
+  tests, the caller one red under mutation). The host holds exactly five names in personal.env
+  (the three EPHEMERA_AWS_* and the archive.org pair), the AWS profile in /etc/ephemera/aws-config,
+  and no Cloudflare, R2 or Space-Track value; every file was built on the home machine, copied by
+  scp into a root-only staging directory, installed at its mode and shredded from staging. Three
+  units: watcher at 32 workers, witness on --ots ots with --daily-from 2099-01-01 and authenticated
+  SPN2, shipper timer every 30 minutes with one-day retention; the spool is the Hetzner volume and
+  the units wait for its mount. The stop contract ran on Linux for the first time: SIGTERM and
+  SIGINT both leave an interrupted record, exit 4 counted as success, and the next start resumes
+  (files_failed in an interrupted record includes files never requested; cosmetic). The first VPS
+  shipper pass found the credentials in the config file, passed the guard as 438173644568 and was
+  clean. D10 cross-check held again: the home root of f91c62acebbb equals the Hetzner root, 51
+  minutes against 14. Runbook corrected where it described a flag that does not exist (--ots-bin;
+  ots resolves through PATH in the EnvironmentFile) and extended with what the host holds. Suite
+  247 -> 253. Next: phase B, earliest 28 Sep, once 27 Sep is whole on both hosts.

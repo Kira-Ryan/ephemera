@@ -120,8 +120,9 @@ comparable. Evidence under `evidence/hetzner/`.
 The cycle it pulled, manifest `f91c62acebbb`, first seen by the host at 12:27:59 UTC and by the
 home watcher at 12:26:57 UTC, produced root
 `4e9f5b042f20d2e671c49907d52cf37e3542afe17bd2fb47c912e9d5eeeb41e5`. The home pull of the same
-manifest was still running when this was written (3,500 of 11,133 files at 12:44 UTC, at a third of
-the Hetzner rate); its root is the cross-check and is recorded below when it lands.
+manifest finished at 13:18:11 UTC, 51 minutes after it began against the host's 14, with 11,133
+files recorded, 0 failed, and the same root, byte for byte. That is the second cross-check of D10
+across two hosts on two networks; the first was `34e224670e92` on 12 September, above.
 
 What this changes in the plan: 32 connections rather than 16 on this host, since the second slice
 held the higher rate for a whole cycle with no failures and the 16-connection figure was the lower

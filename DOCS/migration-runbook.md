@@ -186,7 +186,7 @@ Correcting the draft's reasoning while we are here. It said "none of these run o
 
 **Not fixed, outside this change, same one word:** `infra/deploy-site.sh:9` and `infra/site-bootstrap.sh:13,14,15` each call a bare `python infra/cf_site.py ...`. Both source `guard_cf.sh` first, so on a stock Ubuntu host the guard now passes and the script dies one line later. `.github/workflows/deploy-site.yml:47,54` also call a bare `python`, and that is **not** a defect: the job runs `actions/setup-python@v5` at `:36`, which puts `python` on the runner's PATH.
 
-**3.3 `archive/witness.py:72-73`, drop the silent Docker fallback.** Today `--ots auto` picks `ots` if `shutil.which("ots")` finds it and otherwise `docker`. Under systemd the unit's PATH is not a login shell PATH, so an `ots` installed into `/opt/ephemera/.venv/bin` is invisible and `auto` silently selects Docker, which is the exact dependency this migration removes. Two edits:
+**3.3 `archive/witness.py:72-73`, drop the silent Docker fallback.** (Not landed as of 26 September; the installed unit names `--ots ots`, so `auto` never runs, and reaches the venv's client through `PATH`, section 5.2.) Today `--ots auto` picks `ots` if `shutil.which("ots")` finds it and otherwise `docker`. Under systemd the unit's PATH is not a login shell PATH, so an `ots` installed into `/opt/ephemera/.venv/bin` is invisible and `auto` silently selects Docker, which is the exact dependency this migration removes. Two edits:
 
 - At `archive/witness.py:80`, the native command is the bare string `["ots", *ots_args]`. Add an `--ots-bin` argument (default `"ots"`), store it on the runner, and use it here, so the unit can name `/opt/ephemera/.venv/bin/ots` absolutely and never depend on PATH.
 - At `archive/witness.py:72-73`, make `auto` mean native-or-refuse: if `which(ots_bin)` finds nothing, raise rather than falling through to Docker. Docker stays reachable, but only when explicitly asked for with `--ots docker`, which is what `Makefile:51,55,59` still want on Windows. This converts a silent dependency into a loud refusal, which is the project's rule.
@@ -266,7 +266,7 @@ Write this file **on the VPS with a heredoc, naming those five and nothing else*
 
 **Credentials outside the checkout.** `.gitignore` now carries `/.aws/` and `/.ssh/` (`.gitignore:26-29`), because the draft put an SSH private key and an AWS credentials file inside the working tree of a public repository with no ignore rule for either: `git check-ignore -v` reported `.aws/config`, `.aws/credentials` and `.ssh/id_ed25519` as NOT IGNORED before that change, and a test now asks git rather than reading the file (`infra/tests/test_guard.py:295`). The automated committer could never have taken them, because `web/publish.py:168` and `:175-178` both carry a `-- web/dist` pathspec, but the VPS is where a human runs git by hand. Better still, do not put them there at all: unlike `personal.env`, whose location is pinned by `infra/guard.py:16`, both are named by absolute path in the units, so `/etc/ephemera/aws-config` and `/etc/ephemera/ssh/` cost nothing and are what this runbook's units use.
 
-**`/etc/ephemera/ephemera.env`**, mode 0640, an `EnvironmentFile` for the units. Holds `EPHEMERA_CONTACT`, `LANG=C.UTF-8`, `PYTHONUNBUFFERED=1`, and no credential. `EPHEMERA_CONTACT` is not a credential, it is the address published in the User-Agent (`archive/poll.py:74-75`), but four entry points refuse to start without an address containing `@`: `archive/poll.py:255-257`, `archive/run_cycle.py:162-164`, `archive/witness.py:368-370`, `archive/gp_pull.py:128-130`, all returning exit 5. Put it in the `EnvironmentFile` rather than on the `ExecStart` line, because the command line is world-readable in `/proc`.
+**`/etc/ephemera/ephemera.env`**, mode 0640, an `EnvironmentFile` for the units. Holds `EPHEMERA_CONTACT`, `LANG=C.UTF-8`, `PYTHONUNBUFFERED=1`, a `PATH` that puts `/opt/ephemera/.venv/bin` first (section 5.2), and no credential. `EPHEMERA_CONTACT` is not a credential, it is the address published in the User-Agent (`archive/poll.py:74-75`), but four entry points refuse to start without an address containing `@`: `archive/poll.py:255-257`, `archive/run_cycle.py:162-164`, `archive/witness.py:368-370`, `archive/gp_pull.py:128-130`, all returning exit 5. Put it in the `EnvironmentFile` rather than on the `ExecStart` line, because the command line is world-readable in `/proc`.
 
 **Git push credential for `web/publish.py:185`.** The code runs a bare `git push` and delegates entirely to git's configuration; `remote.origin.url` in `.git/config` is HTTPS today, which on Windows resolves through Git Credential Manager. A systemd unit has no TTY and no credential helper, so the push fails and `web/publish.py:187` logs `push failed (will retry on the next run)`. Note what this now is and is not: a push failure is a credential problem, and a *rejected* push is not. Since the publisher fast-forwards before it builds (`web/publish.py:54-110`), a non-fast-forward rejection means a second publisher is pushing to the same branch, and the run before it would already have refused with "this clone and origin/main have diverged". Do not debug the deploy key on that message.
 
@@ -278,6 +278,35 @@ Two more git settings that are not secrets and will otherwise stop the publisher
 
 - `git -C /opt/ephemera config user.name` and `user.email`. They are repo-local here, not global (deliberately: PLAN.md keeps the employer address out of the history), so a fresh clone has no identity and `git commit --only` at `web/publish.py:175-178` fails with "Please tell me who you are", logged as `commit failed` at line 180 and returning 1.
 - Make the service user own the checkout, or add `git config --global --add safe.directory /opt/ephemera`. Without one of those, git refuses every command with "dubious ownership". In the draft that was worse than an inconvenience: the cycle count read `None` and the shrink guard disabled itself. It is now a refusal - `sync_with_published()` runs `git rev-parse --is-inside-work-tree` first and returns 1 with git's own message before anything is built (`web/publish.py:64-69`).
+
+### As installed on ephemera-a, 26 September 2026 (phase A)
+
+What the host holds, by name, and how each file got there. Nothing was typed at a prompt and no
+value passed through a shell command line: the three files were built on the home machine by a
+script that read the home `personal.env` for the three values it needed, copied with `scp` into a
+root-only staging directory, put in place with `install -o ephemera -m 0600`, and the staged
+copies shredded.
+
+- `/opt/ephemera/infra/personal.env`, 0600 ephemera: `EPHEMERA_AWS_PROFILE=ephemera`,
+  `EPHEMERA_AWS_ACCOUNT_IDS`, `EPHEMERA_AWS_FORBIDDEN_IDS`, `ARCHIVE_ORG_ACCESS_KEY`,
+  `ARCHIVE_ORG_SECRET_KEY`. Five names, but not the table's five: the Space-Track pair waits for
+  phase B step 6, when the catalogue moves, and the archive.org pair, which the table predates, is
+  what the witness's SPN2 client reads (`spn2_credentials()` in `archive/witness.py`). No
+  Cloudflare, R2 or Space-Track value is on the host.
+- `/etc/ephemera/aws-config`, 0600 ephemera: one `[profile ephemera]` section carrying the keys
+  of IAM user `ephemera-shipper-a`, created by `infra/iam_shipper.py` under the guard. That user
+  has one inline policy, `ephemera-shipper-bucket-only`: put, get, abort-multipart and list-parts
+  on `ephemera-space-raw/*`, list on the bucket, nothing else. No delete of any kind, so a lost
+  host can add to the archive and cannot remove from it. The script creates the key once and only
+  with `--write-config PATH`; `--rotate-key` replaces it. Nothing prints a key.
+- `/etc/ephemera/ephemera.env`, 0640 root:ephemera: `EPHEMERA_CONTACT`, `LANG=C.UTF-8`,
+  `PYTHONUNBUFFERED=1` and `PATH=/opt/ephemera/.venv/bin:...`, so `ots` resolves to the venv's
+  client (section 5.2).
+
+Checked before the first unit started, as the service user and with the unit's environment:
+`guard.enforce()` returned account 438173644568 via profile `ephemera`;
+`witness.spn2_credentials()` returned a pair; `git check-ignore` names `infra/personal.env`
+under `.gitignore:23`; `git status` was clean.
 
 ### The Cloudflare deploy: it stays on GitHub Actions
 
@@ -309,7 +338,14 @@ WorkingDirectory=/opt/ephemera
 EnvironmentFile=/etc/ephemera/ephemera.env
 ```
 
-and none of them sets `StandardError=`, so stderr goes to the journal (section 3, "console suppression"). Set `Storage=persistent` in `journald.conf` and confirm with `journalctl --disk-usage`. On the watcher, set `LogRateLimitIntervalSec=0` in the unit: journald's default drops bursts silently after 10,000 messages in 30 s, and the poller logs a warning per failed attempt (`archive/poll.py:220-224`), so a bad cycle would have its evidence quietly discarded, which is exactly what CLAUDE.md forbids.
+and, because the spool is on the Hetzner volume (`/srv/ephemera/spool` is a symlink to
+`/mnt/HC_Volume_106962304/spool`), every unit that touches the spool also carries in `[Unit]`
+`RequiresMountsFor=/mnt/HC_Volume_106962304` and `ConditionPathIsMountPoint=/mnt/HC_Volume_106962304`.
+The volume's fstab entry is `nofail`, so without those lines a host that booted without its volume
+would run the poller against the root disk; with them the unit waits for the mount and does not
+start without it, and `systemctl status` says why.
+
+None of them sets `StandardError=`, so stderr goes to the journal (section 3, "console suppression"). Set `Storage=persistent` in `journald.conf` and confirm with `journalctl --disk-usage`. On the watcher, set `LogRateLimitIntervalSec=0` in the unit: journald's default drops bursts silently after 10,000 messages in 30 s, and the poller logs a warning per failed attempt (`archive/poll.py:220-224`), so a bad cycle would have its evidence quietly discarded, which is exactly what CLAUDE.md forbids.
 
 ### 5.1 `ephemera-watcher.service`, long-running
 
@@ -317,7 +353,7 @@ and none of them sets `StandardError=`, so stderr goes to the journal (section 3
 [Service]
 Type=simple
 ExecStart=/opt/ephemera/.venv/bin/python -u /opt/ephemera/archive/run_cycle.py \
-  --spool /srv/ephemera/spool --workers 16 --min-free-gb 25 --interval 120
+  --spool /srv/ephemera/spool --workers 32 --min-free-gb 25 --interval 120
 Restart=always
 RestartSec=10
 SuccessExitStatus=4
@@ -328,7 +364,9 @@ LogRateLimitIntervalSec=0
 
 A service and not a timer, for three reasons that are in the code. The tick interval is internal: `--interval`, `type=float, default=120.0`, "seconds between manifest checks" at `archive/run_cycle.py:152`, slept at line 190, and the loop at 171 to 193 runs forever unless `--once` or `--ticks` is given, which exist for the tests. The conditional-GET state is in memory only: `state` is a local dict created at line 169 and used at 93 to 101, so a timer re-executing `--once` would lose the ETag every invocation and turn D17's conditional GET into 720 full 821 KB manifest downloads a day, about 590 MB a day of pointless traffic against the operator. And a tick can *be* the pull: `tick()` calls `poll.main()` inline at lines 118 to 119 and a full cycle takes 45 to 116 minutes, so a 120 s timer would start overlapping pollers on one spool, and there is no spool lock anywhere (PLAN.md records this as accepted, single-writer by design).
 
-`--interval 120` stays at the code default because D17 fixes the number, and it bounds detection lag to two minutes against a 480 minute cadence for the cost of one conditional GET.
+`--interval 120` stays at the code default because D17 fixes the number, and it bounds detection lag to two minutes against a 480 minute cadence for the cost of one conditional GET. `--workers 32` on this host: P8's second run held that rate for
+a whole cycle with no failures (`probes/p8_vps_bootstrap/`), and the first pull under the unit ran at
+the same rate, 500 files every 37 s.
 
 `SuccessExitStatus=4` because a graceful stop returns `poll.EXIT_INTERRUPTED = 4` (`archive/poll.py:61`, returned at `archive/run_cycle.py:178` and `:193`), so without it systemd marks the unit failed on every clean stop.
 
@@ -340,14 +378,25 @@ A service and not a timer, for three reasons that are in the code. The tick inte
 
 **Unverified and worth testing first on the VPS:** the SIGTERM path has never been executed. `archive/tests/test_poll.py` fires `_thread.interrupt_main()` directly, which exercises the `KeyboardInterrupt` branch and not the wiring at `archive/poll.py:233`. Windows cannot deliver a real SIGTERM, so this is only testable on Linux. By the repository's own "test the caller" rule the handler is currently unverified. Write that test on the VPS before the cutover.
 
+Executed on ephemera-a on 26 September, two minutes into a pull, both ways. `systemctl kill -s
+SIGTERM`: the poller logged `interrupted: cancelling queued downloads and waiting for in-flight
+ones`, wrote the record as `interrupted` with no root, returned 4, systemd counted that a success
+and restarted it ten seconds later, and the new run resumed the same cycle (`status=interrupted ->
+pulling`). `systemctl stop`, which sends the unit's SIGINT: two seconds, `Result=success`,
+`ExecMainStatus=4`, record `interrupted`; `systemctl start` resumed it. One thing to read
+correctly in an interrupted record: the SIGTERM run's says 1,466 files failed and the SIGINT run's
+0, with no failure logged in either. Once the stop flag is set, a worker that takes a queued file
+from the pool raises before requesting it (`archive/poll.py:182`), and how many it takes before
+the queue is cancelled is a race, so `files_failed` in an interrupted record includes files that
+were never asked for. The resumed run pulled them all; nothing on disk is wrong.
+
 ### 5.2 `ephemera-witness.service`, long-running
 
 ```
 [Service]
 Type=simple
 ExecStart=/opt/ephemera/.venv/bin/python -u /opt/ephemera/archive/witness.py \
-  --spool /srv/ephemera/spool --ots ots --ots-bin /opt/ephemera/.venv/bin/ots --interval 300 \
-  --daily-from 2099-01-01
+  --spool /srv/ephemera/spool --ots ots --interval 300 --daily-from 2099-01-01
 Restart=always
 RestartSec=30
 SuccessExitStatus=4
@@ -365,7 +414,7 @@ A service, not a timer. The loop at `archive/witness.py:381-404` ends in `pause(
 
 300 s against an 8 hour feed cadence gives roughly 96 chances to capture inside a cycle's live window, which is the only window that exists.
 
-`--ots ots` explicitly, so that even before edit 3.3 lands the Docker fallback cannot engage. Note that `witness.py` imports no `signal` and never calls `poll._install_sigterm_as_interrupt`, so today a `systemctl stop` kills it mid-pass. `KillSignal=SIGINT` improves this only during the sleep: `KeyboardInterrupt` is a `BaseException`, so a SIGINT during a pass is not caught by the per-cycle `except Exception` at line 389 and unwinds out of `main` with a traceback and a non-zero exit, which `Restart=always` covers. If you want a clean stop, install the poller's handler in `witness.py` and wrap the whole `while` loop in `except KeyboardInterrupt: return poll.EXIT_INTERRUPTED`.
+`--ots ots` explicitly, so that even before edit 3.3 lands the Docker fallback cannot engage. Edit 3.3 has not landed (26 September: `archive/witness.py` takes no `--ots-bin`, and `OtsRunner._run` invokes the bare `ots`), so the unit does not name the binary; it reaches the venv's client through the `PATH` in `/etc/ephemera/ephemera.env`, which puts `/opt/ephemera/.venv/bin` first. Checked on the host by sourcing that file and running `which ots`. Note that `witness.py` imports no `signal` and never calls `poll._install_sigterm_as_interrupt`, so today a `systemctl stop` kills it mid-pass. `KillSignal=SIGINT` improves this only during the sleep: `KeyboardInterrupt` is a `BaseException`, so a SIGINT during a pass is not caught by the per-cycle `except Exception` at line 389 and unwinds out of `main` with a traceback and a non-zero exit, which `Restart=always` covers. If you want a clean stop, install the poller's handler in `witness.py` and wrap the whole `while` loop in `except KeyboardInterrupt: return poll.EXIT_INTERRUPTED`.
 
 ### 5.3 `ephemera-ship.timer` plus `ephemera-ship.service`, oneshot
 
@@ -390,6 +439,10 @@ If you would rather have catch-up after a long power-off, that is the one thing 
 `--keep-days 1` rather than the home machine's three: section 2 sizes the volume on it. The
 shipper also now adopts, rather than re-uploads, a cycle whose tar another host already put at the
 key with the same root (`adopt_remote()`, section 6), which is why two shippers can overlap.
+
+First pass under the timer on ephemera-a, 26 September 13:11:55 UTC, seconds after `systemctl
+enable --now`: `Credentials found in config file: /etc/ephemera/aws-config`, guard passed as account
+438173644568 via profile `ephemera`, pass clean in under a second, next elapse thirty minutes later.
 
 This is a port, not a redesign: the live Windows task already runs `--once --max-cycles 1` on a PT30M repetition with a PT2H execution limit. `--interval` exists at `archive/ship.py:279` with default 1800.0 but production does not use it, and the code argues against it: in loop mode `main()` never returns and the per-pass result is only logged, whereas `--once` returns 0 or 1 and hands systemd a real exit status. Nothing survives in memory between passes.
 
@@ -500,7 +553,9 @@ shape it has.
 **Phase A, the overlap.** Both hosts pull every manifest. The VPS runs the watcher, the witness
 with daily roots switched off, and the shipper; nothing else. Windows keeps running all six tasks,
 unchanged, and keeps publishing the site. This phase lasts at least one full UTC day, so the day the
-VPS started in, of which it holds only part, is behind it before the copy.
+VPS started in, of which it holds only part, is behind it before the copy. Phase A began on
+ephemera-a at 13:09 UTC on 26 September 2026, so the earliest phase B is 28 September, once the
+27th has passed whole on both hosts.
 
 **Phase B, the copy.** With every Windows task stopped, the records Windows holds are copied into
 the VPS spool under per-file ownership rules, checked, and then the VPS starts the three components
