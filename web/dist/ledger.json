@@ -1,6 +1,6 @@
 {
  "schema": 2,
- "generated_utc": "2026-09-26T08:20:24Z",
+ "generated_utc": "2026-09-26T12:20:25Z",
  "poller": "home (residential; single poller until poller A exists)",
  "method": "built from each cycle's cycle.json, witness.json and ship.json in the poller's spool; coverage is the fraction of the last 24 h's minutes with a watcher heartbeat under 10 minutes old (D18); a cadence hold is a manifest first-seen gap over 9 h; source bytes are the responses as served, stored bytes are the gzipped archive objects the shipper recorded",
  "totals": {
@@ -15521,8 +15521,18 @@
   ],
   "latest": "cycle_b191dbc2ad33"
  },
- "catalogue_snapshots": 244,
+ "catalogue_snapshots": 246,
  "catalogue": [
+  {
+   "fetched_utc": "2026-09-26T12:10:12Z",
+   "records": 12892,
+   "sha12": "73610dda05db"
+  },
+  {
+   "fetched_utc": "2026-09-26T10:10:12Z",
+   "records": 12892,
+   "sha12": "d453d080a05e"
+  },
   {
    "fetched_utc": "2026-09-26T08:10:11Z",
    "records": 12892,
@@ -15572,16 +15582,6 @@
    "fetched_utc": "2026-09-25T12:10:12Z",
    "records": 12892,
    "sha12": "f959b1c24cfa"
-  },
-  {
-   "fetched_utc": "2026-09-25T10:10:11Z",
-   "records": 12892,
-   "sha12": "0597a4306308"
-  },
-  {
-   "fetched_utc": "2026-09-25T08:10:11Z",
-   "records": 12892,
-   "sha12": "ed67501221a0"
   }
  ],
  "cycles": [
