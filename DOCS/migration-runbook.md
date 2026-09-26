@@ -135,32 +135,35 @@ to it. What does not exist yet is a decision entry naming a provider and a regio
 the account is opened, with the price actually paid, so the estimates below stop being the only
 numbers in the repository.
 
-**No VPS price in this repository is verified.** `probes/p4_cost/README.md:48` excludes "the VPS
-itself" from the cost table entirely, and line 68 records that Hetzner's own prices were **not
-captured**, because hetzner.com renders them client-side, with the numbers taken from a third-party
-snapshot dated 13 Feb 2026 and marked "Unverified against hetzner.com". P8 measured no provider's
-price either. Every figure below is a desk estimate to confirm at purchase.
+**Hetzner's prices, verified in the console on 26 September 2026** (Helsinki, USD, including 15%
+VAT, which is how the console showed them to the owner): CPX12 1 vCPU / 2 GB / 40 GB $15.51,
+CPX22 2 vCPU / 4 GB / 80 GB $26.44, CPX32 4 vCPU / 8 GB / 160 GB $48.29, CPX42 8 vCPU / 16 GB /
+320 GB $94.29; every one with 20 TB of traffic; block-storage volumes $0.088205 per GB per month;
+a primary IPv4 $0.69. These replace the third-party snapshot P4 had to rely on.
 
-- **Hetzner Cloud** (Falkenstein, Nuremberg, Helsinki). CPX31 class, 4 vCPU AMD / 8 GB / 160 GB,
-  plus a 200 GB volume; or CPX41, 8 vCPU / 16 GB / 240 GB. 20 TB egress included on EU locations.
-  Estimate EUR 16 to 30 a month, which is the band the owner's decision names. Caveat beyond price:
-  Hetzner is known for acting quickly on abuse complaints, which matters precisely because open
-  question 3 in section 1 is whether 27.8 GB a day from one address draws one.
-- **OVHcloud VPS** (Gravelines, Frankfurt). Unmetered bandwidth. Estimate EUR 12 to 25.
-- **Netcup** (Nuremberg, Vienna). Large disks cheaply. Estimate EUR 10 to 20.
-- **Scaleway** (Paris, Amsterdam, Warsaw). Already priced in P4 for storage, so the account may
-  already exist. Estimate EUR 15 to 30.
+**What was bought, the same day:** `ephemera-a`, CPX22 with a 150 GB volume, in Helsinki, Ubuntu
+24.04.4, at 2.29.55.154. About **$40 a month** all in ($26.44 + $13.23 + $0.69). CPX22 rather than
+the CPX32 this draft first named, because with real prices the difference is $22 a month and P8's
+measurements say 4 GB is enough: the poller's peak was 578 MB RSS on a full cycle, scoring runs
+under 2 GB with its workers, and nothing else on the box holds memory. The cost of that choice is
+scoring speed: about twice the home machine's 8 minutes per cycle, which at three cycles a day is
+immaterial, and CPU contention when a pull and a scoring pass overlap, which slows both and breaks
+neither. 150 GB rather than 320 because retention on this host is one day, not three (section 6):
+a cycle is in Deep Archive three minutes after it completes, so three days of local copies bought
+nothing there, and 150 GB then holds about three days of shipper outage before the poller's 25 GB
+floor refuses a cycle. If eight days of grace are wanted later, a volume resizes in place.
+
+With S3 Deep Archive at USD 10 to 17 a month at month 12 (P4), the whole project runs about
+**USD 50 to 57 a month**, under P4's USD 60 line even with compute counted, which P4 never priced.
+
+The alternatives, for the record, all unverified: OVHcloud VPS (Gravelines, Frankfurt), unmetered
+bandwidth; Netcup (Nuremberg, Vienna), large disks cheaply; Scaleway (Paris, Amsterdam, Warsaw).
 
 Excluded by decision, not by price: any AWS instance (D14, nothing on AWS runs continuously), and
 any Cloudflare compute (D08 zero-ops, and no Workers path exists for a 9 GB pull).
 
-Region: EU, near eu-west-1 for the S3 leg. But the deciding input is the rate measured from that
-region on day one, not proximity to Ireland.
-
-**Rough monthly cost:** VPS EUR 15 to 30 (unverified), plus S3 Glacier Deep Archive at USD 10.3 to
-16.5 at month 12 (P4 desk pricing, never checked against a real bill). Combined, roughly USD 27 to
-50 a month at month 12. P4's USD 60 kill line was set for storage alone; if the owner wants one
-number covering compute too, that needs a new decision entry raising or restating the line.
+Region: Helsinki. Measured on day one (P8, second run): 12.2 files/s at 32 connections, S3 at
+65.4 MB/s, so proximity to Ireland was not the deciding input and did not need to be.
 
 Image: Ubuntu 24.04 LTS, which is what P8 measured. `python3.12` is the distro Python and satisfies
 everything, including `pool.shutdown(cancel_futures=...)` at `archive/poll.py:386`.
@@ -343,13 +346,20 @@ A service and not a timer, for three reasons that are in the code. The tick inte
 [Service]
 Type=simple
 ExecStart=/opt/ephemera/.venv/bin/python -u /opt/ephemera/archive/witness.py \
-  --spool /srv/ephemera/spool --ots ots --ots-bin /opt/ephemera/.venv/bin/ots --interval 300
+  --spool /srv/ephemera/spool --ots ots --ots-bin /opt/ephemera/.venv/bin/ots --interval 300 \
+  --daily-from 2099-01-01
 Restart=always
 RestartSec=30
 SuccessExitStatus=4
 KillSignal=SIGINT
 TimeoutStopSec=700
 ```
+
+`--daily-from 2099-01-01` is the overlap setting (section 6, phase A): this host builds no daily
+roots while Windows still holds the complete days. At phase B step 6 it becomes that day's UTC date
+and stays there; every earlier day's root arrives by copy. Captures go through authenticated SPN2
+because the VPS's `personal.env` carries the archive.org keys; without them the witness falls back
+to the redirect endpoint by itself.
 
 A service, not a timer. The loop at `archive/witness.py:381-404` ends in `pause(args.interval)` with `--interval` defaulting to 300.0 at line 360; `--once` and `--ticks` exist as seams for `Makefile:46` and the tests. Three reasons a timer is wrong: a pass has no upper bound, since one cycle submits a manifest plus ten samples at a 12 s gap with two 300 s-timeout HTTP calls each, so a bad pass exceeds an hour and a five-minute timer would spend its life skipping. The pass returns 1 whenever any step recorded an error (line 399), and permanent already-recorded losses are normal, so a timer would show the unit failed more or less forever. And all cadence state is on disk anyway: the hourly upgrade backoff is persisted as `last_upgrade_attempt_utc` against `--upgrade-every` default 3600.0, and daily roots are keyed by UTC date with a build-once guard.
 
@@ -364,7 +374,7 @@ A service, not a timer. The loop at `archive/witness.py:381-404` ends in `pause(
 Type=oneshot
 Environment=AWS_CONFIG_FILE=/etc/ephemera/aws-config
 ExecStart=/opt/ephemera/.venv/bin/python -u /opt/ephemera/archive/ship.py \
-  --spool /srv/ephemera/spool --once --max-cycles 1
+  --spool /srv/ephemera/spool --once --max-cycles 1 --keep-days 1
 TimeoutStartSec=2h
 SuccessExitStatus=SIGTERM
 
@@ -376,6 +386,10 @@ OnUnitActiveSec=30min
 **Why `OnBootSec=` is in every timer block here and `Persistent=` is in none of them.** systemd.timer(5) defines `OnUnitActiveSec=` as "a timer relative to when the unit the timer unit is activating was last activated". On a freshly installed timer with no other trigger there is no such moment, so there is nothing to measure from and the timer has no next elapse. The same section says a timer set with `OnBootSec=` or `OnStartupSec=` that is already in the past "will immediately elapse and the configured unit is started", and then: "This is not the case for timers defined in the other directives." Measured with transient units on systemd 249 (Ubuntu 22.04 under WSL, 13 Sep 2026), not on the VPS: `systemd-run --user --on-unit-active=60` gave `NEXT n/a`, `LEFT n/a` in `systemctl list-timers --all` and `NextElapseUSecMonotonic=infinity`, with `ActiveState=active`. It is loaded, it looks healthy, and it never fires. Adding `Persistent=true` to that same unit changed nothing at all: still `infinity`. That is the second half of the correction, and systemd.timer(5) states it outright under `Persistent=`: "Note that this setting only has an effect on timers configured with `OnCalendar=`." Beside a monotonic timer it is inert, so any claim that it recovers a missed run is wrong. The same probe with `--on-boot=300 --on-unit-active=60` fired immediately (the machine had been up far longer than five minutes), then scheduled its next elapse 57 s later from `OnUnitActiveSec=`. That is the shape all three timers want: `OnBootSec=` gives the chain its first activation, at install and again after every reboot, and `OnUnitActiveSec=` holds the cadence from each activation after that. A consequence worth planning for rather than being surprised by: installing one of these timers also runs its service once, straight away, which is exactly what C7 and C10 want.
 
 If you would rather have catch-up after a long power-off, that is the one thing `Persistent=` buys, and it needs a calendar expression to buy it: `OnCalendar=*-*-* 00/4:00:00` with `Persistent=true`, and no monotonic lines. Unmeasured here, and not what a host meant to stay up needs. Re-check whichever you choose on the VPS's own systemd at C2: `systemctl list-timers --all` is the whole test, and section 7 check 1 is where it is a gate.
+
+`--keep-days 1` rather than the home machine's three: section 2 sizes the volume on it. The
+shipper also now adopts, rather than re-uploads, a cycle whose tar another host already put at the
+key with the same root (`adopt_remote()`, section 6), which is why two shippers can overlap.
 
 This is a port, not a redesign: the live Windows task already runs `--once --max-cycles 1` on a PT30M repetition with a PT2H execution limit. `--interval` exists at `archive/ship.py:279` with default 1800.0 but production does not use it, and the code argues against it: in loop mode `main()` never returns and the per-pass result is only logged, whereas `--once` returns 0 or 1 and hands systemd a real exit status. Nothing survives in memory between passes.
 
@@ -458,216 +472,144 @@ Cost is not the constraint: a full build against the real spool was timed at abo
 
 ---
 
-## 6. Cutover without losing a cycle
-
-The feed drops each set after about eight hours, so a gap is permanent. The whole point of the order below is that the poller is the one component where running two copies is safe, so it goes first with overlap and everything else follows behind it inside one cycle.
-
-### Can both pollers run at once? Yes, and they should
-
-They must be on **separate spools on separate machines**. There is no lock anywhere and single-writer is a design assumption (PLAN.md, open review items). Two pollers on one spool would race on `heartbeat.json.tmp` and on the cycle record.
-
-On two spools, D10 does exactly what it was written for: identity is the manifest SHA-256, so both produce `cycle_<same sha12>`, and D11 removed the wall-clock date precisely so a resume or a second poller across UTC midnight does not produce a different identity. When both complete, both produce the same root under the D09 construction. That is not a duplicate, it is the first real cross-poller check this project has ever run, and it is direct evidence for PLAN item 9. P8 has already observed it once, on manifest `34e224670e92`, from Cape Town and eu-west-1. Record the C4 comparison in the probe as well.
-
-Note that the case-insensitive duplicate rule at `archive/poll.py:111-129` and the colon rejection at `archive/poll.py:95` are Windows-shaped rules that now bind Linux. **Keep them.** A Linux poller must refuse exactly what the Windows poller refuses, or the two roots can differ and D10's guarantee evaporates. No live cycle has ever tripped either: all 44 `cycle.json` records show `manifest_anomalies = 0` (checked 13 Sep).
-
-The one real cost of the overlap is doubled load on `api.starlink.com` from two IPs during the window, which is D03's intent anyway. Keep the window to one or two cycles, not a week.
-
-### What must never run twice
-
-**Shipper. Absolutely never.** Both hosts would PUT to the same key `cycles/<sha12>/files.tar`, and the tars are **not** byte-identical across hosts: the five record members are added with `tarfile.add` (`archive/ship.py:132-134`), which copies uid, gid, uname, gname and mode from the filesystem, and Linux records the service user's real values where Windows records mode 666, uid 0 and empty names. So two shippers would write two different objects to one versioned key, each host's `ship.json` claiming its own SHA-256, and a restore verified against one would fail against the other. This is the single most damaging thing that can go wrong in the cutover.
-
-**Ledger publisher. Never.** Both would commit to `main` and the loser's `git push` would be rejected non-fast-forward. Since the fix at `web/publish.py:54-110` this no longer wedges silently: the second publisher's next run fetches, sees the branch both ahead and behind, and refuses to build with `REFUSING to build: this clone and origin/main have diverged`, naming the counts. It still never merges, rebases or force-pushes, because `web/dist` is a build product and reconciling two hosts' builds of one spool by rebase would publish an interleaving neither host ever built. A refusal is a fault to settle by hand, which is the point: one host runs the ledger.
-
-**Witness. Never, in practice.** Two witnesses would double Save Page Now submissions inside the one window that cannot be redone, and P8 measured only three captures at the 12 s gap from one datacentre IP, which is not enough to say how much throttle headroom a second capturing host would have.
-
-**Catalogue. Never.** Two clients logging into one Space-Track account from two IPs is undocumented and could look like abuse. The rate itself is trivial, 48 requests a day against 30 a minute and 300 an hour, but a soft block looks identical to a maintenance page because `archive/gp_pull.py:59-60` raises on any non-200 with no retry. A two-hour gap in catalogue snapshots costs a shifted pairing and nothing irreplaceable; an account lock costs the whole `score/` layer.
-
-**Score. Wasteful, not dangerous.** Different spools, different outputs. Still cut it over as one switch.
-
-### Moving the 44 cycles and their records
-
-Total non-raw state is about **1.06 GB**, measured 13 Sep with `du`: 44 cycles of records excluding `files/` (396 MB), `spool/score` (443 MB), `spool/gp` (215 MB), `heartbeats.jsonl` (3.13 MB), `spool/daily` (under 1 MB). That is a single tar over ssh, minutes not hours.
-
-**Transport, and it has to implement the per-file rule below rather than fight it.** Git for Windows ships GNU tar 1.34, `ssh`, `scp` and `sftp`, and no `rsync` (measured on the owner's machine, 13 Sep 2026). So the tar is the transport: build it on Windows excluding `files/`, `scp` it over, and extract it on the VPS with **`tar --skip-old-files -xvf`**, never a plain `tar -xf`. A plain extract overwrites, which is the exact opposite of the per-file rule that governs this whole section; `--skip-old-files` decides per file, on existence alone, which is that rule. Measured with GNU tar 1.34 on both ends: an archive holding `cyc/cycle.json`, `cyc/MANIFEST.txt` and `cyc/root.txt.ots`, extracted into a directory that already held the first two, left both existing files byte for byte untouched, extracted `root.txt.ots` into that same existing directory, named every skip on stderr as `tar: cyc/cycle.json: skipping existing file`, and exited 0. **Capture that stderr.** It is the per-file record of what the VPS already had, and C5 reads it.
-
-Two neighbours of that flag, measured at the same time. `tar -kxvf` (`--keep-old-files`) leaves disk in the identical state but reports each existing file as `Cannot open: File exists` and exits 2, so a genuine error hides among the expected ones; prefer `--skip-old-files` with the captured log. And before extracting, run `tar -df <archive>` in the target directory: it lists every member whose bytes differ from what is on disk (`cyc/cycle.json: Size differs`), warns on every member that is absent, and exits 1. That is the pre-flight audit of precisely what the skip rule is about to withhold, and it is what turns "the VPS keeps its own copy" from an assumption into a list.
-
-**If tar is all you have, tar is enough.** The per-file rule never needed rsync; it needed the extract flag. The one case that needs more is a tar too old to have `--skip-old-files`: then extract into an **empty** staging directory on the VPS and merge from there with `cp -rn`, which is also per file (`cp` measured at coreutils 8.32; on coreutils 9.x `--update=none` is the preferred spelling and `-n` is deprecated, unverified here). What you must never do on a populated spool is a plain `tar -xf` or a plain `cp -r`.
-
-**Binary-safe only.** `score/resummarise.py:35-39` rebuilds every report's summary from the gzipped rows files, and `score/catalogue.py:53-56` hard-fails a snapshot whose bytes do not hash to its record, so any text-mode or CRLF-translating copy destroys both silently.
-
-**The rule that governs every directory below: copy per FILE, never per directory.** The draft said to use "`--ignore-existing` semantics at the cycle-directory level: a cycle directory the VPS already pulled itself must never be overwritten by the Windows copy". **That rule is struck.** Per-directory skipping is what produced the two worst defects found in this runbook. For every cycle both hosts pulled, it would have withheld `ship.json`, so `needs_upload()` returns "not yet shipped" (`archive/ship.py:151-155`) and the VPS re-uploads a byte-different tar to a key S3 already holds; and it would have withheld `root.txt.ots` and `witness.json`, so `archive/witness.py:191-192` re-stamps a root that already carries a Bitcoin attestation and `archive/witness.py:282,294-296` records Wayback captures as never made that Windows had verified. On this pair of hosts the per-file rule is `tar --skip-old-files` at extract time (Transport, above); `rsync --ignore-existing` and `cp -rn` are the same rule wherever those tools exist. Inside a cycle directory the VPS pulled itself, every file the VPS lacks must land. `cycle.json` is the one file for which "the VPS's copy stays" is not automatically right, and the next paragraph is about that.
-
-**Which host's `cycle.json` wins, and why it is not always the VPS's.** The draft's rule was "the VPS's `cycle.json` stays", unconditionally, and C4 compares exactly one cycle. Windows keeps polling until C11, so every overlap cycle after that first one gets no comparison at all, and the two records are not interchangeable. A pull that ends gapped writes `status: gaps` and `merkle_root: null` and **deletes any `root.txt` it had**; a complete one writes the root (`archive/poll.py:425-435`). Keeping the VPS's gapped record where Windows completed the same cycle keeps the worse of the two, and the consequences are not cosmetic:
-
-- **The VPS never witnesses that cycle, ever.** `archive/witness.py:260-262` returns immediately for a record with no `merkle_root`, so no stamp and no Wayback capture, however many 300 s passes run. The Windows `root.txt.ots` and `witness.json` copied in at C6 then sit beside a record saying the cycle has no root.
-- **Its day's root loses a leaf.** `archive/witness.py:228-232` takes each leaf from `rec["merkle_root"]` and counts a rootless cycle into `gapped_cycles_excluded` instead (`:244`), so a `daily/<D>` the VPS builds for that day is a root over fewer cycles than the one Windows already built, stamped and published for the same day.
-- **The site publishes one fewer complete and one fewer anchored cycle.** `web/build.py:235` counts complete as `c["merkle_root"]` being set, and `:249-250` publishes both totals from that list.
-- **And the shipper replaces the good tar in S3 with the gapped one.** A `gaps` record still ships (`archive/ship.py:179-180`). With Windows' `ship.json` re-synced at C9, `files_fingerprint()` over the VPS's gapped record (`archive/ship.py:83-92`) does not equal the `shipped.files_fingerprint` the complete tar was bound to, so `needs_upload()` returns "the record has changed since the tar was built" (`archive/ship.py:170-171`), the VPS packs the files it does have and PUTs a second version of `cycles/<sha12>/files.tar` over the complete one. Object Lock is in governance mode, so both versions then stay.
-
-**So the better record wins, not the local one.** Before the copy, compare the two `cycle.json` files for every cycle both hosts hold. Both hosts pulled the same manifest, so `manifest_sha256` and `files_listed` agree by construction (D10) and the comparison is only about what each host actually got:
-
-1. **One `status` is `complete` and the other is `gaps`: the complete record wins, always.** Take that host's `cycle.json` **and** its `root.txt` **and** the `files/*.gz` the other host lacks, as one move. A record without its files leaves a cycle naming files that are not on disk, and the next ship pass raises `CorruptCycle` at `archive/ship.py:107` and returns 1 every thirty minutes until someone fixes it.
-2. **Both `complete`:** the roots are identical or C4 has already stopped the cutover. Either record will do; keep the earlier `first_seen_utc`, per C4.
-3. **Both `gaps`:** the higher `files_recorded` wins; record `files_failed`, `files_not_attempted` and the `failures` map from both, because that is the only place the disagreement is written down. Neither poller can merge the other's files into its record, so do not hand-build a union: note it, and let a resumed pull on the surviving host heal the cycle while its manifest is still current. A rolled manifest is never retried (D17), so once the window has closed the gap is permanent and is published as a gap.
-4. **`manifest_anomalies` must agree.** It is derived from the manifest bytes, so a difference means something is wrong with one host rather than with the feed. All 44 live records show 0 (checked 13 Sep).
-
-`etag_cache.json` is the conditional-GET state for the stored `files/` (`archive/poll.py:186-194` returns the cached record on a 304), so it belongs with whichever host's `files/` you keep and moves with them.
-
-**And the bulk copy is never the last word.** Windows keeps witnessing until C6 and keeps shipping until C9, so a `witness.json` or a `ship.json` copied at C5 is a snapshot that goes stale minutes later: the live spool's gap between `finished_utc` and `shipped.uploaded_utc` is **36 to 64 minutes, median 55**, across the 31 of 44 cycles uploaded once the shipper was current (measured 13 Sep over every `cycle_*` under `Z:\ephemera\spool`; all 44 are shipped). The draft's "45 to 70 minutes across every shipped cycle" was wrong in both directions: four cycles sit under 45 minutes, the fastest at 36.1, and thirteen sit over 70. Every one of those thirteen was uploaded inside a single backlog drain between 2026-09-02T16:53Z and 2026-09-03T04:35Z, when the shipper first worked through the cycles that predated it at `--max-cycles 1` per 30-minute pass with each 7 to 15 GB tar taking most of an hour on the home uplink; their gaps run from 49 minutes to 3.3 days, the longest being `cycle_72bcd7796b49`, finished 2026-08-30T15:22:53Z and uploaded 2026-09-02T23:33:20Z. That tail is a backlog signature, not a cadence. What it means for the cutover is unchanged and slightly sharper: the feed rolls about every 8 h, so a C5-to-C9 window covers one to three shipped cycles in steady state, and if you enter the cutover with a shipping backlog it covers however many that backlog holds. Each component's cutover step below therefore **re-syncs its own per-cycle files after the Windows unit for that component is stopped and before the VPS one is started.** C5 is a first pass, not the authority.
-
-Per-directory rules:
-
-- **`cycle_*/`**, everything except `files/`: `cycle.json`, `MANIFEST.txt`, `root.txt`, `root.txt.ots`, `root.txt.ots.bak`, any `root.txt.ots.stale-*`, `witness.json`, `ship.json`, `etag_cache.json`. Copy `root.txt.ots` **byte-exact and before the witness unit ever starts**: if it is absent, `proof_matches()` returns False, the cycle is stamped again, and its committed timestamp becomes the migration date. The Bitcoin attestation evidence for the original stamping time is destroyed and cannot be recovered (live example: `cycle_1b3b36972d57` carries `stamped_utc` 2026-09-08T05:02:06Z and attested block 966019). `ship.json` is equally critical in the other direction: without it `needs_upload()` returns "not yet shipped", and for the 35 cycles whose `files/` are already deleted that means `pack()` raises `CorruptCycle` and the pass returns 1 every thirty minutes forever. The witness files are re-synced at C6 and `ship.json` at C9; see those steps.
-- **`daily/`**: complete or not at all, **and transferred at C6 after the Windows witness has been stopped**, not at C5. If `root.txt` exists for a day without `daily.json`, `archive/witness.py:238` raises `FileNotFoundError`, which the caller's blanket handler at `:394-396` catches, so the **entire** daily step aborts for **every** day on **every** pass with only "daily-root step crashed" in the log, unlike `witness_cycle`, which isolates per cycle. And if a day's `root.txt` is missing entirely, the day is rebuilt from whatever `cycle.json` files are then present; if any of that day's cycles did not migrate, the rebuilt root differs from the one already stamped and published, which is a silent falsification. The reason for moving the transfer is in C6: `archive/witness.py:212-233` builds a daily root for every UTC day strictly before today on every 300 s pass, so any UTC midnight between the copy and the stop gives Windows a day the VPS will never receive and will later rebuild itself, because `archive/witness.py:237` skips only a day whose `root.txt` is already present.
-- **`gp/`**: complete, and the directory **names** must survive byte-identical. `score/catalogue.py:66` sets `snapshot_id = snapshot_dir.name`, `score/visibility.py:318` writes it into every report as `catalogue_snapshot`, and `score/globe_pack.py:109` resolves it straight back to `spool/gp/<name>`. Renaming on migration silently breaks every existing report's pack rebuild. Copying `gp/` also fixes the first-pass duplicate: `latest_sha()` compares against the newest record in its own spool, so on an empty `gp/` the first VPS pass would re-store a byte-identical catalogue and put a duplicate sha12 row in the ledger.
-- **`score/`**: complete and binary-safe. 40 cycles carry a visibility report and only 9 of 44 still hold `files/`; for the rest the report and its rows file **are** the measurement, and re-scoring them would need a Deep Archive restore. If `score/` is absent nothing errors: the cycles that still hold files are re-scored from scratch, and every regenerated report carries a fresh `as_of` (`score/visibility.py:305`), so the site republishes new as-of dates for measurements that did not change.
-- **`heartbeats.jsonl`**: **concatenate, do not copy, and then say what the merged file makes the site publish.** The VPS watcher started at C3, two steps before this copy, and `archive/run_cycle.py:141` appends a line on every tick from that moment, so copying the Windows file over it destroys every VPS tick since C3 and skipping the copy loses all of the Windows history. `web/build.py:174-180` reads that single file as the only source for D18 observed coverage, taking nothing from each line but its `utc` field, and `coverage_24h` (`web/build.py:185-203`) returns `None` only when the whole history is shorter than the window, so a truncated file publishes a wrong coverage fraction rather than "not yet measured". Append the Windows file to the VPS one and sort by the `utc` field; duplicate or out-of-order ticks are harmless, because `coverage_24h` sorts what it reads, but lost ticks are not. It is a rolling 24 hour window, so a genuine cutover gap is published honestly as an uncovered window and heals within a day.
-
-  **What the merged file then makes true of the published figure, stated rather than hidden.** For roughly the 24 hours after the cutover, the file is two hosts' ticks in one stream, and nothing in it says which host wrote which line: `archive/run_cycle.py:129` sets every tick's `poller` field to `poll.user_agent(args.contact)`, which is a fixed string with no hostname in it (`archive/poll.py:74-75`), so both hosts write the same value. `coverage_24h` marks a minute covered when **any** tick is under ten minutes old (`web/build.py:201`), so across the overlap the published number is the fraction of minutes on which at least one of the two hosts was alive. It can only equal or beat either host's own uptime. Meanwhile the page says "Poller heartbeat coverage over the last 24 hours" (`web/pages.py:670-671`, and again at `:623-624`) and the ledger's `poller` field is the single fixed string at `web/build.py:241`; neither of them says two hosts. So the honest statement, and it belongs in that day's bulletin rather than in a code comment: **for the overlap window the coverage figure is the union of the home poller's and the VPS's observations, not one host's observed uptime, and it is one host's again from 24 hours after C11.** D18 accommodates this - it defines coverage over heartbeats and the ledger as "one record per poller per cycle" - but the published sentence does not, and an unexplained step up in coverage across the cutover is exactly the sort of number this project does not get to leave standing.
-- **`heartbeat.json`**: do **not** copy. It is gitignored, regenerated on the first tick, and `archive/witness.py:111` reads it to decide whether the watcher is alive.
-- **`outbox/`**: do **not** copy. Recreate empty; `pack()` mkdirs it anyway. The 9.28 GB `cycle_03329cf37459.tar` there is dead: that cycle shipped on 4 Sep, adopted its fingerprint on 6 Sep and had its local files deleted on 7 Sep. Delete it on Windows too, once you have confirmed its `ship.json` shows `shipped` with a `files_fingerprint`.
-- **`partial/`**: disposable, one `--limit` test slice.
-- **`cycle_*/files/`, 9 directories at about 9.26 GB each.** Do not copy them wholesale. The rule is: copy `files/` **only** for cycles that are either (a) not yet shipped with a matching fingerprint, or (b) still listed in `spool/score/run.json`'s `pending`. Everything else's raw bytes are already in Deep Archive, HEAD-verified, and the local copy is about to be deleted by retention anyway. Enumerate both sets before you copy; at 4.2 MB/s from the home uplink each 9.26 GB cycle is about 37 minutes.
-
-Nothing goes missing if you copy `files/` while the home poller is running: those directories are for **completed** cycles, and a completed cycle is never rewritten.
-
-### The order
-
-Run every step with the previous one verified. Home keeps polling throughout steps C1 through C10.
-
-The pattern from C6 onward is the same three moves every time, and the draft got it wrong by
-omitting the middle one: **stop the Windows unit, re-sync that component's own files, start the VPS
-unit.** A component's records are only final once the Windows writer for them has stopped.
-
-**C0. Day-one measurement on the real host.** Provision the host to the section 2 spec, clone, make
-a venv, and before installing anything else run the probe's `probe.sh` and one sustained
-`archive/poll.py` pull against a scratch spool. Record both in
-`probes/p8_vps_bootstrap/README.md` under a second dated heading. If a kill line from section 1
-trips, stop here: the region or the shape of the plan changes and nothing on Windows has been
-touched.
-
-**C1. Build the real host.** `apt install python3.12-venv git bash ca-certificates fonts-dejavu-core chromium-browser`, create the `ephemera` user and `/srv/ephemera/spool`, `pip install -r requirements.txt` plus the pinned `opentimestamps-client`, write `personal.env` (heredoc, history suppressed, five names) and `/etc/ephemera/ephemera.env`, put the AWS profile at `/etc/ephemera/aws-config` mode 0600 and the deploy key under `/etc/ephemera/ssh/`, install the units disabled. Land the code edits from section 3 on `main` first, so the clone has them. Home untouched.
-
-**C2. Gate: `make test` green on the VPS**, with a real browser present so the browser tests do not skip. This is also where `infra/guard_cf.sh` gets exercised on Linux, by `infra/tests/test_guard.py`. Then `python3 infra/guard.py` prints the personal account and profile, and a deliberately wrong account id in a sandbox copy refuses. Then `archive/poll.py --limit 5` against a scratch spool: five files, a partial record under `partial/`, no root, exit 3 (D13). This is the first time the code has ever been run on Linux, so treat a failure here as expected rather than surprising.
-
-**C3. Start `ephemera-watcher.service`. Both pollers now running.** Zero risk of a gap; this is the only step that adds a poller before removing one. Note the UTC time you start it: C4 needs it.
-
-**C4. Gate: one full cycle pulled by both, and two fields compared, not one.** Wait for the manifest to roll, then for that `cycle_<sha12>` compare:
-
-- **`root.txt`, which must be identical.** P8 already observed exactly this across two continents on one manifest, so a difference here is a fault in this host, not a surprise about the feed. Different roots, or no root on the VPS, and you stop before touching anything on Windows.
-- **`cycle.json`'s `first_seen_utc`, which may legitimately differ and whose difference the root cannot show.** The root commits file digests only. `archive/poll.py:295` sets `first_seen` from the local prior record or from this run's start time, so the first cycle the VPS pulls carries the VPS's C3 start time, not the time Windows first saw that manifest. Live `first_seen` values cluster at about 04:1x, 12:2x and 20:3x UTC, so a C3 start anywhere in the 00:00 to 04:16 UTC window puts the same cycle on a **different UTC date** on the two hosts.
-
-Two things break on that skew and neither is visible in a root comparison. `archive/witness.py:225-232` buckets cycles into daily roots by `first_seen_utc[:10]`, and `:237` never rebuilds a day that already has `root.txt`, so one cycle becomes a leaf of Windows' already-stamped `daily/<D>` and again of the VPS's later `daily/<D+1>`. And `web/build.py:208` counts any gap over `CADENCE_HOLD_H = 9.0` (`web/build.py:36`) as a published cadence hold against an 8 h cadence, so an 8 h shift in one `first_seen` can fabricate a hold that did not happen or hide one that did.
-
-**When they differ, take the earlier value - the Windows one - into the VPS's `cycle.json` before C6 starts the VPS witness.** The earlier value is the true first-seen and is what Windows has already bucketed and published, and editing it invalidates nothing: cycle identity is the manifest SHA-256 (D10) and the Merkle root is over file digests (D09), so neither changes. Do it before the witness runs, because a daily root is built once. Record both values and the edit.
-
-Also record the VPS wall time against P1's 6 hour kill line and against the home machine's 45 to 116 minutes.
-
-**C5. Copy the historical records, per file.** About 1.06 GB plus the selected `files/`, by the rules in "Moving the 44 cycles" above. Per file and never per directory: `tar -df` first to see what would have been overwritten, then `tar --skip-old-files -xvf` with stderr captured, which is the list of what the VPS already had.
-
-That skip rule is right for every file except one. **Before the copy, compare the two `cycle.json` files for every cycle both hosts hold**, by "Which host's `cycle.json` wins" above. Wherever Windows' record is the better one - complete against the VPS's gapped, or more `files_recorded` where both gapped - put its `cycle.json`, its `root.txt` and the `files/*.gz` the VPS lacks in **deliberately and overwriting**, after the skip-extract has run. Record every cycle where the two records differed and which one you kept; that list is the cross-poller evidence D18 asks to be published rather than suppressed. `etag_cache.json` follows whichever `files/` you keep. `daily/` is **not** copied here, it is copied at C6. `heartbeats.jsonl` is concatenated, not copied.
-
-**Timing rule for C5 through C9: run them inside one UTC day, and do not start C5 within two hours of 00:00 UTC.** Every step from here to C9 has a Windows writer running behind it, and a UTC midnight crossing the C5-to-C6 gap is the specific case that has Windows build, stamp and publish a `daily/<D>` the VPS never receives and later rebuilds from its own cycle set.
-
-**C6. Witness: stop, re-sync, start.** In that order.
-
-1. Stop the Windows Witness task; confirm no `witness.py` process remains.
-2. Re-sync per file, from Windows into the VPS spool and **including into the cycle directories the VPS pulled itself**: every `root.txt.ots`, `root.txt.ots.bak`, any `root.txt.ots.stale-*`, and every `witness.json`. Then copy `daily/` in full, complete days only. Nothing on Windows writes these any more, so this copy is final and no midnight can land behind it.
-3. Spot-check one overlap cycle on the VPS: `witness.json` carries `stamped_utc` and an `attested.block_height`, `root.txt.ots` is byte-identical to the Windows copy, and the Wayback samples read `verified`.
-4. Start `ephemera-witness.service`. Within one 300 s interval it picks up the current cycle. **There is no stamping backlog waiting for it**, and the draft's claim that one cycle sits unstamped because Docker Desktop is broken is stale: Docker was repaired on 9 Sep and the spool has caught up. Measured 13 Sep across `Z:\ephemera\spool`: all 44 cycle directories hold a `root.txt`, all 44 hold a `root.txt.ots` beside it, all 44 `witness.json` records carry an `attested.block_height`, and there is no `root.txt.ots.stale-*` file anywhere in the spool. The 14 `daily/` days are all stamped and attested too, the newest at Bitcoin block 966741 for 2026-09-12. So the gate for this step is that the number stays zero: after the first VPS pass, roots without proofs is still 0 and witness records without a block height is still 0.
-
-The draft said to time the stop "just after a cycle's captures have completed rather than mid-window". **Do not.** Waiting can push the C5-to-C6 gap out by most of an 8 h capture window, which is how a midnight lands inside it. Stopping mid-window is safe here: step 2 hands the VPS the same `witness.json`, with the same pending samples, and it makes the remaining captures itself.
-
-**C7. Catalogue: stop, re-sync, start.** Never overlapping, because two clients on one Space-Track account from two IPs is still unverified (section 1, open question 2). Stop the Windows Catalogue task, re-sync `gp/` per file with the directory names byte-identical, then start `ephemera-catalogue.timer` and confirm `systemctl list-timers ephemera-catalogue.timer` shows a real `NEXT` rather than `n/a` (5.3). With `OnBootSec=5min` in the block the first pass runs at once, so verify the new `gp/` snapshot within minutes instead of waiting two hours, and verify it is **not** a duplicate of the newest copied one.
-
-**C8. Score: stop, re-sync, start.** Stop the Windows Score task, re-sync `spool/score` per file (binary-safe), then start `ephemera-score.service`. Verify one new report plus a pack over 4 MB.
-
-**C9. Shipper: stop, re-sync `ship.json`, verify against S3, then start.** This is the step the draft got most wrong. Follow it literally.
-
-1. Stop the Windows Shipper task; confirm no `ship.py` process remains. Nothing else in the system writes `ship.json`.
-2. Re-sync every cycle's `ship.json` from Windows into the VPS spool, per file, **overwriting** what is there. The VPS shipper has never run, so it has written none of them.
-3. **Gate, before starting anything, and drive it from what S3 holds rather than from what `ship.json` claims.** For every `cycle_*` on the VPS whose `cycle.json` status is `complete` or `gaps`, list the tar's versions first:
-
-   `aws s3api list-object-versions --bucket ephemera-space-raw --prefix cycles/<sha12>/files.tar --query 'Versions[].[VersionId,LastModified]'`
-
-   and then take the case that puts you in. The draft collapsed the first two cases into one and got the first backwards.
-
-   - **No versions at all.** S3 holds no tar for this cycle, so Windows never shipped it, and the VPS PUTting it is the **correct** behaviour rather than the failure. The draft's gate demanded `ship.json` with `shipped` non-null for every complete or gapped cycle and named "the VPS will PUT" as the consequence, which condemns the one upload that has to happen and is unsatisfiable for a cycle only the VPS ever pulled. What to check here instead is that the cycle can actually be packed: `files/` still holds every name its record lists, or `pack()` raises `CorruptCycle` at `archive/ship.py:107` and the pass returns 1 every thirty minutes forever. And if `ship.json` nonetheless claims `shipped` for a key that does not exist, stop: the record is lying, and understanding why comes before anything writes to S3.
-   - **Exactly one version.** The normal case for the cycles already shipped from Windows. Require all three: `ship.json` exists with `shipped` non-null; `shipped.files_fingerprint` equals `files_fingerprint(cycle.json)` (`archive/ship.py:83-92`); and `aws s3api head-object --bucket ephemera-space-raw --key cycles/<sha12>/files.tar` returns a `Metadata.sha256` equal to `ship.json`'s `shipped.sha256` (`archive/ship.py:205` wrote the object metadata, `:213` wrote the record). If any of the three fails, `needs_upload()` returns a reason (`archive/ship.py:151-171`) and the VPS **will** PUT a second, byte-different object over a tar that is already there. That is the double ship, and the fix is to correct `ship.json` before the timer starts, never after.
-   - **Two or more versions.** A second upload has already happened, and the object metadata says whether it was a legitimate one. Every version carries `Metadata.merkle_root` as well as `Metadata.sha256` (`archive/ship.py:205`); read both with `head-object --version-id`. Different `merkle_root` values, or an empty one on the older version, means the cycle was gapped and then healed and re-shipped on purpose, which is behaviour the shipper is built for (`archive/ship.py:170-171` and the module docstring at `:27-31`). The **same** `merkle_root` with a **different** `sha256` means two hosts tarred the same content, which is the double ship. Neither can be undone: Object Lock is in governance mode.
-
-   Only the S3 side is evidence. "Confirm every cycle carries its copied `ship.json`" is satisfied by a stale `ship.json` and says nothing whatever about a cycle only the VPS ever pulled.
-4. Start `ephemera-ship.timer`, and confirm it has a next elapse: `systemctl list-timers ephemera-ship.timer` showing a real `NEXT`, not `n/a` (5.3). After its first pass, re-run the version listing **across the whole `cycles/` prefix** and diff it against the listing from step 3. What you are looking for is a key that **gained** a version during that pass. On a `cycles/<sha12>/files.tar` key that is a double ship unless the `Metadata.merkle_root` test above says it was a heal. On the five record keys it is routine, and the next paragraph says why.
-
-**One version per key is the rule for `files.tar` and for nothing else. It is false by design for the records.** D15's 2026-09-02 amendment puts `cycle.json`, `root.txt`, `root.txt.ots`, `witness.json` and `MANIFEST.txt` beside the tar in STANDARD class, "re-synced whenever their bytes change", and `archive/ship.py:226-235` is that sentence in code: every pass, for each of the five (`RECORD_FILES`, `archive/ship.py:61`), it hashes the local file and PUTs it again whenever the digest differs from `state["records"][name]`. On a versioned bucket each of those PUTs is another version, and it is meant to be. Measured on the live spool, 13 Sep: `witness.json` changes in **2 to 4 distinct 30-minute shipper windows per cycle** (median 3, from 3 to 14 recorded witness events per cycle), so its key carries several versions for every cycle; and all 44 cycles hold a `root.txt.ots.bak`, the backup `ots upgrade` leaves when it rewrites the proof in place after the Bitcoin attestation, with the current proof two to four times the size of its backup, so `root.txt.ots` has at least two versions for every cycle as well. **A second version of a record key means the record changed and was re-synced, which is the system working. A second version of `cycles/<sha12>/files.tar` means the archived bytes for that cycle were replaced, which is either a heal the shipper did deliberately or the one thing this whole step exists to prevent.**
-
-Why this is worth four steps: the two hosts' tars cannot be byte-identical. The record members are added with `tarfile.add` (`archive/ship.py:134`), which copies uid, gid, uname, gname and mode from the filesystem, and every `files/*.gz` differs as well because `archive/poll.py:204` writes the gzip with no `mtime=`, stamping the local clock into each gzip header. Two shippers therefore write two different objects under one versioned key, each host's `ship.json` claiming its own SHA-256, and a restore verified against one fails against the other. The runbook calls that the single most damaging thing that can go wrong in the cutover, and the draft's own copy rule made it near-certain.
-
-**C10. Ledger: stop the Windows task, then start `ephemera-ledger.timer`.** The clone made at C1 is behind `origin/main` by every "ledger build" the Windows publisher pushed since, and the draft had no step that refreshed it. It no longer needs one: `sync_with_published()` fetches and fast-forwards before every build (`web/publish.py:54-110`, called at `:131`). Stop Windows first anyway, because two publishers on one branch is the diverged case and it is refused rather than reconciled.
-
-The shrink guard is a real safety net again. Its baseline is the larger of what `origin/main` publishes and what this clone has committed (`web/publish.py:159-166`), so a build holding fewer cycles than the live site is refused with both counts named. In the draft that count came from the stale local HEAD, so the guard measured the build against a published count it did not have and would have passed regardless. Do not reach for `--allow-shrink` to get past it.
-
-Verify, in order: `systemctl list-timers ephemera-ledger.timer` showing a real `NEXT` and not `n/a` (5.3), then the fast-forward line in the journal, the commit, the push over the deploy key, the `deploy-site` workflow going green, and `ephemera.space` serving the new build with at least the cycle count it served before. Run this within one build interval of C4, or the published page goes stale while the VPS accumulates cycles the Windows build cannot see.
-
-**C11. Stop the Windows Watcher.** The archive is now entirely on the VPS.
-
-**C12. Leave the Windows machine powered, all six tasks disabled, spool untouched, for seven days.**
-
----
-
-## 7. Verification and rollback
-
-### Per-step gates
-
-Already stated inline: C0 (the rate on the host actually bought), C2 (test suite, guard, limit slice), C4 (matching roots **and** compared `first_seen_utc`), C6 (an overlap cycle's stamp and captures intact after the re-sync), C7 and C8 (one live artefact each), C9 (one S3 object version per `files.tar` key, the recorded sha256 matching that object's metadata, and a cycle S3 has never seen recognised as a first upload rather than a fault, all before the VPS shipper starts), C10 (the fast-forward, the commit, the push, the workflow, the live page). Do not proceed past a red gate.
-
-### Before the home machine is switched off
-
-Everything here is a command that either passes or does not. "Looks fine" is not a gate.
-
-**The strongest single check.** `python3 archive/verify.py <a VPS-pulled cycle> --wayback`, exit 0. It deliberately re-implements the D09 Merkle construction from the documented paragraph rather than importing the poller's function, so a passing root is agreement between two independent codings. It checks the cycle's identity against `MANIFEST.txt`, the names against the manifest order, every stored gzip against the record, the root, `root.txt` being exactly 65 bytes (D12), the OpenTimestamps proof being bound to **this** root, and the Wayback copies being re-fetchable and re-hashable. If this passes on a cycle the VPS pulled, stamped, captured and shipped by itself, the migration has genuinely worked.
-
-**Then, in order:**
-
-1. `systemctl is-active` on the three services, and `systemctl list-timers --all` on the three timers with **`NEXT` and `LEFT` reading real values on every one of them and never `n/a`**. `n/a` there means the timer has no next elapse and will never fire, which is precisely what a monotonic `OnUnitActiveSec=` with no `OnBootSec=` gives you (5.3): the unit reads `active`, `systemctl --failed` stays empty, and the catalogue and the ledger simply stop. `systemctl --failed` empty as well. (This gate is why the ship unit says `SuccessExitStatus=SIGTERM` and not `143`; see 5.3, which also says what that directive does not cover.)
-2. Watcher: `heartbeat.json` age under 10 minutes, `heartbeats.jsonl` growing, at least two complete VPS-pulled cycles with roots, wall time comfortably inside 6 hours.
-3. `journalctl -u ephemera-watcher --since -24h` non-empty. If it is empty, you set `StandardError=null` or passed `--log-file`, and you have been running blind.
-4. Witness: a VPS-created `root.txt.ots`, `ots verify` passing, and within an hour or two a `block_height` in `witness.json`. Also confirm `witness.json` carries `stamped_utc`, which is what edit 3.4 protects. And confirm no overlap cycle was re-stamped: for one cycle both hosts held, `stamped_utc` still reads its original date and not the migration date.
-5. Shipper: one VPS-shipped cycle, and **exactly one object version for every `cycles/<sha12>/files.tar` key**, not only for that one cycle. `aws s3api list-object-versions --bucket ephemera-space-raw --prefix cycles/`, count per key, and then look only at the `files.tar` keys: a second version there is the double ship C9 exists to prevent, unless the two versions' `Metadata.merkle_root` differ, which is a heal the shipper did on purpose (C9 step 3). **Do not apply the one-version rule to the other five keys under a cycle prefix.** `cycle.json`, `root.txt`, `root.txt.ots`, `witness.json` and `MANIFEST.txt` are re-PUT whenever their bytes change (`archive/ship.py:226-235`, D15's 2026-09-02 amendment), and they do change: measured 13 Sep, `witness.json` changes in 2 to 4 separate 30-minute shipper windows per cycle, and every one of the 44 cycles has had its `root.txt.ots` rewritten once by `ots upgrade`. Several versions on a record key is the system working; what is worth checking there is that the newest version's `Metadata.sha256` matches the local file, which is the digest `ship.json`'s `records` map already holds. The restore drill remains outstanding from PLAN item 8 and this is the moment to do it: a Bulk restore in-region, verified against the recorded SHA-256 per VERIFY.md. It takes 12 to 48 hours, so start it at C9 and let it run.
-6. Score: one VPS report plus a pack over 4 MB, and `run.json` showing no unexpected `skipped_no_files`.
-7. Ledger: `web/dist/ledger.json` on the live site showing at least the cycle count it showed before the cutover, `coverage_24h` recovered after 24 hours, and every report's `pack` field reading a bare `globe_<sha12>.json` with no drive letter, no backslash and no leading slash. That last one is the 3.9 fix reaching the public artefact; until the first VPS publish the committed file still carries the old `Z:\` strings.
-8. Disk: `df -h` for the `ephemera` user showing free space above 25 GB with three days of retention held. Remember `f_bavail` excludes the ext4 reserve.
-9. Environment, **for all six units and not just the watcher**: none of `HTTP_PROXY`, `HTTPS_PROXY`, `NO_PROXY`, `REQUESTS_CA_BUNDLE`, `CURL_CA_BUNDLE` is set in any of them. `systemctl show -p Environment <unit>` is not the check: it reports `Environment=` directives only, so it cannot see a variable arriving through an `EnvironmentFile=` or through the manager's `DefaultEnvironment`. Measured on a transient unit whose `EnvironmentFile=` set `HTTPS_PROXY`, `systemctl show -p Environment` printed an empty value while the process's own environment held it.
-
-   **The two kinds of unit need two different commands, and the draft gave only one.** For the three long-running services, read the running process: `tr '\0' '\n' < /proc/$(systemctl show -p MainPID --value ephemera-watcher.service)/environ`. That command cannot work for the other three. `ephemera-ship`, `ephemera-catalogue` and `ephemera-ledger` are `Type=oneshot` units driven by timers, so between passes they have no process at all and `MainPID` is `0`; the path becomes `/proc/0/environ` and you get a "No such file" that reads like a system fault rather than an answer. Measured on an inactive transient oneshot: `MainPID=0`, `ActiveState=inactive`.
-
-   For a oneshot, make the unit answer on its next pass. Install a dumper and a drop-in, run the unit once by hand, read the file, then take the drop-in out again:
-
-   ```
-   # /usr/local/sbin/ephemera-dumpenv, mode 0755
-   #!/bin/sh
-   tr '\0' '\n' < /proc/self/environ > "/run/ephemera-env-$1.txt"
-
-   # /etc/systemd/system/ephemera-catalogue.service.d/env-audit.conf
-   [Service]
-   ExecStartPre=/usr/local/sbin/ephemera-dumpenv catalogue
-   ```
-
-   then `systemctl daemon-reload`, `systemctl start ephemera-catalogue.service`, `grep -E 'PROXY|CA_BUNDLE' /run/ephemera-env-catalogue.txt` expecting no output, then remove the drop-in and `daemon-reload` again. `ExecStartPre=` runs under the same unit environment as `ExecStart=`, which is what makes this an answer about the real unit rather than about a shell you happened to run: measured on a transient oneshot whose `EnvironmentFile=` set `HTTPS_PROXY` and `FOO`, the `ExecStartPre` process's `/proc/self/environ` held both, identically to the `ExecStart` process's. Note that starting one of these by hand runs exactly the pass its timer runs, so for `ephemera-ledger` that is a real commit and push and for `ephemera-ship` a real upload; do it when you are content for that pass to happen. `ephemera-catalogue` is the one that matters most: `archive/gp_pull.py:55` is the only session in the archive that transmits a password.
-10. Reboot the VPS once, deliberately, and confirm all six come back and the watcher resumes the in-flight cycle from its ETag cache rather than re-pulling 9 GB.
+## 6. Cutover: one overlap, one copy, and two things the code now refuses
+
+Rewritten 26 September 2026 after three adversarial passes on the previous text each found the
+same class of defect: two hosts overlapping on one archive, and a copy or re-sync step that races.
+The previous design had twelve steps and re-synced records between hosts as each component moved.
+Every re-sync was a race, and the two irreversible outcomes were a second, byte-different tar
+uploaded over a cycle the other host had already put in Deep Archive, and a daily root stamped by a
+host that held only part of that day. Both are now refused in code, so the procedure no longer has
+to be perfect:
+
+- `archive/ship.py` `adopt_remote()`: before packing a never-shipped cycle, the shipper reads the
+  object already at the cycle's key. A matching `merkle_root` in its metadata is this archive and
+  is adopted as this host's shipped state; a different root is a conflict, refused loudly, never
+  overwritten; an empty key uploads as before. Two pollers pulling the same manifest produce the
+  same cycle id and the same root (D10; observed twice in P8, on AWS and on the Hetzner host).
+- `archive/witness.py --daily-from YYYY-MM-DD`: a host builds daily roots only for days on or
+  after that date. A future date builds none. A daily root is built once and never rebuilt, so the
+  host that held all of a day builds it and the other host receives it by copy.
+
+The findings record at the end of this document refers to the previous text's step numbers (C1 to
+C12); those steps no longer exist. The findings themselves stand as the reasons this section has the
+shape it has.
+
+### The two phases
+
+**Phase A, the overlap.** Both hosts pull every manifest. The VPS runs the watcher, the witness
+with daily roots switched off, and the shipper; nothing else. Windows keeps running all six tasks,
+unchanged, and keeps publishing the site. This phase lasts at least one full UTC day, so the day the
+VPS started in, of which it holds only part, is behind it before the copy.
+
+**Phase B, the copy.** With every Windows task stopped, the records Windows holds are copied into
+the VPS spool under per-file ownership rules, checked, and then the VPS starts the three components
+it was not running. Windows stays stopped. About thirty minutes of Windows silence, during which the
+VPS watcher keeps pulling, so the archive never stops.
+
+### Why the VPS runs only three components in the overlap
+
+- **Catalogue.** Two clients logging into one Space-Track account from two addresses is unverified
+  (P8 deliberately did not try it, and `archive/gp_pull.py` raises on any non-200 with no retry).
+  Windows keeps pulling the catalogue alone. The VPS has no snapshots and does not need any yet.
+- **Score.** Scoring pairs a cycle with the newest snapshot fetched before it. With no snapshots on
+  the VPS, `score/run.py` reports its cycles as pending and does nothing, which is correct.
+- **Ledger.** The site is built from one spool. The VPS spool holds only the cycles since it
+  started; a build from it would show a shrunken archive, and `web/publish.py`'s shrink guard,
+  which compares against what origin actually publishes, would refuse it. Windows publishes until
+  the copy is done.
+
+### What happens on its own during the overlap
+
+- **Pulls.** Both hosts see each manifest within two minutes of each other and pull it. Same id,
+  same root. Whichever finishes first ships it; when the other reaches it, `adopt_remote()` finds
+  the tar with this root already at the key and adopts it. No second upload. Measured on 26
+  September: the Hetzner host pulls a full cycle in about a quarter of the home link's time, so in
+  practice the VPS ships and Windows adopts.
+- **Stamps.** Both hosts stamp the same root. Two proofs of one root are both valid; the earlier
+  one is the better provenance and is the one that survives the copy (below).
+- **Wayback.** Both hosts capture the manifest at the same per-cycle URL. Wayback de-duplicates a
+  repeat capture of an unchanged URL by returning the earlier snapshot (measured 2 September), and
+  the copy re-hashes to the same manifest either way, so both records verify. The VPS captures
+  through authenticated SPN2 (`ARCHIVE_ORG_ACCESS_KEY` and `ARCHIVE_ORG_SECRET_KEY` in the VPS's
+  `personal.env`); Windows through whichever path its keys give it.
+- **Daily roots.** Only Windows builds them: the VPS witness runs with `--daily-from 2099-01-01`.
+- **Retention.** The VPS shipper runs with `--keep-days 1`: a cycle is in Deep Archive three
+  minutes after it completes at 65 MB/s (P8, Hetzner), and the 150 GB volume holds about three
+  days of shipper outage at one day's retention (section 2).
+
+### Phase B, step by step
+
+1. **Stop Windows, completely.** `schtasks /End` and `/Change /Disable` on all six Ephemera tasks.
+   Confirm with `Get-Process pythonw` that nothing of Ephemera's is running: the watcher and the
+   witness are long-running and `End` must actually have killed them. Note the time; the site's
+   heartbeat coverage will show this gap and should.
+2. **Stop the VPS witness and shipper.** The watcher keeps running: a pull writes only inside its
+   own cycle directory and appends to `heartbeats.jsonl`, and the copy touches neither of those for
+   the cycle in flight. Note which cycle it is on.
+3. **Package the Windows records.** On Windows, from `Z:\ephemera\spool`, one tar of the records
+   only, never `files/`: every `cycle_*/` without its `files/` subdirectory, all of `daily/`, all of
+   `gp/`, all of `score/`, and `heartbeats.jsonl`. Git for Windows ships GNU tar 1.34 and no rsync;
+   `tar --exclude='cycle_*/files' -cf records.tar cycle_* daily gp score heartbeats.jsonl` from that
+   directory. Expect roughly 1 GB: about 9 MB of records per cycle, 300 MB of score output, 135 MB
+   of catalogue snapshots. `scp` it to the VPS and extract it into an empty **staging** directory,
+   never onto the live spool.
+4. **Apply the ownership rules from staging into the spool**, with a script, per file. The rules
+   are the whole of what the earlier drafts got wrong, so they are stated as a table:
+
+   | Path | Cycle only on Windows | Cycle on both hosts |
+   |---|---|---|
+   | `cycle.json`, `etag_cache.json`, `MANIFEST.txt`, `root.txt` | copy | keep the VPS's, after checking the two `root.txt` are byte-identical; a difference stops the script (see below) |
+   | `root.txt.ots`, `root.txt.ots.bak`, `witness.json` | copy | copy Windows's over the VPS's: same root, earlier proof, complete captures |
+   | `ship.json` | copy | copy Windows's if it records `shipped`; otherwise keep the VPS's |
+   | `files/` | never | never |
+   | `daily/*` | copy all | (not per cycle) |
+   | `gp/*`, `score/*` | copy all | (not per cycle) |
+   | `heartbeats.jsonl` | concatenate both files, sorted by `utc`; never overwrite | |
+   | `outbox/` | nothing; the orphan tar stays on Windows | |
+
+   A `root.txt` that differs between hosts for the same cycle id means the two hosts recorded
+   different archives for one manifest. That has never been observed (P8 checked it on both
+   probe hosts against the same manifest) and it is not a case to script around: the script stops,
+   prints both records' `status`, `files_recorded`, `files_failed` and `manifest_anomalies`, and a
+   person decides. The likely cause is one host's pull ending gapped while the other's completed;
+   the complete record wins, together with its `files/` if the shipper has not yet run on it.
+5. **Check before starting anything.** On the VPS spool: every `cycle_*` with a `root.txt` also
+   has a `root.txt.ots`; every complete cycle's `ship.json` records `shipped`; the count of
+   `daily/*` directories equals Windows's; `python archive/verify.py` passes on the oldest cycle,
+   the newest Windows-only cycle and one overlap cycle. Then `s3api list-object-versions` on the
+   overlap cycles' `files.tar` keys: exactly one version each. The record objects legitimately
+   carry several versions and are not part of this check.
+6. **Start the rest of the VPS.** Catalogue timer, score service, ledger timer; restart the witness
+   with `--daily-from <today, UTC>` and the shipper. The concatenated heartbeat history means the
+   site's coverage figure for the overlap window is the union of two hosts' observations, not one
+   host's uptime, until 24 hours after this step; say so in that day's bulletin. The build's
+   `poller` string (`web/build.py`) must be changed before the first VPS publish: it names the home
+   poller today, and the site would otherwise state a falsehood about where it runs.
+7. **Watch the first VPS publish.** `web/publish.py` syncs with origin before it builds, so the
+   VPS's clone fast-forwards to Windows's last ledger commit, builds a site with every cycle both
+   hosts ever held plus the new ones, passes the shrink guard, commits and pushes. The deploy
+   workflow does the rest. Confirm the live site's build stamp and cycle count.
+8. **Leave Windows stopped.** Its spool is untouched by all of this: the copy only read from it.
+   Item 6b closes when the VPS has published three consecutive builds and shipped three consecutive
+   cycles on its own.
 
 ### Rollback
 
-Up to and including C10, the rollback is two minutes: stop the VPS unit, re-enable the Windows scheduled task. It works because every component except the poller is single-writer and the Windows spool is untouched until C11.
+At any point before step 6: stop the VPS's three running components, re-enable the six Windows
+tasks, done. The Windows spool was never written to. In S3 the VPS has only adopted, never
+uploaded over, so there is nothing to undo there; cycles the VPS shipped first carry its metadata
+and Windows adopts them on its next pass by the same rule. The site: Windows's `publish.py` syncs
+with origin first, so it picks up from wherever the VPS left it.
 
-After C11 the rollback is the same command, and the Windows spool then has a hole for whatever the VPS pulled in between. The VPS spool holds those cycles, so the union is complete and nothing is lost; you would copy them back the way you copied forward.
+After step 6, rollback is the same plus one rule: run the Windows catalogue and ledger only after
+the VPS's are stopped, never both. Nothing else on the two hosts conflicts.
 
-**The one exception, and the draft's advice on it was useless.** The irreversible action is an S3 write: a cycle shipped from the VPS under a key Windows would also ship is a second object version with a different tar SHA-256 and a contradicting `ship.json`. The draft said to "check `systemctl --failed` on the VPS before re-enabling the Windows Shipper", which tells you nothing about which cycles the VPS already uploaded. Do this instead: before re-enabling the Windows Shipper for any reason, list the object versions under `cycles/` (check 5 above) and look at the `files.tar` keys only. For every `cycles/<sha12>/files.tar` the VPS may have touched, confirm it still holds exactly one version and that version's `Metadata.sha256` matches the `shipped.sha256` in the `ship.json` on the host you are about to run. The five record keys under the same prefix will each hold several versions, and that is not a finding: they are re-PUT whenever their bytes change (`archive/ship.py:226-235`), so counting versions across the whole prefix flags every healthy cycle and tells you nothing about the one thing that matters. Prevent it; do not plan to recover from it, because Object Lock in governance mode means the extra version stays.
+## 7. Verification and rollback
 
-Keep the Windows spool intact for seven days after C11. It is both the cold rollback and the source for any `files/` you decide you needed after all.
-
----
+Folded into section 6 on 26 September 2026: the checks are step 5 there and the rollback is its
+last subsection. The previous per-step gates referred to the twelve-step procedure that no longer
+exists.
 
 ## 8. What stays on the owner's machine
 
