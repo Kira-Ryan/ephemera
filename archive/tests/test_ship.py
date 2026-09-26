@@ -345,3 +345,60 @@ def test_a_cycle_shipped_before_fingerprints_existed_is_adopted_not_reuploaded(s
     assert reshipped["uploaded_utc"] != "2026-01-01T00:00:00Z", \
         "a cycle whose record was still changing at upload time was left unverified"
     assert reshipped["files_fingerprint"] == ship.files_fingerprint(r)
+
+
+def test_a_cycle_another_host_already_shipped_is_adopted_not_uploaded_again(s3, cycle):
+    """Two pollers pulling the same manifest produce the same cycle id and root (D10, P8), so a
+    second host reaches a cycle the first already put in cold storage. A second upload would leave
+    two byte-different versions under one key with contradicting digests. The shipper must read
+    the object's own metadata, see the same root, and adopt it as its shipped state.
+
+    Mutation: drop the adopt_remote call from ship_cycle and this fails on the version count."""
+    _, spool, rec, cyc = cycle
+    key = f"cycles/{cyc.name[6:]}/files.tar"
+    s3.put_bucket_versioning(Bucket=BUCKET, VersioningConfiguration={"Status": "Enabled"})
+    # what the first host left behind: some bytes, in DEEP_ARCHIVE, with this cycle's root
+    s3.put_object(Bucket=BUCKET, Key=key, Body=b"the first host's tar", StorageClass="DEEP_ARCHIVE",
+                  Metadata={"sha256": "ab" * 32, "cycle": cyc.name, "merkle_root": rec["merkle_root"]})
+    assert smain(spool) == 0
+    state = json.loads((cyc / "ship.json").read_text())
+    assert state["shipped"]["key"] == key and state["shipped"]["sha256"] == "ab" * 32
+    assert state["shipped"]["adopted_from_remote_utc"] and state["error"] is None
+    assert state["shipped"]["files_fingerprint"] == ship.files_fingerprint(rec)
+    versions = s3.list_object_versions(Bucket=BUCKET, Prefix=key).get("Versions", [])
+    assert len(versions) == 1, "a second version was uploaded over the existing cold copy"
+    # a DEEP_ARCHIVE body cannot be read without a restore (moto is faithful), so the object being
+    # untouched is shown by its size and its recorded digest
+    head = s3.head_object(Bucket=BUCKET, Key=key)
+    assert head["ContentLength"] == len(b"the first host's tar") and head["Metadata"]["sha256"] == "ab" * 32
+    # and the local files are now eligible for retention exactly as if this host had shipped them
+    assert ship.needs_upload(state, rec) is None
+
+
+def test_a_foreign_object_at_the_cycle_key_is_a_refusal_never_an_overwrite(s3, cycle):
+    """If the key holds an object whose metadata names a DIFFERENT root, two archives disagree
+    about what this cycle is. No procedure resolves that by uploading over it: the cycle is
+    refused, loudly, and left for a person.
+
+    Mutation: make adopt_remote return None on a root mismatch and this uploads over it."""
+    _, spool, rec, cyc = cycle
+    key = f"cycles/{cyc.name[6:]}/files.tar"
+    s3.put_object(Bucket=BUCKET, Key=key, Body=b"somebody else's archive", StorageClass="DEEP_ARCHIVE",
+                  Metadata={"sha256": "cd" * 32, "cycle": cyc.name, "merkle_root": "ff" * 32})
+    assert smain(spool) == 1
+    state = json.loads((cyc / "ship.json").read_text())
+    assert state["shipped"] is None or not state["shipped"]
+    assert "cold storage conflict" in state["error"] and "ffffffffffff" in state["error"]
+    head = s3.head_object(Bucket=BUCKET, Key=key)
+    assert head["ContentLength"] == len(b"somebody else's archive") and head["Metadata"]["merkle_root"] == "ff" * 32
+    assert len(s3.list_object_versions(Bucket=BUCKET, Prefix=key).get("Versions", [])) <= 1
+    assert (cyc / "files").exists() and any((cyc / "files").iterdir()), "local files must survive a refusal"
+
+
+def test_an_empty_key_still_uploads_as_before(s3, cycle):
+    """The adopt path must not change the ordinary case: nothing at the key means upload."""
+    _, spool, rec, cyc = cycle
+    assert smain(spool) == 0
+    state = json.loads((cyc / "ship.json").read_text())
+    assert state["shipped"]["key"] and "adopted_from_remote_utc" not in state["shipped"]
+    assert s3.head_object(Bucket=BUCKET, Key=state["shipped"]["key"])["ContentLength"] == state["shipped"]["bytes"]

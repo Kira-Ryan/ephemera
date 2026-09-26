@@ -51,6 +51,7 @@ from pathlib import Path
 
 import boto3
 from boto3.s3.transfer import TransferConfig
+from botocore.exceptions import ClientError
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "infra"))
@@ -171,6 +172,41 @@ def needs_upload(state: dict, rec: dict) -> str | None:
             "the cold copy is missing files the record now names")
 
 
+class RemoteConflict(RuntimeError):
+    """An object already sits at this cycle's key and it is NOT this archive. Never overwritten."""
+
+
+def adopt_remote(s3, bucket: str, key: str, rec: dict) -> dict | None:
+    """The cold copy another host already made of this exact cycle, as a shipped state, or None
+    when the key is empty.
+
+    Two pollers pulling the same manifest produce the same cycle id and the same Merkle root (D10,
+    observed in P8), so during a cutover the second host reaches a cycle the first one has already
+    shipped. Uploading again would put a second, byte-different version under the same key with a
+    contradicting recorded digest, which is the one outcome the migration must not produce. The
+    object's own metadata says which archive it holds: a matching root is adopted as this host's
+    shipped state, and a different root is a conflict that stops the cycle loudly, because no
+    procedure should ever resolve that by overwriting."""
+    try:
+        head = s3.head_object(Bucket=bucket, Key=key)
+    except ClientError as e:
+        if e.response["Error"]["Code"] in ("404", "NoSuchKey", "NotFound"):
+            return None
+        raise
+    meta = head.get("Metadata") or {}
+    root = rec.get("merkle_root") or ""
+    if not root or meta.get("merkle_root") != root:
+        raise RemoteConflict(f"{key} already holds an object whose merkle_root is "
+                             f"{(meta.get('merkle_root') or '?')[:12]}..., not this cycle's {root[:12]}...")
+    if not meta.get("sha256"):
+        raise RemoteConflict(f"{key} exists with a matching root but no recorded sha256; not adopting blind")
+    return {"bucket": bucket, "key": key, "bytes": head["ContentLength"], "sha256": meta["sha256"],
+            "storage_class": head.get("StorageClass") or "STANDARD", "etag": head.get("ETag"),
+            "files_fingerprint": files_fingerprint(rec), "files_count": len(rec.get("files") or []),
+            "uploaded_utc": head["LastModified"].strftime("%Y-%m-%dT%H:%M:%SZ"),
+            "verified_utc": poll.utc_now(), "adopted_from_remote_utc": poll.utc_now()}
+
+
 def ship_cycle(cycle_dir: Path, s3, args) -> tuple[bool, bool]:
     """(no error, an upload happened). The second value is what --max-cycles counts: a cycle that
     uploads nothing must not consume the pass budget, or an unfinished cycle sorting earlier by
@@ -184,6 +220,18 @@ def ship_cycle(cycle_dir: Path, s3, args) -> tuple[bool, bool]:
     uploaded = False
     try:
         why = needs_upload(state, rec)
+        if why == "not yet shipped":
+            # Before packing nine gigabytes: is this cycle already in cold storage from another
+            # host? Only the never-shipped case asks; a fingerprint mismatch on a cycle THIS host
+            # shipped is a heal and must re-upload as before.
+            adopted = adopt_remote(s3, args.bucket, f"{prefix}/files.tar", rec)
+            if adopted:
+                state["shipped"] = adopted
+                state["error"] = None
+                poll.write_json_atomic(cycle_dir / "ship.json", state)
+                log.info("%s: already in cold storage with this root (uploaded %s); adopted, not re-uploaded",
+                         cycle_dir.name, adopted["uploaded_utc"])
+                why = None
         if why:
             key = f"{prefix}/files.tar"
             tar_path = args.spool / "outbox" / f"{cycle_dir.name}.tar"
@@ -253,6 +301,10 @@ def ship_cycle(cycle_dir: Path, s3, args) -> tuple[bool, bool]:
                 log.info("%s: local files/ deleted (%.1f days old, shipped and verified)", cycle_dir.name, age_days)
     except CorruptCycle as e:
         state["error"] = f"{poll.utc_now()}: local bytes do not match the record: {e}"[:500]
+        log.error("%s: REFUSING to ship, %s", cycle_dir.name, e)
+        ok = False
+    except RemoteConflict as e:
+        state["error"] = f"{poll.utc_now()}: cold storage conflict: {e}"[:500]
         log.error("%s: REFUSING to ship, %s", cycle_dir.name, e)
         ok = False
     except Exception as e:  # noqa: BLE001 - recorded loudly; the next cycle still gets its turn

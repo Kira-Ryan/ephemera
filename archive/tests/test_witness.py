@@ -682,3 +682,31 @@ def test_missing_or_partial_keys_mean_no_authentication(monkeypatch):
 
     monkeypatch.setattr(guard, "load_env", lambda: {"ARCHIVE_ORG_ACCESS_KEY": "a", "ARCHIVE_ORG_SECRET_KEY": "s"})
     assert REAL_SPN2_CREDENTIALS() == ("a", "s")
+
+
+def test_daily_roots_before_daily_from_belong_to_another_host_and_are_not_built(tmp_path, stub_runner):
+    """A daily root is built once and never rebuilt. A second host that starts mid-day holds only
+    part of that day's cycles; if it built the root it would stamp a different root for a date the
+    first host already stamped. --daily-from says which days are this host's to build, and a date in
+    the future means none.
+
+    Mutation: drop the `date < daily_from` clause from witness_daily and the first case fails."""
+    feed, spool, rec, cycle, origin = build_cycle(tmp_path)
+    wb = FakeWayback(origin)
+    try:
+        set_current(spool, rec["manifest_sha256"])
+        # the fixture cycle was first seen today, so no daily root is due yet; back-date it
+        c = json.loads((cycle / "cycle.json").read_text())
+        c["first_seen_utc"] = "2026-09-20T04:00:00Z"
+        (cycle / "cycle.json").write_text(json.dumps(c))
+        assert wmain(feed, spool, wb, "--daily-from", "2026-09-21") == 0
+        assert not (spool / "daily").exists() or not list((spool / "daily").glob("*")), \
+            "a day before --daily-from was built"
+        assert wmain(feed, spool, wb, "--daily-from", "2099-01-01") == 0
+        assert not list((spool / "daily").glob("*")) if (spool / "daily").exists() else True
+        assert wmain(feed, spool, wb, "--daily-from", "2026-09-20") == 0
+        assert (spool / "daily" / "2026-09-20" / "root.txt").exists(), "a day on --daily-from was not built"
+        assert wmain(feed, spool, wb) == 0                          # no flag: everything, as before
+    finally:
+        feed.close()
+        wb.close()

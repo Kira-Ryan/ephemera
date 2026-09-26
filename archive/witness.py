@@ -298,6 +298,12 @@ def witness_daily(spool: Path, runner: OtsRunner | None, args) -> bool:
     cycles entered (and how many gapped cycles could not), and run the same stamping lifecycle
     on it as on cycle roots. The day's root is built once and never rebuilt."""
     today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+    # A daily root is built once and never rebuilt, over every complete cycle first seen that day.
+    # A second host that started mid-day holds only part of that day, and if it built the root it
+    # would stamp and publish a different root for a date the first host already stamped. So a host
+    # only builds days from --daily-from onward; before it, the day belongs to another host and its
+    # root arrives by copy. A date in the future means this host builds no daily roots at all.
+    daily_from = getattr(args, "daily_from", None) or ""
     days: dict[str, list[dict]] = {}
     gapped: dict[str, int] = {}
     for cdir in sorted(spool.glob("cycle_*")):
@@ -306,7 +312,7 @@ def witness_daily(spool: Path, runner: OtsRunner | None, args) -> bool:
             continue
         rec = json.loads(rec_path.read_text())
         date = (rec.get("first_seen_utc") or "")[:10]
-        if not date or date >= today:
+        if not date or date >= today or date < daily_from:
             continue
         if rec.get("merkle_root"):
             days.setdefault(date, []).append(
@@ -437,6 +443,9 @@ def main(argv: list[str] | None = None) -> int:
                     help="seconds between Save-Page-Now submissions; default 2 with archive.org keys "
                          "in personal.env, 12 without, because about 8 rapid unauthenticated captures "
                          "trip Wayback's 429 limiter (measured 31 Aug 2026)")
+    ap.add_argument("--daily-from", default=None, metavar="YYYY-MM-DD",
+                    help="build daily roots only for UTC days on or after this date; days before it "
+                         "belong to another host (a cutover), and a future date builds none")
     ap.add_argument("--max-capture-attempts", type=int, default=5,
                     help="failed capture attempts per item before the loss is recorded once and "
                          "never retried (Wayback throttles repeat captures of one URL)")
