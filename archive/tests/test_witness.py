@@ -10,6 +10,7 @@ import json
 import socketserver
 import sys
 import threading
+import urllib.parse
 from pathlib import Path
 
 import pytest
@@ -31,10 +32,20 @@ class FakeWayback:
     is wrong. limit_once: url suffixes that 429 one time."""
 
     def __init__(self, origin: dict[str, bytes], corrupt: set | None = None, limit_once: set | None = None,
-                 gzip_no_header: set | None = None):
+                 gzip_no_header: set | None = None, spn2_fail_once: set | None = None, pending_polls: int = 0):
+        """spn2_fail_once: url suffixes whose first SPN2 job reports status "error". pending_polls:
+        how many status polls answer "pending" before "success", to exercise the polling loop."""
         self.origin, self.corrupt = origin, corrupt or set()
         self.gzip_no_header = gzip_no_header or set()
         self.limited = dict.fromkeys(limit_once or set(), 1)
+        # Authenticated SPN2: POST /save makes a job, GET /save/status/<job> reports it. What the
+        # double saw is recorded so a test can assert which endpoint the witness actually used.
+        self.posts: list[dict] = []
+        self.redirect_gets = 0
+        self.status_polls: dict[str, int] = {}
+        self.jobs: dict[str, str] = {}
+        self.spn2_fail = dict.fromkeys(spn2_fail_once or set(), 1)
+        self.pending_polls = pending_polls
         fake = self
 
         class Handler(http.server.BaseHTTPRequestHandler):
@@ -49,9 +60,48 @@ class FakeWayback:
                 self.end_headers()
                 self.wfile.write(body)
 
+            def do_POST(self):
+                if self.path != "/save":
+                    self._send(404)
+                    return
+                n = int(self.headers.get("Content-Length") or 0)
+                form = dict(p.split("=", 1) for p in self.rfile.read(n).decode().split("&") if "=" in p)
+                url = urllib.parse.unquote_plus(form.get("url", ""))
+                fake.posts.append({"url": url, "authorization": self.headers.get("Authorization"),
+                                   "accept": self.headers.get("Accept")})
+                if not (self.headers.get("Authorization") or "").startswith("LOW "):
+                    self._send(401, json.dumps({"message": "You need to be logged in"}).encode(),
+                               [("Content-Type", "application/json")])
+                    return
+                job = f"spn2-{len(fake.jobs):04d}"
+                fake.jobs[job] = url
+                self._send(200, json.dumps({"url": url, "job_id": job}).encode(),
+                           [("Content-Type", "application/json")])
+
             def do_GET(self):
+                if self.path.startswith("/save/status/"):
+                    job = self.path[len("/save/status/"):]
+                    url = fake.jobs.get(job)
+                    if url is None:
+                        self._send(404, json.dumps({"message": "no such job"}).encode(),
+                                   [("Content-Type", "application/json")])
+                        return
+                    fake.status_polls[job] = fake.status_polls.get(job, 0) + 1
+                    if fake.status_polls[job] <= fake.pending_polls:
+                        body = {"status": "pending", "job_id": job}
+                    elif any(url.endswith(s) and fake.spn2_fail.get(s, 0) > 0 for s in fake.spn2_fail):
+                        for s in fake.spn2_fail:
+                            if url.endswith(s):
+                                fake.spn2_fail[s] -= 1
+                        body = {"status": "error", "job_id": job, "status_ext": "error:no-access",
+                                "message": "The requested URL could not be captured"}
+                    else:
+                        body = {"status": "success", "job_id": job, "timestamp": TS, "original_url": url}
+                    self._send(200, json.dumps(body).encode(), [("Content-Type", "application/json")])
+                    return
                 if self.path.startswith("/save/"):
                     url = self.path[len("/save/"):]
+                    fake.redirect_gets += 1
                     for suffix, left in list(fake.limited.items()):
                         if url.endswith(suffix) and left > 0:
                             fake.limited[suffix] -= 1
@@ -139,6 +189,24 @@ def stub_runner(monkeypatch):
     stub = StubOts()
     monkeypatch.setattr(witness, "make_ots_runner", lambda mode: stub)
     yield stub
+
+
+@pytest.fixture(autouse=True)
+def no_real_archive_org_keys(monkeypatch):
+    """witness.main reads the archive.org keys from the owner's real infra/personal.env, which a
+    sandbox spool does not shadow. Every test here runs against a fake Wayback, so a real key
+    would only ever be sent to the double, but the point is stronger than that: no test may
+    depend on what is in the owner's credentials file. Tests that want the SPN2 path set a fake
+    pair explicitly. The poll interval is shortened so the job loop does not sleep for real."""
+    monkeypatch.setattr(witness, "spn2_credentials", lambda: None)
+    monkeypatch.setattr(witness, "SPN2_POLL_S", 0.01)
+
+
+def with_keys(monkeypatch):
+    monkeypatch.setattr(witness, "spn2_credentials", lambda: ("fake-access", "fake-secret"))
+
+
+REAL_SPN2_CREDENTIALS = witness.spn2_credentials   # bound before any fixture replaces the name
 
 
 def test_sample_indices_follow_the_documented_chain_and_are_deterministic():
@@ -450,3 +518,167 @@ def test_every_child_process_is_started_without_a_console(monkeypatch, tmp_path)
     for kw in seen:
         assert kw.get("creationflags") == witness.NO_WINDOW
     assert witness.NO_WINDOW == getattr(subprocess, "CREATE_NO_WINDOW", 0)
+
+
+def test_with_keys_captures_go_through_spn2_and_are_verified_the_same_way(tmp_path, monkeypatch):
+    """The unauthenticated endpoint has answered HTTP 500 to this machine since 13 Sep 2026.
+    With archive.org keys present the witness must submit through POST /save with the LOW
+    authorization, poll the job, and then do exactly the id_ re-fetch and re-hash it always did,
+    so "verified" keeps its meaning. One sample is corrupted at the double to prove the re-hash
+    still runs on this path.
+
+    Mutation: make capture() ignore `auth` and use the redirect endpoint, and this fails."""
+    with_keys(monkeypatch)
+    feed, spool, rec, cycle, origin = build_cycle(tmp_path)
+    wb = FakeWayback(origin, corrupt={feed.names[1]})
+    try:
+        set_current(spool, rec["manifest_sha256"])
+        assert wmain(feed, spool, wb) == 1                      # the corrupt sample is a recorded failure
+        w = json.loads((cycle / "witness.json").read_text())
+        assert wb.posts, "nothing was submitted through SPN2"
+        assert all(p["authorization"] == "LOW fake-access:fake-secret" for p in wb.posts)
+        assert all(p["accept"] == "application/json" for p in wb.posts)
+        assert wb.redirect_gets == 0, "the keyed path fell back to the redirect endpoint"
+        assert w["wayback"]["manifest"]["via"] == "spn2"
+        assert w["wayback"]["manifest"]["verified"] and w["wayback"]["manifest"]["timestamp"] == TS
+        good = [s for s in w["wayback"]["samples"].values() if s["name"] != feed.names[1]]
+        bad = [s for s in w["wayback"]["samples"].values() if s["name"] == feed.names[1]][0]
+        assert good and all(s["verified"] and s["via"] == "spn2" for s in good)
+        assert bad["verified"] is False and "mismatch" in bad["error"]
+        # every capture was a job: one POST per manifest plus samples, no redirect-endpoint GETs
+        assert len(wb.posts) == 1 + 3
+    finally:
+        feed.close()
+        wb.close()
+
+
+def test_spn2_job_error_is_recorded_with_its_reason_and_retried_next_pass(tmp_path, monkeypatch):
+    """A job that reports status "error" carries status_ext and a message; both go into the entry
+    so the archive page can say why, and the next pass retries only that capture.
+
+    Mutation: return None instead of the error string from _spn2_submit and this fails."""
+    with_keys(monkeypatch)
+    feed, spool, rec, cycle, origin = build_cycle(tmp_path)
+    wb = FakeWayback(origin, spn2_fail_once={feed.names[0]})
+    try:
+        set_current(spool, rec["manifest_sha256"])
+        assert wmain(feed, spool, wb) == 1
+        w = json.loads((cycle / "witness.json").read_text())
+        hit = [s for s in w["wayback"]["samples"].values() if s["name"] == feed.names[0]][0]
+        assert "error:no-access" in hit["error"] and "could not be captured" in hit["error"]
+        assert hit["attempts"] == 1 and not hit.get("verified")
+        assert wmain(feed, spool, wb) == 0
+        w = json.loads((cycle / "witness.json").read_text())
+        assert all(s["verified"] for s in w["wayback"]["samples"].values())
+        assert [s for s in w["wayback"]["samples"].values() if s["name"] == feed.names[0]][0]["attempts"] == 2
+    finally:
+        feed.close()
+        wb.close()
+
+
+def test_spn2_pending_is_polled_until_the_job_reports(tmp_path, monkeypatch):
+    """A capture is a job, and the first status poll usually says pending. The witness must keep
+    polling rather than treat pending as failure.
+
+    Mutation: break after the first status poll in _spn2_submit and this fails."""
+    with_keys(monkeypatch)
+    feed, spool, rec, cycle, origin = build_cycle(tmp_path)
+    wb = FakeWayback(origin, pending_polls=2)
+    try:
+        set_current(spool, rec["manifest_sha256"])
+        assert wmain(feed, spool, wb) == 0
+        assert wb.status_polls and all(n >= 3 for n in wb.status_polls.values()), wb.status_polls
+        w = json.loads((cycle / "witness.json").read_text())
+        assert w["wayback"]["manifest"]["verified"]
+    finally:
+        feed.close()
+        wb.close()
+
+
+def test_a_job_that_never_reports_is_an_error_not_a_hang(tmp_path, monkeypatch):
+    """Wayback caps one capture at two minutes; a job still pending past SPN2_WAIT_S is recorded
+    as an error and left for the next pass, instead of holding the witness forever.
+
+    Mutation: remove the deadline from the polling loop and this test does not return."""
+    with_keys(monkeypatch)
+    monkeypatch.setattr(witness, "SPN2_WAIT_S", 0.05)
+    feed, spool, rec, cycle, origin = build_cycle(tmp_path)
+    wb = FakeWayback(origin, pending_polls=10_000)
+    try:
+        set_current(spool, rec["manifest_sha256"])
+        assert wmain(feed, spool, wb) == 1
+        w = json.loads((cycle / "witness.json").read_text())
+        assert "still pending" in w["wayback"]["manifest"]["error"]
+    finally:
+        feed.close()
+        wb.close()
+
+
+def test_without_keys_the_redirect_endpoint_is_still_used(tmp_path):
+    """No keys means the old path, unchanged: the autouse fixture returns None for the keys, so
+    this is the default every other test in the file runs under."""
+    feed, spool, rec, cycle, origin = build_cycle(tmp_path)
+    wb = FakeWayback(origin)
+    try:
+        set_current(spool, rec["manifest_sha256"])
+        assert wmain(feed, spool, wb) == 0
+        assert wb.posts == []
+        w = json.loads((cycle / "witness.json").read_text())
+        assert "via" not in w["wayback"]["manifest"] and w["wayback"]["manifest"]["verified"]
+    finally:
+        feed.close()
+        wb.close()
+
+
+def test_the_capture_gap_default_follows_the_keys(tmp_path, monkeypatch):
+    """Twelve seconds between samples exists only to dodge the unauthenticated limiter. With keys
+    the default drops to two; an explicit --capture-gap wins either way.
+
+    Mutation: hard-code CAPTURE_GAP_ANON_S in main() and the keyed case fails."""
+    gaps: list[float] = []
+    monkeypatch.setattr(witness, "pause", lambda s: gaps.append(s))
+    feed, spool, rec, cycle, origin = build_cycle(tmp_path)
+    wb = FakeWayback(origin)
+    try:
+        set_current(spool, rec["manifest_sha256"])
+        base = ["--spool", str(spool), "--base", feed.base, "--wayback", wb.base,
+                "--contact", CONTACT, "--samples", "3", "--once"]
+        assert witness.main(base) == 0
+        assert witness.CAPTURE_GAP_ANON_S in gaps and witness.CAPTURE_GAP_AUTH_S not in gaps
+        gaps.clear()
+        with_keys(monkeypatch)
+        for d in spool.glob("cycle_*"):
+            (d / "witness.json").unlink(missing_ok=True)
+        assert witness.main(base) == 0
+        sample_gaps = [g for g in gaps if g not in (witness.SPN2_POLL_S,)]
+        assert witness.CAPTURE_GAP_AUTH_S in sample_gaps and witness.CAPTURE_GAP_ANON_S not in sample_gaps
+        gaps.clear()
+        for d in spool.glob("cycle_*"):
+            (d / "witness.json").unlink(missing_ok=True)
+        assert witness.main(base + ["--capture-gap", "0.5"]) == 0
+        assert 0.5 in gaps and witness.CAPTURE_GAP_AUTH_S not in gaps
+    finally:
+        feed.close()
+        wb.close()
+
+
+def test_missing_or_partial_keys_mean_no_authentication(monkeypatch):
+    """Half a key pair is no key pair, and a missing personal.env is not an error for the witness:
+    it is the unauthenticated path, which is what a fresh checkout has. guard.load_env raises
+    GuardRefused for a missing file, and that must not escape as a crash of the witness.
+
+    Mutation: catch only OSError in spn2_credentials and the missing-file case raises."""
+    import guard
+    cases = ({}, {"ARCHIVE_ORG_ACCESS_KEY": "a"}, {"ARCHIVE_ORG_SECRET_KEY": "s"},
+             {"ARCHIVE_ORG_ACCESS_KEY": "", "ARCHIVE_ORG_SECRET_KEY": "s"})
+    for env in cases:
+        monkeypatch.setattr(guard, "load_env", lambda e=env: dict(e))
+        assert REAL_SPN2_CREDENTIALS() is None, env
+
+    def missing():
+        raise guard.GuardRefused("guard: personal.env is missing")
+    monkeypatch.setattr(guard, "load_env", missing)
+    assert REAL_SPN2_CREDENTIALS() is None
+
+    monkeypatch.setattr(guard, "load_env", lambda: {"ARCHIVE_ORG_ACCESS_KEY": "a", "ARCHIVE_ORG_SECRET_KEY": "s"})
+    assert REAL_SPN2_CREDENTIALS() == ("a", "s")

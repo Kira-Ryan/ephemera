@@ -39,9 +39,20 @@ from pathlib import Path
 import requests
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
+sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "infra"))
 import poll  # noqa: E402
 
 WAYBACK_DEFAULT = "https://web.archive.org"
+# Authenticated Save Page Now 2: a capture is a job, polled until it reports. Wayback's own limit
+# on one capture is two minutes; a job still pending past this is recorded as an error and the
+# next pass tries again, which is the same retry the unauthenticated path always had.
+SPN2_WAIT_S = 150.0
+SPN2_POLL_S = 3.0
+# Pacing between sample captures. Unauthenticated Save Page Now throttles around eight rapid
+# captures (measured 31 Aug 2026), hence 12 s. An authenticated account is allowed 12 concurrent
+# captures and 100,000 a day, so the gap is there only to be polite.
+CAPTURE_GAP_ANON_S = 12.0
+CAPTURE_GAP_AUTH_S = 2.0
 HEARTBEAT_FRESH_S = 900
 ATTESTATION_RE = re.compile(r"BitcoinBlockHeaderAttestation\((\d+)\)")
 SCHEMA = 1
@@ -138,20 +149,86 @@ def verified_sha(body: bytes) -> str:
         return poll.sha256_bytes(body)
 
 
-def capture(session: requests.Session, wayback: str, url: str, expected_sha: str) -> dict:
-    """One Save-Page-Now round trip: submit, read the capture timestamp, fetch the id_ copy back,
-    re-hash. Returns the witness entry; an entry with an `error` key is a recorded failure."""
-    entry: dict = {"url": url, "submitted_utc": poll.utc_now()}
-    r = session.get(f"{wayback}/save/{url}", timeout=300)
+def spn2_credentials() -> tuple[str, str] | None:
+    """The archive.org S3-like key pair from the gitignored infra/personal.env, or None when either
+    half is absent, in which case the witness falls back to the unauthenticated endpoint. Read
+    through the same parser the account guards use; the values are never logged."""
+    import guard  # noqa: PLC0415 - infra/guard.py, the shared personal.env parser
+    try:
+        env = guard.load_env()
+    except (OSError, guard.GuardRefused):
+        # No personal.env at all is what a fresh checkout has, and for the witness that is the
+        # unauthenticated path, not a refusal: the guards refuse because they are about to write
+        # to a cloud account, and a Wayback capture writes to nothing of ours.
+        return None
+    ak, sk = env.get("ARCHIVE_ORG_ACCESS_KEY", ""), env.get("ARCHIVE_ORG_SECRET_KEY", "")
+    return (ak, sk) if ak and sk else None
+
+
+def _spn2_submit(session: requests.Session, wayback: str, url: str, auth: tuple[str, str]) -> tuple[str | None, str | None]:
+    """Submit a capture job and wait for it. Returns (timestamp, None) on success or (None, error).
+
+    POST /save answers with a job id; GET /save/status/<id> reports pending, success or error.
+    Both carry the Authorization header, and both ask for JSON, which the unauthenticated endpoint
+    never offered: it only ever answered with a redirect to scrape."""
+    headers = {"Accept": "application/json", "Authorization": f"LOW {auth[0]}:{auth[1]}"}
+    r = session.post(f"{wayback}/save", data={"url": url}, headers=headers, timeout=120)
     if r.status_code == 429:
-        entry["error"] = "429 rate limited by Save-Page-Now"
-        return entry
-    m = re.search(r"/web/(\d{14})", r.url)
-    if not m:
-        entry["error"] = f"no capture timestamp in SPN response (HTTP {r.status_code}, url {r.url[:120]})"
-        return entry
-    entry["timestamp"] = m.group(1)
-    entry["id_url"] = f"{wayback}/web/{m.group(1)}id_/{url}"
+        return None, "429 rate limited by Save-Page-Now"
+    try:
+        body = r.json()
+    except ValueError:
+        return None, f"SPN2 submit returned non-JSON (HTTP {r.status_code}): {r.text[:120]!r}"
+    job = body.get("job_id")
+    if not job:
+        return None, f"SPN2 submit refused (HTTP {r.status_code}): {body.get('message') or body}"
+    deadline = time.monotonic() + SPN2_WAIT_S
+    status = "pending"
+    while time.monotonic() < deadline:
+        pause(SPN2_POLL_S)
+        st = session.get(f"{wayback}/save/status/{job}", headers=headers, timeout=60)
+        try:
+            j = st.json()
+        except ValueError:
+            return None, f"SPN2 status returned non-JSON (HTTP {st.status_code}): {st.text[:120]!r}"
+        status = j.get("status")
+        if status == "success":
+            ts = j.get("timestamp") or ""
+            if not re.fullmatch(r"\d{14}", ts):
+                return None, f"SPN2 success without a usable timestamp: {ts!r}"
+            return ts, None
+        if status == "error":
+            return None, f"SPN2 job failed: {j.get('status_ext') or '?'}: {j.get('message') or '?'}"
+    return None, f"SPN2 job still {status} after {SPN2_WAIT_S:.0f} s"
+
+
+def capture(session: requests.Session, wayback: str, url: str, expected_sha: str,
+            auth: tuple[str, str] | None = None) -> dict:
+    """One Save-Page-Now round trip: submit, read the capture timestamp, fetch the id_ copy back,
+    re-hash. Returns the witness entry; an entry with an `error` key is a recorded failure.
+
+    With `auth` the submission goes through authenticated SPN2 and the entry carries the job id;
+    without it the unauthenticated redirect endpoint is used. The id_ fetch and the re-hash are
+    the same either way, so `verified` means the same thing on both paths."""
+    entry: dict = {"url": url, "submitted_utc": poll.utc_now()}
+    if auth:
+        ts, err = _spn2_submit(session, wayback, url, auth)
+        entry["via"] = "spn2"
+        if err:
+            entry["error"] = err
+            return entry
+    else:
+        r = session.get(f"{wayback}/save/{url}", timeout=300)
+        if r.status_code == 429:
+            entry["error"] = "429 rate limited by Save-Page-Now"
+            return entry
+        m = re.search(r"/web/(\d{14})", r.url)
+        if not m:
+            entry["error"] = f"no capture timestamp in SPN response (HTTP {r.status_code}, url {r.url[:120]})"
+            return entry
+        ts = m.group(1)
+    entry["timestamp"] = ts
+    entry["id_url"] = f"{wayback}/web/{ts}id_/{url}"
     copy = session.get(entry["id_url"], timeout=300)
     if copy.status_code != 200:
         entry["error"] = f"id_ fetch HTTP {copy.status_code}"
@@ -327,13 +404,14 @@ def witness_cycle(cycle_dir: Path, session: requests.Session, runner: OtsRunner 
                     manifest_url = f"{args.base}/MANIFEST.txt?cycle={rec['manifest_sha256'][:12]}"
                     wb["manifest"] = attempt(wb.get("manifest"),
                                              capture(session, args.wayback, manifest_url,
-                                                     rec["manifest_sha256"]), "MANIFEST.txt")
+                                                     rec["manifest_sha256"], auth=args.spn2), "MANIFEST.txt")
                 for i in pending_files:
                     pause(args.capture_gap)
                     f = rec["files"][i]
                     samples[str(i)] = attempt(samples.get(str(i)), {
                         "name": f["name"],
-                        **capture(session, args.wayback, f"{args.base}/{f['name']}", f["sha256"])}, f["name"])
+                        **capture(session, args.wayback, f"{args.base}/{f['name']}", f["sha256"],
+                                  auth=args.spn2)}, f["name"])
             except requests.RequestException as e:
                 wb["last_error"] = f"{poll.utc_now()}: {e}"[:400]
                 log.error("%s: Wayback step failed: %s", cycle_dir.name, e)
@@ -355,9 +433,10 @@ def main(argv: list[str] | None = None) -> int:
     ap.add_argument("--samples", type=int, default=10)
     ap.add_argument("--upgrade-every", type=float, default=3600.0,
                     help="seconds between ots upgrade attempts per still-pending proof")
-    ap.add_argument("--capture-gap", type=float, default=12.0,
-                    help="seconds between Save-Page-Now submissions; ~8 rapid unauthenticated "
-                         "captures trip Wayback's 429 limiter (measured 31 Aug 2026)")
+    ap.add_argument("--capture-gap", type=float, default=None,
+                    help="seconds between Save-Page-Now submissions; default 2 with archive.org keys "
+                         "in personal.env, 12 without, because about 8 rapid unauthenticated captures "
+                         "trip Wayback's 429 limiter (measured 31 Aug 2026)")
     ap.add_argument("--max-capture-attempts", type=int, default=5,
                     help="failed capture attempts per item before the loss is recorded once and "
                          "never retried (Wayback throttles repeat captures of one URL)")
@@ -377,6 +456,15 @@ def main(argv: list[str] | None = None) -> int:
 
     session = requests.Session()
     session.headers["User-Agent"] = poll.user_agent(args.contact)
+    # Authenticated Save Page Now when the keys exist, the redirect endpoint when they do not. The
+    # choice is logged once, without the values, because which path witnessed a cycle is part of
+    # what its record means.
+    args.spn2 = spn2_credentials()
+    if args.capture_gap is None:
+        args.capture_gap = CAPTURE_GAP_AUTH_S if args.spn2 else CAPTURE_GAP_ANON_S
+    log.info("Wayback captures via %s, %.0f s between samples",
+             "authenticated SPN2" if args.spn2 else "the unauthenticated endpoint (no archive.org keys in personal.env)",
+             args.capture_gap)
     try:
         runner: OtsRunner | None = make_ots_runner(args.ots)
     except RuntimeError as e:
