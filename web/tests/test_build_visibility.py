@@ -763,3 +763,27 @@ def test_the_finding_page_does_not_reprint_the_front_page(tmp_path):
     assert "It is not an error of the satellite, and it is not a statement about which side is right" in finding
     assert "At the first instant of each operator file" in finding          # the headline cut
     assert "does not label any separation as a manoeuvre" in finding        # the lost category
+
+
+def test_the_licence_wording_flips_by_itself_on_1_october(tmp_path, monkeypatch):
+    """D06 gave the request to SpaceX thirty days, closing 30 September 2026. The site must say
+    "unanswered as of this build" up to that day and the dated thirty-day statement from 1 October,
+    keyed on the build's own timestamp so nobody has to remember a Wednesday.
+
+    Mutation: hard-code either sentence in home() or check() and one of the two builds fails."""
+    import pages
+    spool = make_spool(tmp_path, NOW)
+    add_catalogue(spool)
+    add_score(spool)
+    out = tmp_path / "dist"
+    for when, expect, forbid in (
+        (datetime(2026, 9, 30, 23, 59, tzinfo=timezone.utc), "is unanswered as of this build", "thirty days"),
+        (datetime(2026, 10, 1, 0, 0, tzinfo=timezone.utc), "had received no answer by 30 September 2026", "unanswered as of this build"),
+    ):
+        monkeypatch.setattr(build, "utc_now", lambda w=when: w)
+        assert build.main(["--spool", str(spool), "--out", str(out)]) == 0
+        for doc in (text((out / "index.html").read_text(encoding="utf-8")), text(page_at(out, "check"))):
+            assert expect in doc, f"at {when:%Y-%m-%d}: expected {expect!r}"
+            assert forbid not in doc, f"at {when:%Y-%m-%d}: still says {forbid!r}"
+        if when.month == 10:
+            assert "come down on request" in text(page_at(out, "check"))

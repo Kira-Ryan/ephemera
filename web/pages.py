@@ -75,6 +75,19 @@ def month_label(ym: str) -> str:
     return datetime.strptime(ym, "%Y-%m").strftime("%B %Y")
 
 
+def licence_request(ledger: dict) -> str:
+    """The state of the written request to SpaceX, as a clause. D06 gave the request thirty days,
+    closing 30 September 2026. Until then the site says it is unanswered as of this build; from
+    1 October it says the thirty days passed without an answer, dated, and states the position D06
+    takes (mirror as published, take down on request). Keyed on the build's own timestamp so the
+    wording changes on the day rather than when someone remembers."""
+    gen = ledger["generated_utc"]
+    if gen < "2026-10-01":
+        return "a written request went to SpaceX on 31 August 2026 and is unanswered as of this build"
+    return ("a written request went to SpaceX on 31 August 2026 and had received no answer by 30 September 2026, "
+            "the thirty days D06 allowed; the files are held as published and come down on request")
+
+
 def pack_link(ledger: dict, rel: str) -> str:
     """Where the newest scored cycle's globe pack is readable from, as an href. It is the published
     object URL when the build was given one (infra/r2_packs.py), and the copy beside the site when
@@ -959,8 +972,7 @@ def home(ledger: dict, pack_mb: float | None) -> str:
     rows, about 140,000 per cycle, are available on request.</p>
     <p>Code is MIT and the <a href="https://github.com/Kira-Ryan/ephemera">repository is public</a>, including
     the propagation and the scoring behind every figure here. Figures derived by this project are intended for
-    CC BY 4.0. The raw SpaceX files carry no stated licence; a written request went to SpaceX on 31 August 2026
-    and is unanswered as of this build.
+    CC BY 4.0. The raw SpaceX files carry no stated licence; {licence_request(ledger)}.
     <a href="check/#data">Licence and citation in full.</a></p>
   </section>
   <section class="z-c3 col" id="next">
@@ -1197,8 +1209,8 @@ def check(ledger: dict, pack_mb: float | None) -> str:
     <p class="fine"><b>Licence.</b> Code is MIT, and the <a href="https://github.com/Kira-Ryan/ephemera">repository
     is public</a>, so the propagation, the frame handling and the cut every headline figure is taken at can be read
     and re-run rather than taken on trust. Figures derived by this project are intended for CC BY 4.0. The raw
-    SpaceX files carry no stated licence; a written request went to SpaceX on 31 August 2026 and is unanswered as of
-    this build, and any file comes down on request. Public element sets come from Space-Track.org and are redistributed
+    SpaceX files carry no stated licence; {licence_request(ledger)}. Any file comes down on request. Public element
+    sets come from Space-Track.org and are redistributed
     under Space-Track's blanket approval for basic space situational awareness data, with citation.</p>
     <p class="fine"><b>Citation.</b> Ryan, K. (2026). <i>Ephemera: an archive of the public Starlink ephemerides and a
     daily measure of public catalogue visibility.</i> https://ephemera.space, retrieved {esc(gen)} UTC.</p>
