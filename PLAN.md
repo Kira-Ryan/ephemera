@@ -347,3 +347,16 @@ document's tracking table, not here.
   Still open: the cutover section of DOCS/migration-runbook.md failed a third adversarial pass with
   two blockers, both from re-sync steps specified with skip-existing semantics, so they are no-ops
   for exactly the files they exist to refresh. It is NOT ready to follow.
+- 2026-09-26 - Authenticated Save Page Now 2 in the witness. The unauthenticated endpoint answered
+  HTTP 500 to every capture from 13 Sep 04:33 UTC to 25 Sep 04:45 UTC first-seen, 43 cycles, and
+  those 43 have no independent copy and never will: the source deletes each manifest at the next
+  cycle. It recovered on its own at 13:17 UTC on 25 Sep, so the outage was Wayback's, not this
+  address's. The owner's archive.org keys went into personal.env the same day; probed from this
+  machine, SPN2 captured a manifest in 0.71 s, byte-identical. archive/witness.py now submits
+  through SPN2 when keys exist (a job id, polled to success, error or a two-minute cap) and falls
+  back to the redirect endpoint when they do not; the id_ re-hash is the same on both paths and
+  each entry says which path made it. The witness was restarted onto it at 12:12 UTC; the first
+  real SPN2 capture is the next cycle. Site: copy_gap() cleared its outage sentence by itself once
+  the newest manifest verified, which is what it was written to do. Suite 236 -> 243.
+  Also today: the D06 wording flips itself on 1 Oct, tested a minute either side; the owner's city
+  is off the site.
