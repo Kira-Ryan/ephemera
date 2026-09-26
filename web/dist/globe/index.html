@@ -81,10 +81,10 @@
     <a href="../scored/">Scored cycles</a>
     <a href="../archive/">The archive</a>
     <a href="../check/">Check it</a>
-    <a href="../globe/" aria-current="page" title="3D view: loads a 5.3 MB pack and needs WebGL">The globe</a>
+    <a href="../globe/" aria-current="page" title="3D view: loads a 5.2 MB pack and needs WebGL">The globe</a>
   </nav></div>
   <h1>Ephemera globe</h1>
-  <div id="status">Loading the globe pack (5.3 MB, WebGL needed).</div>
+  <div id="status">Loading the globe pack (5.2 MB, WebGL needed).</div>
   <div id="instant"></div>
   <div id="webgl"></div>
   <div class="legend">
@@ -136,7 +136,7 @@
 (function () {
   "use strict";
   const $ = (id) => document.getElementById(id);
-  const PACK_URL = "https://packs.ephemera.space/globe/b191dbc2ad33.json";  // ephemera:pack-url
+  const PACK_URL = "https://packs.ephemera.space/globe/f91c62acebbb.json";  // ephemera:pack-url
   // Blue to red, not green to red: the near end separates by hue on the axis red/green colour
   // blindness leaves intact, and the far end separates by lightness. The number is always shown too.
   const COLOURS = [[1, "#7fd4ff"], [10, "#ffe08a"], [30, "#ff8c42"], [1000, "#ff4d5e"], [Infinity, "#c86bff"]];
