@@ -94,13 +94,53 @@ rate limit, and the witness records exactly this kind of failure per sample and 
   a quiet throttle. Only the real host will show that, which is why the home poller stays up
   through the cutover.
 
+## Second run, 26 September 2026: the production host
+
+The owner bought the host the runbook now names: `ephemera-a`, Hetzner Cloud CPX22 (2 vCPU AMD,
+4 GB, 80 GB) with a 150 GB volume, Helsinki, Ubuntu 24.04.4 LTS, Python 3.12.3, at 2.29.55.154.
+The same `probe.sh` ran there, then the same sustained pull, so the two hosts are directly
+comparable. Evidence under `evidence/hetzner/`.
+
+| Quantity | Hetzner CPX22, Helsinki | AWS t3.small, eu-west-1 (12 Sep) |
+|---|---|---|
+| Feed reachability | 200, TLS in 0.28 s, served by 151.101.129.143 | 200, 34 ms |
+| Conditional request | **304** | 304 |
+| 200 files at 16 connections | 5.68 files/s, 11.6 MB/s, 0 failed | 6.51 files/s |
+| 400 files at 32 connections | **12.20 files/s, 24.9 MB/s, 0 failed** | 8.23 files/s |
+| Sustained full cycle, 11,133 files, 32 connections | **13 min 59 s, 0 failed, 22.6 GB raw** (13.3 files/s, 27.0 MB/s), root written | 24 min 3 s at 16 connections |
+| Poller peak memory, full cycle | 658 MB RSS, 186% of 2 vCPU | 578 MB, 179% |
+| S3 eu-west-1, 2 GiB single PUT | **65.4 MB/s**, 32.9 s (a 9.3 GB tar: about 2.5 min) | 55.7 MB/s |
+| Native OpenTimestamps | v0.7.2, `ots stamp` 1.7 s, 770-byte proof | 1.5 s |
+| Wayback at a 12 s gap | 3 of 3 captures, no 429, no 523 | 2 of 3, one 523 |
+| CelesTrak | 200 in 0.83 s | 200 |
+| OTS calendars, Space-Track, S3, STS, GitHub, Cloudflare API | all answer | all answer |
+| IPv6 | default route present | none |
+| `requirements.txt` | installs in 11.5 s | 15.9 s |
+
+The cycle it pulled, manifest `f91c62acebbb`, first seen by the host at 12:27:59 UTC and by the
+home watcher at 12:26:57 UTC, produced root
+`4e9f5b042f20d2e671c49907d52cf37e3542afe17bd2fb47c912e9d5eeeb41e5`. The home pull of the same
+manifest was still running when this was written (3,500 of 11,133 files at 12:44 UTC, at a third of
+the Hetzner rate); its root is the cross-check and is recorded below when it lands.
+
+What this changes in the plan: 32 connections rather than 16 on this host, since the second slice
+held the higher rate for a whole cycle with no failures and the 16-connection figure was the lower
+of the two; the shipper's `--max-cycles 1` can be raised, since a cycle uploads in under three
+minutes; and the migration runbook's section 2 now carries these numbers instead of estimates.
+Sizing note: with `--keep-days 1` on the shipper, the 150 GB volume holds about three days of
+shipper outage before the poller's 25 GB floor refuses a cycle.
+
+Note on `probe.sh`: the S3 step was skipped on both runs, because the presigned URL contains `&`
+and sourcing an unquoted env file breaks on it; the upload was run by hand each time. The script
+should quote the value or read it from a file. Recorded rather than silently fixed, so the two
+`s3_put=skipped` lines in the evidence make sense.
+
 ## Next steps
 
-1. Owner opens the Hetzner Cloud account (or OVH or netcup; D14, non-AWS) and creates the host to
-   the runbook's spec: 4 vCPU, 8 GB, about 320 GB of disk, EU location, Ubuntu 24.04.
-2. Day one on that host: run `probe.sh` again, then the sustained pull, and record both in this
-   file under a second dated heading.
-3. Then the runbook's cutover, both pollers running until the host has caught its own cycles.
+1. ~~Owner opens the hosting account and creates the host~~ done 26 Sep: `ephemera-a`, CPX22
+   plus 150 GB, sized down from the draft's 4 vCPU / 8 GB / 320 GB on P8's own measurements.
+2. ~~Day one: run `probe.sh` and the sustained pull there~~ done 26 Sep, above.
+3. The runbook's cutover (section 6): the overlap, then one copy with Windows stopped.
 
 ## Evidence
 
