@@ -37,7 +37,8 @@ the site's browser tests so a regression cannot ship.
 - SpaceX public-files terms of use (README states none; it describes the folder as "a mirror of the ephemeris files Starlink uploads to space-track.org"). Request sent: **31 Aug 2026**, to space-safety-onboarding@spacex.com (address confirmed from the space-safety.starlink.com application bundle), from a personal address; sent text in `probes/p5_spacex_terms/email-draft.md`. Answer: *pending*. D06 closes on an answer or on 30 Sep 2026.
 - Whether CelesTrak will share or co-publish a SupGP / ephemeris history archive. Asked: **13 Sep
   2026**, to TS.Kelso@celestrak.org (address confirmed the same day from celestrak.org/webmaster.php),
-  from the personal address; sent text in `DOCS/outreach/kelso-2026-09-13.md`. Answer: *pending*.
+  from the personal address; sent text in `DOCS/outreach/kelso-2026-09-13.md`. Answer: **none by 26 Sep
+  2026**, thirteen days on; the launch gate's seven-day clock elapsed on 20 Sep.
   This is the first ally contact (PLAN item 11) and it starts the 7-day clock in the public launch
   gate. The figures quoted in it are from the ledger of 2026-09-13 08:20 UTC and are repeated here
   so a later correction can find them: 90 percent of scored Starlink satellites within 10 km of the
