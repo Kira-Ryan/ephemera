@@ -10,7 +10,8 @@ ownership table, and check the result.
 The table, as code: a cycle only Windows had is copied whole. A cycle both hosts had keeps the
 VPS's cycle.json, etag_cache.json, MANIFEST.txt and root.txt after the two root.txt are found byte
 for byte identical, takes Windows's root.txt.ots, root.txt.ots.bak and witness.json (same root,
-earlier proof, complete captures), and takes Windows's ship.json only if it records shipped.
+earlier proof, complete captures), and takes Windows's ship.json only if it records shipped and
+the VPS's is not a first-hand upload record that Windows merely adopted.
 daily/, gp/ and score/ are copied whole; an existing file may only be identical. heartbeats.jsonl
 is the union of both, by utc, never an overwrite. files/ is never touched, and a staging directory
 that contains any is refused outright. A root that differs between hosts, a cycle only one host
@@ -49,6 +50,14 @@ def same_bytes(a: Path, b: Path) -> bool:
     return a.stat().st_size == b.stat().st_size and a.read_bytes() == b.read_bytes()
 
 
+def shipped_state(path: Path) -> dict:
+    """The `shipped` block of a ship.json, or {} when there is none or the file is absent."""
+    try:
+        return dict(json.loads(path.read_text(encoding="utf-8")).get("shipped") or {})
+    except (OSError, ValueError):
+        return {}
+
+
 def record_summary(path: Path) -> str:
     try:
         r = json.loads(path.read_text(encoding="utf-8"))
@@ -83,14 +92,14 @@ def plan_cycle(cdir: Path, dst: Path) -> list[Action]:
         elif n in WINDOWS_WINS:
             actions.append(Action("copy", s, dst / n, "same root; Windows's proof and captures win"))
         elif n == "ship.json":
-            try:
-                shipped = bool((json.loads(s.read_text(encoding="utf-8")).get("shipped") or {}))
-            except (OSError, ValueError):
-                shipped = False
-            if shipped:
-                actions.append(Action("copy", s, dst / n, "Windows recorded the cycle shipped"))
-            else:
+            theirs, ours = shipped_state(s), shipped_state(dst / n)
+            if not theirs:
                 actions.append(Action("keep", s, dst / n, "Windows never shipped it; the VPS's ship.json stays"))
+            elif ours and not ours.get("adopted_from_remote_utc") and theirs.get("adopted_from_remote_utc"):
+                actions.append(Action("keep", s, dst / n, "the VPS uploaded this one itself and Windows adopted it; "
+                                                          "the first-hand record stays"))
+            else:
+                actions.append(Action("copy", s, dst / n, "Windows recorded the cycle shipped"))
     return actions
 
 

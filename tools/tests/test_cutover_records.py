@@ -84,6 +84,31 @@ def test_ship_json_is_taken_from_windows_only_if_windows_shipped(hosts):
     assert json.loads((spool / "cycle_cccccccccccc" / "ship.json").read_text())["shipped"] == {"key": "vps"}
 
 
+def test_a_first_hand_upload_record_on_the_vps_is_kept_over_windows_adoption_of_it(hosts):
+    """Three of the four overlap cycles of 26 to 27 Sep: the VPS uploaded, Windows adopted. Both
+    ship.json records say shipped; the VPS's is the first-hand one (etag, digest, upload time of
+    its own put) and stays. Mutation: drop the adopted_from_remote_utc test and Windows's copy wins."""
+    staging, spool = hosts
+    cycle(staging, "aaaaaaaaaaaa", ROOT_A, shipped=True)
+    (staging / "cycle_aaaaaaaaaaaa" / "ship.json").write_text(json.dumps(
+        {"shipped": {"key": "k", "adopted_from_remote_utc": "2026-09-26T21:06:53Z"}, "records": {}}))
+    cycle(spool, "aaaaaaaaaaaa", ROOT_A, shipped=True)
+    (spool / "cycle_aaaaaaaaaaaa" / "ship.json").write_text(json.dumps(
+        {"shipped": {"key": "k", "uploaded_utc": "2026-09-26T20:33:23Z", "etag": "e"}, "records": {}, "local_files_deleted_utc": "2026-09-27T20:33:00Z"}))
+    acts = cr.plan(staging, spool)
+    ship = [a for a in acts if a.src and a.src.name == "ship.json"][0]
+    assert ship.verb == "keep" and "first-hand" in ship.why
+    cr.apply(acts, spool)
+    state = json.loads((spool / "cycle_aaaaaaaaaaaa" / "ship.json").read_text())
+    assert state["shipped"]["etag"] == "e" and state["local_files_deleted_utc"]
+    # the other way round, Windows uploaded and the VPS adopted: Windows's record wins
+    (staging / "cycle_aaaaaaaaaaaa" / "ship.json").write_text(json.dumps({"shipped": {"key": "k", "etag": "w"}, "records": {}}))
+    (spool / "cycle_aaaaaaaaaaaa" / "ship.json").write_text(json.dumps(
+        {"shipped": {"key": "k", "adopted_from_remote_utc": "2026-09-26T14:23:02Z"}, "records": {}}))
+    acts = cr.plan(staging, spool)
+    assert [a.verb for a in acts if a.src and a.src.name == "ship.json"] == ["copy"]
+
+
 def test_a_root_that_differs_between_hosts_stops_everything_and_writes_nothing(hosts):
     """Mutation: drop the same_bytes comparison in plan_cycle and this passes the wrong root through."""
     staging, spool = hosts
