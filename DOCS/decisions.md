@@ -218,3 +218,37 @@ broken link. The fragment ids the front page already carries (`#finding`, `#arch
 single file until it passes 2 MB, at which point it splits per month under the same paths; that
 split gets its own entry. Rationale: "tabs" in the owner's words, implemented as pages so every
 table row is linkable and indexable and the front page has a fixed height forever.
+
+## D21 — A SupGP column beside the GP column on the scoreboard (2026-09-27, proposed; the owner said yes to the column on 27 Sep)
+
+The visibility pages gain a second public reference: CelesTrak's supplemental GP element sets for
+Starlink (`sup-gp.php?FILE=starlink`, JSON), fitted by CelesTrak to the first six hours of the
+operator's own ephemerides and published with a fit RMS, as Dr Kelso described them in his reply of
+27 September 2026. The GP column stays exactly as it is. The two columns answer different questions
+and the page says so in those words: the GP column is what independent tracking can see (radar and
+optical, no knowledge of planned manoeuvres); the SupGP column is how faithfully a six-hour SGP4 fit
+of the operator's plan carries that plan, and how fast the fit ages past its window. SupGP is
+derived from the same files this archive holds, so the archive is also what lets anyone check a
+SupGP fit against its source. Neither column is a grade, an error of the satellite, a statement of
+which side is right, or a single ratio against any count (D04, D05 unchanged); the prohibited
+wording in the claims register applies to both.
+
+Mechanics, mirroring the catalogue: a puller stores each SupGP snapshot under
+`spool/supgp/<stamp>_<sha12>/` with the raw bytes gzipped, a record (sha256 of the raw bytes, count,
+epoch range, the RMS field kept) and the D09 root, witnessed and shipped like `gp/`; an unchanged
+snapshot is not stored twice; the scorer pairs each cycle with the newest SupGP snapshot fetched
+before it and scores at the same instants as the GP column. Rate: CelesTrak's usage policy (read 27
+Sep 2026) asks for SupGP no more often than every 2 hours and for machine clients to stop on any
+non-200; the puller obeys both, and a non-200 is an error on the record, never a retry loop.
+CelesTrak states no licence text on the pages read (the supplemental data page and the usage
+policy); attribution is given on the page and in `check/` regardless, and `licences/celestrak.md`
+(the folder is the owner's to create; it does not exist yet) records: source, URL, the usage
+policy's cadence and stop rule, the date read, and that no licence text was found.
+
+The page also cites the prior work, in this wording or the owner's: "The shape of the GP result is
+not new. T.S. Kelso showed in 2007 that operator-provided data outperforms radar-derived element
+sets for manoeuvring satellites, and CelesTrak has published supplemental element sets fitted to
+operator ephemerides since (celestrak.org/publications)." Rationale: his reply of 27 September
+made two things plain, that a comparison against GP alone repeats a result he published, and that
+SupGP is the public product actually built for this; a reader deserves both columns and the
+reference. Follow-on, not part of this entry: whether the SupGP RMS itself belongs on the page.

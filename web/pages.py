@@ -699,6 +699,16 @@ FINDING_EXPLAINER = ("<p>The front page gives the headline. This page is the sha
                      "error of the satellite, and it is not a statement about which side is right.</p>")
 
 
+def unwatched_note(t: dict) -> str:
+    """Intervals longer than nine hours that fell while the poller itself was down say nothing about
+    the feed; the count says so rather than folding them into the holds."""
+    n = t.get("cadence_unobserved") or 0
+    if not n:
+        return ""
+    return (f" A further <b>{n}</b> such interval{'s' if n != 1 else ''} fell while the poller was down and "
+            f"{'are' if n != 1 else 'is'} not counted as a hold.")
+
+
 def copy_gap(ledger: dict) -> str:
     """The trailing run of cycles with no verified independent copy, as a sentence.
 
@@ -736,7 +746,8 @@ def archive_asof(ledger: dict) -> str:
             f'<b>{gb(t["bytes_raw"])} GB</b> across {t["files"]:,} files as served. Stored gzipped as '
             f'<b>{gb(t["bytes_stored"])} GB</b>, of which {gb(t["bytes_stored_local"])} GB is on the poller\'s disk and '
             f'{gb(t["bytes_stored_cold_only"])} GB exists only in cold object storage. Cadence holds, meaning a set '
-            f'served longer than nine hours: <b>{t["cadence_holds"]}</b>. Poller heartbeat coverage over the last 24 '
+            f'served longer than nine hours while the poller watched: <b>{t["cadence_holds"]}</b>.{unwatched_note(t)} '
+            f'Poller heartbeat coverage over the last 24 '
             f"hours: <b>{cov}</b>. This project exists because SpaceX publishes the feed openly.</p>")
 
 

@@ -71,8 +71,8 @@ def make_spool(tmp_path: Path, now: datetime) -> Path:
         "cycles": [{"cycle": "cycle_aaaaaaaaaaaa"}], "gapped_cycles_excluded": 0,
         "ots": {"stamped_utc": utc(a), "attested": {"block_height": 964950}}}))
 
-    with open(spool / "heartbeats.jsonl", "w") as f:      # 25 h of ticks, one 30-min hole
-        t = now - timedelta(hours=25)
+    with open(spool / "heartbeats.jsonl", "w") as f:      # 31 h of ticks (from before cycle a), one 30-min hole
+        t = now - timedelta(hours=31)
         while t <= now:
             hole = now - timedelta(hours=5) <= t < now - timedelta(hours=4, minutes=30)
             if not hole:
@@ -115,7 +115,8 @@ def test_ledger_counts_and_coverage(built):
     ledger, _, _ = built
     t = ledger["totals"]
     assert (t["cycles"], t["complete"], t["attested"]) == (4, 2, 1)
-    assert t["cadence_holds"] == 1                      # the 14-hour gap between cycles a and b
+    assert t["cadence_holds"] == 1                      # the 14-hour gap between cycles a and b, watched throughout
+    assert t["cadence_unobserved"] == 0
     # The 30-minute hole starts ON a tick boundary, so the last tick before it is 2 min earlier;
     # minutes stay covered for 10 min after that tick: uncovered = 30 + 2 - 10 = 22 of 1440.
     assert ledger["coverage_24h"] == pytest.approx(1 - 22 / 1440, abs=1e-6)

@@ -132,9 +132,9 @@ Sizing note: with `--keep-days 1` on the shipper, the 150 GB volume holds about 
 shipper outage before the poller's 25 GB floor refuses a cycle.
 
 Note on `probe.sh`: the S3 step was skipped on both runs, because the presigned URL contains `&`
-and sourcing an unquoted env file breaks on it; the upload was run by hand each time. The script
-should quote the value or read it from a file. Recorded rather than silently fixed, so the two
-`s3_put=skipped` lines in the evidence make sense.
+and sourcing an unquoted env file breaks on it; the upload was run by hand each time. Since 27
+September the script also takes `PRESIGNED_PUT_FILE=<file holding just the URL>`, which sidesteps
+the shell entirely. The two `s3_put=skipped` lines in the evidence are from before that.
 
 ## Next steps
 

@@ -787,3 +787,27 @@ def test_the_licence_wording_flips_by_itself_on_1_october(tmp_path, monkeypatch)
             assert forbid not in doc, f"at {when:%Y-%m-%d}: still says {forbid!r}"
         if when.month == 10:
             assert "come down on request" in text(page_at(out, "check"))
+
+
+def test_a_long_gap_the_poller_did_not_watch_is_not_a_cadence_hold(tmp_path, monkeypatch):
+    """Two watcher outages in September 2026 were counted as feed holds: the manifest was not held
+    nine hours, the poller was down. With a heartbeat hole inside the 14-hour gap between cycles a
+    and b, the gap is reported as unwatched, not as a hold, and the page says so.
+
+    Mutation: make cadence_holds ignore its ticks argument and this fails on both counts."""
+    from datetime import datetime, timedelta, timezone
+    from test_build import make_spool, PAGES  # noqa: F401
+    now = datetime(2026, 9, 1, 12, 0, tzinfo=timezone.utc)
+    spool = make_spool(tmp_path, now)
+    a = now - timedelta(hours=30)
+    hole_from, hole_to = a + timedelta(hours=5), a + timedelta(hours=5, minutes=40)
+    kept = [l for l in (spool / "heartbeats.jsonl").read_text(encoding="utf-8").splitlines()
+            if not (hole_from <= build.parse_utc(json.loads(l)["utc"]) < hole_to)]
+    (spool / "heartbeats.jsonl").write_text("\n".join(kept) + "\n", encoding="utf-8")
+    out = tmp_path / "dist"
+    monkeypatch.setattr(build, "utc_now", lambda: now)
+    assert build.main(["--spool", str(spool), "--out", str(out)]) == 0
+    t = json.loads((out / "ledger.json").read_text(encoding="utf-8"))["totals"]
+    assert (t["cadence_holds"], t["cadence_unobserved"]) == (0, 1)
+    home = (out / "index.html").read_text(encoding="utf-8")
+    assert "fell while the poller was down" in home and "not counted as a hold" in home
