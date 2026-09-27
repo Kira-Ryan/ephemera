@@ -37,8 +37,19 @@ the site's browser tests so a regression cannot ship.
 - SpaceX public-files terms of use (README states none; it describes the folder as "a mirror of the ephemeris files Starlink uploads to space-track.org"). Request sent: **31 Aug 2026**, to space-safety-onboarding@spacex.com (address confirmed from the space-safety.starlink.com application bundle), from a personal address; sent text in `probes/p5_spacex_terms/email-draft.md`. Answer: *pending*. D06 closes on an answer or on 30 Sep 2026.
 - Whether CelesTrak will share or co-publish a SupGP / ephemeris history archive. Asked: **13 Sep
   2026**, to TS.Kelso@celestrak.org (address confirmed the same day from celestrak.org/webmaster.php),
-  from the personal address; sent text in `DOCS/outreach/kelso-2026-09-13.md`. Answer: **none by 26 Sep
-  2026**, thirteen days on; the launch gate's seven-day clock elapsed on 20 Sep.
+  from the personal address; sent text in `DOCS/outreach/kelso-2026-09-13.md`. Answer: **received 27 Sep 2026**
+  (the launch gate's seven-day clock had elapsed on 20 Sep). CelesTrak already downloads the 11k+
+  ephemerides every two hours from its own feed and finds all but a few new each time (SpaceX
+  says hourly or less); it fits the first six hours of each with SGP4 and publishes the fit RMS as
+  part of SupGP; propagating standard GP from Space-Track for this purpose is, in his words, "a
+  horrible idea", with the papers at celestrak.org/publications (the SDA-TAP-Lab 2025 one, section
+  "Realizing the Need for Supplemental GP Data (2007)") as the reference. The archive offer and
+  co-authorship were not taken up; questions after reading were invited. Against our own record:
+  the public folder's manifest changes about every eight hours (the seven cycles to 27 Sep 04:15
+  UTC were 7.7, 8.2, 4.6, 11.3, 7.8 and 8.0 h apart, each detected 2 to 5 min after its
+  Last-Modified) and each cycle's files carry Last-Modified times spread over about three hours
+  before the manifest, so the two-hour cadence is his feed's, not the public folder's; to be
+  confirmed with him before any page says so. No site text changes on this reply alone.
   This is the first ally contact (PLAN item 11) and it starts the 7-day clock in the public launch
   gate. The figures quoted in it are from the ledger of 2026-09-13 08:20 UTC and are repeated here
   so a later correction can find them: 90 percent of scored Starlink satellites within 10 km of the
