@@ -53,6 +53,53 @@ SPN2_POLL_S = 3.0
 # captures and 100,000 a day, so the gap is there only to be polite.
 CAPTURE_GAP_ANON_S = 12.0
 CAPTURE_GAP_AUTH_S = 2.0
+VERIFY_FOR_DAYS = 7.0   # a capture Wayback made but does not serve yet is checked again for this long
+
+
+def unserved(entry: dict) -> bool:
+    """A capture that was made (Wayback answered with a timestamp) whose id_ copy could not be
+    fetched: Wayback serves a new capture only after its own indexing, which took hours on 26 Sep
+    2026 and was mistaken for a loss. Not a capture to make again; a copy to fetch again later."""
+    return bool(entry.get("timestamp")) and not entry.get("verified")         and str(entry.get("error", "")).startswith("id_ fetch HTTP")
+
+
+def submitted_age_days(entry: dict) -> float:
+    sub = datetime.strptime(entry["submitted_utc"], "%Y-%m-%dT%H:%M:%SZ").replace(tzinfo=timezone.utc)
+    return (datetime.now(timezone.utc) - sub).total_seconds() / 86400
+
+
+def worth_checking(entry: dict) -> bool:
+    """An unserved capture is fetched again on every pass inside VERIFY_FOR_DAYS; past the window
+    it is checked once more, which records the loss, and then left alone."""
+    return unserved(entry) and (not entry.get("gave_up") or submitted_age_days(entry) <= VERIFY_FOR_DAYS)
+
+
+def verify_late(session: requests.Session, entry: dict, expected_sha: str, label: str, cycle: str) -> bool | None:
+    """Fetch and hash the id_ copy of an earlier capture. True verified, False still unserved,
+    None when the entry is past VERIFY_FOR_DAYS and has now been recorded as a loss."""
+    age_days = submitted_age_days(entry)
+    entry["verify_attempts"] = entry.get("verify_attempts", 0) + 1
+    copy = session.get(entry["id_url"], timeout=300)
+    if copy.status_code == 200:
+        got = verified_sha(copy.content)
+        entry["sha256_of_copy"] = got
+        entry["verified"] = got == expected_sha
+        if entry["verified"]:
+            entry.pop("error", None)
+            entry.pop("gave_up", None)
+            entry["verified_late_utc"] = poll.utc_now()
+            log.info("%s: %s verified late, capture %s served %.1f days after submission",
+                     cycle, label, entry["timestamp"], age_days)
+            return True
+        entry["error"] = f"id_ copy hash mismatch: got {got[:16]}..., recorded {expected_sha[:16]}..."
+        return False
+    entry["error"] = f"id_ fetch HTTP {copy.status_code}"
+    if age_days > VERIFY_FOR_DAYS and not entry.get("gave_up"):
+        entry["gave_up"] = poll.utc_now()
+        log.warning("%s: giving up on %s: capture %s never served in %.0f days (%s)",
+                    cycle, label, entry["timestamp"], VERIFY_FOR_DAYS, entry["error"])
+        return None
+    return False
 HEARTBEAT_FRESH_S = 900
 ATTESTATION_RE = re.compile(r"BitcoinBlockHeaderAttestation\((\d+)\)")
 SCHEMA = 1
@@ -165,23 +212,16 @@ def spn2_credentials() -> tuple[str, str] | None:
     return (ak, sk) if ak and sk else None
 
 
-def _spn2_submit(session: requests.Session, wayback: str, url: str, auth: tuple[str, str],
-                 fresh: bool = False) -> tuple[str | None, str | None]:
+def _spn2_submit(session: requests.Session, wayback: str, url: str, auth: tuple[str, str]) -> tuple[str | None, str | None]:
     """Submit a capture job and wait for it. Returns (timestamp, None) on success or (None, error).
 
     POST /save answers with a job id; GET /save/status/<id> reports pending, success or error.
     Both carry the Authorization header, and both ask for JSON, which the unauthenticated endpoint
-    never offered: it only ever answered with a redirect to scrape.
-
-    `fresh` asks for a capture made now. Without it SPN2 answers a URL captured within the last 45
-    minutes with that capture's timestamp instead of making another, which is right the first time
-    (the other host captured the same bytes minutes earlier) and wrong on a retry: on 26 Sep 2026
-    two such answers named captures Wayback did not hold, and every retry got the same answer."""
+    never offered: it only ever answered with a redirect to scrape. SPN2 answers a URL captured
+    within the last 45 minutes with that capture's timestamp rather than making another; that is
+    the other host's capture of the same bytes, and it is verified like any other."""
     headers = {"Accept": "application/json", "Authorization": f"LOW {auth[0]}:{auth[1]}"}
-    data = {"url": url}
-    if fresh:
-        data["if_not_archived_within"] = "60"
-    r = session.post(f"{wayback}/save", data=data, headers=headers, timeout=120)
+    r = session.post(f"{wayback}/save", data={"url": url}, headers=headers, timeout=120)
     if r.status_code == 429:
         return None, "429 rate limited by Save-Page-Now"
     try:
@@ -212,7 +252,7 @@ def _spn2_submit(session: requests.Session, wayback: str, url: str, auth: tuple[
 
 
 def capture(session: requests.Session, wayback: str, url: str, expected_sha: str,
-            auth: tuple[str, str] | None = None, fresh: bool = False) -> dict:
+            auth: tuple[str, str] | None = None) -> dict:
     """One Save-Page-Now round trip: submit, read the capture timestamp, fetch the id_ copy back,
     re-hash. Returns the witness entry; an entry with an `error` key is a recorded failure.
 
@@ -221,10 +261,8 @@ def capture(session: requests.Session, wayback: str, url: str, expected_sha: str
     the same either way, so `verified` means the same thing on both paths."""
     entry: dict = {"url": url, "submitted_utc": poll.utc_now()}
     if auth:
-        ts, err = _spn2_submit(session, wayback, url, auth, fresh=fresh)
+        ts, err = _spn2_submit(session, wayback, url, auth)
         entry["via"] = "spn2"
-        if fresh:
-            entry["fresh"] = True
         if err:
             entry["error"] = err
             return entry
@@ -379,9 +417,29 @@ def witness_cycle(cycle_dir: Path, session: requests.Session, runner: OtsRunner 
     ok = ots_step(cycle_dir, w["ots"], runner, args) and ok
 
     wb = w["wayback"]
+    # Captures already made whose copies were not served yet: fetched again, for up to
+    # VERIFY_FOR_DAYS, whether or not the cycle is still current and whether or not the entry had
+    # given up. The origin deleting its files does not touch what Wayback holds.
+    try:
+        names_by_index = {str(i): f for i, f in enumerate(rec["files"])}
+        man = wb.get("manifest") or {}
+        if worth_checking(man):
+            if verify_late(session, man, rec["manifest_sha256"], "MANIFEST.txt", cycle_dir.name) is None:
+                ok = False
+        for key, entry in (wb.get("samples") or {}).items():
+            if worth_checking(entry) and key in names_by_index:
+                if verify_late(session, entry, names_by_index[key]["sha256"], entry.get("name", key), cycle_dir.name) is None:
+                    ok = False
+    except requests.RequestException as e:
+        wb["last_error"] = f"{poll.utc_now()}: {e}"[:400]
+        log.error("%s: late verification failed: %s", cycle_dir.name, e)
+        ok = False
+
     if not wb.get("skipped") and current_sha is not None:
         def pending(entry: dict) -> bool:
-            return not entry.get("verified") and not entry.get("gave_up")
+            """A capture still to be made. One that was made and is not served yet is not pending
+            here; verify_late() above owns it."""
+            return not entry.get("verified") and not entry.get("gave_up") and not unserved(entry)
 
         is_current = rec["manifest_sha256"] == current_sha
         pending_manifest = pending(wb.get("manifest") or {})
@@ -410,12 +468,6 @@ def witness_cycle(cycle_dir: Path, session: requests.Session, runner: OtsRunner 
                                     cycle_dir.name, label, entry["attempts"], entry.get("error", "?"))
                 return entry
 
-            def is_retry(prev: dict | None) -> bool:
-                """A retry asks SPN2 for a capture made now (see _spn2_submit); a first attempt
-                takes the other host's capture of the same bytes, which is what de-duplication
-                is for."""
-                return bool((prev or {}).get("attempts"))
-
             try:
                 if pending_manifest:
                     # MANIFEST.txt is the one URL that never changes, and Wayback de-duplicates
@@ -425,17 +477,16 @@ def witness_cycle(cycle_dir: Path, session: requests.Session, runner: OtsRunner 
                     # identical bytes with or without it (verified), and the copy is still
                     # re-hashed against this cycle's recorded manifest sha.
                     manifest_url = f"{args.base}/MANIFEST.txt?cycle={rec['manifest_sha256'][:12]}"
-                    prev = wb.get("manifest")
-                    wb["manifest"] = attempt(prev, capture(session, args.wayback, manifest_url, rec["manifest_sha256"],
-                                                           auth=args.spn2, fresh=is_retry(prev)), "MANIFEST.txt")
+                    wb["manifest"] = attempt(wb.get("manifest"),
+                                             capture(session, args.wayback, manifest_url,
+                                                     rec["manifest_sha256"], auth=args.spn2), "MANIFEST.txt")
                 for i in pending_files:
                     pause(args.capture_gap)
                     f = rec["files"][i]
-                    prev = samples.get(str(i))
-                    samples[str(i)] = attempt(prev, {
+                    samples[str(i)] = attempt(samples.get(str(i)), {
                         "name": f["name"],
                         **capture(session, args.wayback, f"{args.base}/{f['name']}", f["sha256"],
-                                  auth=args.spn2, fresh=is_retry(prev))}, f["name"])
+                                  auth=args.spn2)}, f["name"])
             except requests.RequestException as e:
                 wb["last_error"] = f"{poll.utc_now()}: {e}"[:400]
                 log.error("%s: Wayback step failed: %s", cycle_dir.name, e)

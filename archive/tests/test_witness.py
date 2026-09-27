@@ -21,7 +21,6 @@ import witness  # noqa: E402
 from test_poll import CONTACT, Feed, build_site, make_file, run  # noqa: E402
 
 TS = "20260831120000"
-TS_STALE = "20260101000000"   # a timestamp SPN2 may answer with that the fake, like Wayback on 26 Sep 2026, does not serve
 
 
 class FakeWayback:
@@ -34,11 +33,11 @@ class FakeWayback:
 
     def __init__(self, origin: dict[str, bytes], corrupt: set | None = None, limit_once: set | None = None,
                  gzip_no_header: set | None = None, spn2_fail_once: set | None = None, pending_polls: int = 0,
-                 stale_within_window: set | None = None):
+                 serve_after: dict | None = None):
         """spn2_fail_once: url suffixes whose first SPN2 job reports status "error". pending_polls:
         how many status polls answer "pending" before "success", to exercise the polling loop.
-        stale_within_window: url suffixes whose SPN2 job, unless the submission carried
-        if_not_archived_within, reports success with TS_STALE, a capture the fake does not serve."""
+        serve_after: url suffix -> how many id_ fetches answer 404 before the copy is served, which
+        is what Wayback did for hours on 26 Sep 2026."""
         self.origin, self.corrupt = origin, corrupt or set()
         self.gzip_no_header = gzip_no_header or set()
         self.limited = dict.fromkeys(limit_once or set(), 1)
@@ -50,8 +49,8 @@ class FakeWayback:
         self.jobs: dict[str, str] = {}
         self.spn2_fail = dict.fromkeys(spn2_fail_once or set(), 1)
         self.pending_polls = pending_polls
-        self.stale = stale_within_window or set()
-        self.job_fresh: dict[str, bool] = {}
+        self.serve_after = dict(serve_after or {})
+        self.id_fetches: dict[str, int] = {}
         fake = self
 
         class Handler(http.server.BaseHTTPRequestHandler):
@@ -74,15 +73,13 @@ class FakeWayback:
                 form = dict(p.split("=", 1) for p in self.rfile.read(n).decode().split("&") if "=" in p)
                 url = urllib.parse.unquote_plus(form.get("url", ""))
                 fake.posts.append({"url": url, "authorization": self.headers.get("Authorization"),
-                                   "accept": self.headers.get("Accept"),
-                                   "fresh": form.get("if_not_archived_within")})
+                                   "accept": self.headers.get("Accept")})
                 if not (self.headers.get("Authorization") or "").startswith("LOW "):
                     self._send(401, json.dumps({"message": "You need to be logged in"}).encode(),
                                [("Content-Type", "application/json")])
                     return
                 job = f"spn2-{len(fake.jobs):04d}"
                 fake.jobs[job] = url
-                fake.job_fresh[job] = "if_not_archived_within" in form
                 self._send(200, json.dumps({"url": url, "job_id": job}).encode(),
                            [("Content-Type", "application/json")])
 
@@ -103,8 +100,6 @@ class FakeWayback:
                                 fake.spn2_fail[s] -= 1
                         body = {"status": "error", "job_id": job, "status_ext": "error:no-access",
                                 "message": "The requested URL could not be captured"}
-                    elif any(url.endswith(s) for s in fake.stale) and not fake.job_fresh.get(job):
-                        body = {"status": "success", "job_id": job, "timestamp": TS_STALE, "original_url": url}
                     else:
                         body = {"status": "success", "job_id": job, "timestamp": TS, "original_url": url}
                     self._send(200, json.dumps(body).encode(), [("Content-Type", "application/json")])
@@ -120,6 +115,11 @@ class FakeWayback:
                     self._send(302, headers=[("Location", f"/web/{TS}/{url}")])
                 elif self.path.startswith(f"/web/{TS}id_/"):
                     url = self.path[len(f"/web/{TS}id_/"):]
+                    fake.id_fetches[url] = fake.id_fetches.get(url, 0) + 1
+                    for suffix, n in fake.serve_after.items():
+                        if url.split("?")[0].endswith(suffix) and fake.id_fetches[url] <= n:
+                            self._send(404)
+                            return
                     raw = fake.origin.get(url.split("?")[0])  # like the real origin: query ignored
                     if raw is None:
                         self._send(404)
@@ -439,22 +439,24 @@ def test_daily_root_is_never_rebuilt_upgrades_and_skips_today(tmp_path, stub_run
         feed.close()
 
 
-def test_impossible_capture_gives_up_after_the_cap_and_goes_quiet(tmp_path):
-    """One file's id_ copy 404s on every attempt (Wayback throttling repeat captures of one URL is
-    the real-world case, measured 31 Aug). The loss must be recorded loudly while attempts remain,
-    then once at give-up, and never re-flag later passes. Mutation: drop the gave_up exclusion from
-    pending(), or stop counting attempts -> pass 3 keeps failing, red."""
+def test_impossible_capture_gives_up_after_the_cap_and_goes_quiet(tmp_path, monkeypatch):
+    """One file's id_ copy 404s forever (measured 31 Aug under throttling; on 26 Sep 2026 the same
+    symptom turned out to be a copy served hours later, so a made capture is now waited for, up to
+    VERIFY_FOR_DAYS). The loss must be recorded loudly while it is being waited for, once at
+    give-up, and never re-flag later passes. Mutation: drop the gave_up exclusion from pending() or
+    from worth_checking() -> pass 3 keeps failing, red."""
     feed, spool, rec, cycle, origin = build_cycle(tmp_path)
     del origin[f"{feed.base}/{feed.names[0]}"]  # its id_ fetch will 404 forever
     wb = FakeWayback(origin)
+    monkeypatch.setattr(witness, "VERIFY_FOR_DAYS", -1.0)   # the window is already behind us
     try:
         set_current(spool, rec["manifest_sha256"])
-        assert wmain(feed, spool, wb, "--max-capture-attempts", "2") == 1  # attempt 1: error
-        assert wmain(feed, spool, wb, "--max-capture-attempts", "2") == 1  # attempt 2: gives up
-        assert wmain(feed, spool, wb, "--max-capture-attempts", "2") == 0  # quiet: loss recorded
+        assert wmain(feed, spool, wb) == 1  # captured, copy not served: error
+        assert wmain(feed, spool, wb) == 1  # past the window: gives up, once
+        assert wmain(feed, spool, wb) == 0  # quiet: loss recorded
         w = json.loads((cycle / "witness.json").read_text())
         lost = [s for s in w["wayback"]["samples"].values() if s["name"] == feed.names[0]][0]
-        assert lost["attempts"] == 2 and lost.get("gave_up") and not lost.get("verified")
+        assert lost["attempts"] == 1 and lost["verify_attempts"] == 1 and lost.get("gave_up") and not lost.get("verified")
         others = [s for s in w["wayback"]["samples"].values() if s["name"] != feed.names[0]]
         assert others and all(s["verified"] for s in others)
     finally:
@@ -725,31 +727,95 @@ def test_daily_roots_before_daily_from_belong_to_another_host_and_are_not_built(
         wb.close()
 
 
-def test_a_retry_after_an_unusable_spn2_answer_asks_for_a_capture_made_now(tmp_path, monkeypatch):
-    """SPN2 answers a URL captured within the last 45 minutes with that capture's timestamp rather
-    than making another. On 26 Sep 2026 two such answers, on both hosts, named captures Wayback did
-    not hold (id_ 404, no CDX row), and five retries five minutes apart all got the same answer, so
-    the loss was certain. A retry submits with if_not_archived_within; a first attempt does not,
-    because the other host's capture of the same bytes minutes earlier is exactly what it wants.
+def sample_named(cycle: Path, name: str) -> dict:
+    w = json.loads((cycle / "witness.json").read_text())
+    return [e for e in w["wayback"]["samples"].values() if e["name"] == name][0]
 
-    Mutation: pass fresh=False from either capture call in witness_cycle and the second pass 404s."""
+
+def test_a_capture_not_yet_served_is_verified_later_without_being_made_again(tmp_path, monkeypatch):
+    """26 Sep 2026: Wayback answered a submission with a timestamp and served that copy only hours
+    later. Five re-submissions inside 25 minutes got the same answer and the sample was recorded
+    lost on both hosts; the next day the copy was there. A made capture is fetched again on later
+    passes, never submitted again.
+
+    Mutation: drop the verify_late block from witness_cycle and the second pass still says lost."""
     with_keys(monkeypatch)
     feed, spool, rec, cycle, origin = build_cycle(tmp_path)
-    wb = FakeWayback(origin, stale_within_window={feed.names[0]})
+    wb = FakeWayback(origin, serve_after={feed.names[0]: 1})
     try:
         set_current(spool, rec["manifest_sha256"])
         assert wmain(feed, spool, wb) == 1
-        w = json.loads((cycle / "witness.json").read_text())
-        hit = [s for s in w["wayback"]["samples"].values() if s["name"] == feed.names[0]][0]
-        assert hit["error"] == "id_ fetch HTTP 404" and hit["timestamp"] == TS_STALE and hit["attempts"] == 1
-        assert all(p["fresh"] is None for p in wb.posts), "a first attempt must take the existing capture"
+        hit = sample_named(cycle, feed.names[0])
+        assert hit["timestamp"] == TS and hit["error"] == "id_ fetch HTTP 404" and not hit.get("verified")
+        assert hit["attempts"] == 1 and not hit.get("gave_up")
+        posts = [p for p in wb.posts if p["url"].endswith(feed.names[0])]
+        assert len(posts) == 1
+        assert wmain(feed, spool, wb) == 0
+        hit = sample_named(cycle, feed.names[0])
+        assert hit["verified"] and "error" not in hit and hit["verified_late_utc"] and hit["verify_attempts"] == 1
+        assert len([p for p in wb.posts if p["url"].endswith(feed.names[0])]) == 1, "it was submitted again"
+        assert all(e["verified"] for e in json.loads((cycle / "witness.json").read_text())["wayback"]["samples"].values())
+    finally:
+        feed.close()
+        wb.close()
+
+
+def test_a_superseded_cycle_still_gets_its_made_captures_verified(tmp_path, monkeypatch):
+    """The origin deleting its files does not touch what Wayback holds, so a copy still unserved
+    when the next cycle lands is not "never made" and is not written off with the cycle."""
+    with_keys(monkeypatch)
+    feed, spool, rec, cycle, origin = build_cycle(tmp_path)
+    wb = FakeWayback(origin, serve_after={feed.names[1]: 1})
+    try:
+        set_current(spool, rec["manifest_sha256"])
+        assert wmain(feed, spool, wb) == 1
+        set_current(spool, "0" * 64)      # a newer manifest is current now
         assert wmain(feed, spool, wb) == 0
         w = json.loads((cycle / "witness.json").read_text())
-        hit = [s for s in w["wayback"]["samples"].values() if s["name"] == feed.names[0]][0]
-        assert hit["verified"] and hit["attempts"] == 2 and hit["fresh"] is True and hit["timestamp"] == TS
-        retries = [p for p in wb.posts if p["url"].endswith(feed.names[0])]
-        assert [p["fresh"] for p in retries] == [None, "60"]
-        assert all(s["verified"] for s in w["wayback"]["samples"].values())
+        assert "skipped" not in w["wayback"], w["wayback"].get("skipped")
+        assert sample_named(cycle, feed.names[1])["verified"]
+    finally:
+        feed.close()
+        wb.close()
+
+
+def test_an_unserved_capture_is_a_loss_only_after_the_verify_window(tmp_path, monkeypatch):
+    with_keys(monkeypatch)
+    feed, spool, rec, cycle, origin = build_cycle(tmp_path)
+    wb = FakeWayback(origin, serve_after={feed.names[0]: 100})
+    try:
+        set_current(spool, rec["manifest_sha256"])
+        assert wmain(feed, spool, wb) == 1
+        assert wmain(feed, spool, wb) == 0        # still unserved: waited for, not an error, not a loss
+        assert not sample_named(cycle, feed.names[0]).get("gave_up")
+        monkeypatch.setattr(witness, "VERIFY_FOR_DAYS", -1.0)
+        assert wmain(feed, spool, wb) == 1
+        hit = sample_named(cycle, feed.names[0])
+        assert hit["gave_up"] and "never served" not in hit["error"] and hit["error"] == "id_ fetch HTTP 404"
+        assert wmain(feed, spool, wb) == 0, "a recorded loss is not re-flagged every pass"
+    finally:
+        feed.close()
+        wb.close()
+
+
+def test_a_capture_given_up_on_with_a_timestamp_is_verified_late(tmp_path, monkeypatch):
+    """The records both hosts wrote on 26 Sep: five attempts, id_ 404, gave_up. Those copies exist."""
+    with_keys(monkeypatch)
+    feed, spool, rec, cycle, origin = build_cycle(tmp_path)
+    wb = FakeWayback(origin)
+    try:
+        set_current(spool, rec["manifest_sha256"])
+        assert wmain(feed, spool, wb) == 0
+        w = json.loads((cycle / "witness.json").read_text())
+        key, entry = next((k, e) for k, e in w["wayback"]["samples"].items() if e["name"] == feed.names[2])
+        entry.update({"verified": False, "error": "id_ fetch HTTP 404", "attempts": 5, "gave_up": "2026-09-26T13:46:49Z"})
+        entry.pop("sha256_of_copy", None)
+        (cycle / "witness.json").write_text(json.dumps(w))
+        posts_before = len(wb.posts)
+        assert wmain(feed, spool, wb) == 0
+        hit = sample_named(cycle, feed.names[2])
+        assert hit["verified"] and "gave_up" not in hit and hit["verified_late_utc"]
+        assert len(wb.posts) == posts_before, "a made capture was submitted again"
     finally:
         feed.close()
         wb.close()
