@@ -49,7 +49,11 @@ the site's browser tests so a regression cannot ship.
   UTC were 7.7, 8.2, 4.6, 11.3, 7.8 and 8.0 h apart, each detected 2 to 5 min after its
   Last-Modified) and each cycle's files carry Last-Modified times spread over about three hours
   before the manifest, so the two-hour cadence is his feed's, not the public folder's; to be
-  confirmed with him before any page says so. No site text changes on this reply alone.
+  confirmed with him before any page says so. No site text changes on this reply alone. Follow-ups
+  in hand on 27 Sep: read the papers he named against the visibility page; a SupGP column beside
+  the GP column (the owner said yes on 27 Sep; decision entry to follow); a reply with two
+  questions (is the two-hourly feed the public folder or a direct provision; does CelesTrak keep
+  the raw files) and one commitment (cite, add SupGP).
   This is the first ally contact (PLAN item 11) and it starts the 7-day clock in the public launch
   gate. The figures quoted in it are from the ledger of 2026-09-13 08:20 UTC and are repeated here
   so a later correction can find them: 90 percent of scored Starlink satellites within 10 km of the

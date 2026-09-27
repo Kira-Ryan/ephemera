@@ -414,16 +414,18 @@ Observed on the first shared cycle, 26 September: both hosts sample the same ten
 is deterministic per cycle), and for two of them SPN2 answered every submission with the timestamp
 of a capture made minutes earlier that Wayback did not hold (`id_` 404, no CDX row). SPN2
 de-duplicates against any capture of the URL within 45 minutes, so five retries five minutes apart
-could only fail, on both hosts. Retries now submit with `if_not_archived_within=60` and the entry
-records `fresh: true`; a first attempt still takes the other host's capture, which is the
-de-duplication doing its job. Measured straight after, that did not change SPN2's answer for
-these two: it hands back the same job id for the same URL, and that job reports the same capture
-(`status: success`, `http_status: 200`, `first_archive: true`, the same timestamp) while the
-availability API and CDX show nothing archived for the URL at all. So the loss is a capture
-Wayback recorded and does not hold, and no request shape inside the job's cache window changes
-it; both hosts recorded the loss after five attempts, 25 minutes. Open, and worth measuring:
-whether such a job resolves hours later, in which case the five attempts should spread over the
-cycle's live window rather than the first 25 minutes of it.
+could only fail, on both hosts. A retry with `if_not_archived_within=60` changed nothing: SPN2
+hands back the same job for the same URL. The next day the copy was there: CDX had the row and
+the `id_` fetch answered 200. So the capture was real and Wayback simply had not served it yet,
+for hours. Since 27 September the witness treats a capture that was made (a timestamp came back)
+but whose `id_` copy was not served as a copy to fetch again, not a capture to make again: on
+every later pass, for `VERIFY_FOR_DAYS` (7) after submission, whether or not the cycle is still
+current (the origin deleting its files does not touch what Wayback holds) and whether or not the
+entry had already given up, it fetches and re-hashes the copy; a success clears the loss and
+records `verified_late_utc`; past the window it is recorded as a loss once and left alone. The
+five capture attempts still apply to submissions that return no timestamp. `archive/witness.py`
+`unserved()`, `worth_checking()`, `verify_late()`; the site's loss counts follow `gave_up`, so a
+late verification lowers them at the next build.
 
 A service, not a timer. The loop at `archive/witness.py:381-404` ends in `pause(args.interval)` with `--interval` defaulting to 300.0 at line 360; `--once` and `--ticks` exist as seams for `Makefile:46` and the tests. Three reasons a timer is wrong: a pass has no upper bound, since one cycle submits a manifest plus ten samples at a 12 s gap with two 300 s-timeout HTTP calls each, so a bad pass exceeds an hour and a five-minute timer would spend its life skipping. The pass returns 1 whenever any step recorded an error (line 399), and permanent already-recorded losses are normal, so a timer would show the unit failed more or less forever. And all cadence state is on disk anyway: the hourly upgrade backoff is persisted as `last_upgrade_attempt_utc` against `--upgrade-every` default 3600.0, and daily roots are keyed by UTC date with a build-once guard.
 
@@ -515,7 +517,7 @@ One Linux-only behaviour change to watch, not a defect: `score/visibility.py:281
 # .service
 Type=oneshot
 Environment=LANG=C.UTF-8
-Environment=GIT_SSH_COMMAND=ssh -i /etc/ephemera/ssh/id_ed25519 -o IdentitiesOnly=yes -o UserKnownHostsFile=/etc/ephemera/ssh/known_hosts
+Environment="GIT_SSH_COMMAND=ssh -i /etc/ephemera/ssh/id_ed25519 -o IdentitiesOnly=yes -o UserKnownHostsFile=/etc/ephemera/ssh/known_hosts"
 ExecStart=/opt/ephemera/.venv/bin/python -u /opt/ephemera/web/publish.py --spool /srv/ephemera/spool
 TimeoutStartSec=15min
 
@@ -533,6 +535,12 @@ This unit now makes a network call before it builds. `sync_with_published()` (`w
 `ExecStart` must be the **absolute path to `web/publish.py`**, not `python -m web.publish`, because `web/publish.py:135` does a bare `import build` with no `sys.path` insertion; it works only because Python puts the script's own directory on `sys.path[0]`, and `PYTHONSAFEPATH=1` would kill it.
 
 `LANG=C.UTF-8` because of the un-encoded subprocess decode at `web/publish.py:144-145`.
+
+The `Environment=` value is quoted as a whole, and that is not cosmetic: an earlier draft wrote it
+unquoted, and on 27 September systemd 255 on the host parsed it as five assignments, kept
+`GIT_SSH_COMMAND=ssh` and reported the rest as "Invalid environment assignment, ignoring". The unit
+would have pushed with a bare `ssh`, no key, and failed. `systemd-analyze verify` shows the warning;
+it runs at install.
 
 Cost is not the constraint: a full build against the real spool was timed at about 1.2 seconds when it held 33 cycles (9 Sep); it holds 44 now. 4 hours is a freshness choice against an 8 hour feed cadence, so the page is never more than half a cycle stale. `score/run.py` produces new reports every 30 minutes, so a scored cycle waits up to 4 hours to appear; tighten to 1 hour if that matters, the build cost is noise.
 
@@ -639,8 +647,15 @@ VPS watcher keeps pulling, so the archive never stops.
    directory. Expect roughly 1 GB: about 9 MB of records per cycle, 300 MB of score output, 135 MB
    of catalogue snapshots. `scp` it to the VPS and extract it into an empty **staging** directory,
    never onto the live spool.
-4. **Apply the ownership rules from staging into the spool**, with a script, per file. The rules
-   are the whole of what the earlier drafts got wrong, so they are stated as a table:
+4. **Apply the ownership rules from staging into the spool** with `tools/cutover_records.py`
+   (`plan` prints every action and writes nothing; `apply` refuses if anything would stop and
+   otherwise copies, then runs the checks of step 5; eleven tests, the root comparison red under
+   mutation). Run it as the service user, `sudo -u ephemera`, or every copied file lands owned by
+   root and the shipper and witness can no longer rewrite their own records. Staging lives on the
+   volume, `/mnt/HC_Volume_106962304/staging/records`, owned by `ephemera`. Rehearsed on 27
+   September against the live spool in `plan` mode with a 2.26 GB tar of the Windows records
+   (1,942 members, no `files/`). The rules are the whole of what the earlier drafts got wrong, so
+   they are stated as a table:
 
    | Path | Cycle only on Windows | Cycle on both hosts |
    |---|---|---|

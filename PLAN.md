@@ -417,3 +417,18 @@ document's tracking table, not here.
   live window. Also: the host's make test ran on Linux, green after one test stopped assuming Docker
   exists; the bucket's 7-day abort-incomplete-multipart rule verified under the guard. Suite 257
   -> 258. Next: phase B, earliest 28 Sep, once 27 Sep is whole on both hosts.
+- 2026-09-27 - The losses were not losses. Twenty-four hours on, Wayback served yesterday's
+  "ghost" capture: CDX had the row, id_ answered 200. So a capture that came back with a
+  timestamp is real and only unserved for a while; five retries in 25 minutes could never see
+  that, and a fresh submission asked the same job. archive/witness.py now fetches and re-hashes
+  an unserved copy on every later pass for seven days, whether the cycle is still current or
+  not and whether the entry had given up or not; a late success clears the loss (verified_late_utc)
+  and the site's counts follow. The fresh-retry change of 26 Sep is out. Four tests, the block
+  red under mutation. Overnight the overlap ran the other way three times: the VPS pulled and
+  shipped first (9.3 GB in about 40 s each), Windows adopted at its next pass, one version per
+  key. Phase B rehearsal: tools/cutover_records.py (the ownership table as code; plan, apply,
+  check; eleven tests) and the host's remaining prerequisites in place: Space-Track pair, deploy
+  key (public half handed to the owner), GitHub host keys from api.github.com/meta, git identity,
+  fonts-dejavu-core, catalogue/score/ledger units installed but not enabled (the ledger unit's
+  Environment= must be quoted; the runbook had it unquoted and systemd dropped the key). Suite
+  258 -> 273.
