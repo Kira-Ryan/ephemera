@@ -18,6 +18,7 @@ from __future__ import annotations
 
 import argparse
 import html
+import bisect
 import json
 import math
 import shutil
@@ -209,9 +210,36 @@ def coverage_24h(ticks: list[datetime], now: datetime) -> float | None:
     return covered / minutes
 
 
-def cadence_holds(cycles: list[dict]) -> int:
+def watched_throughout(ticks: list[datetime], a: datetime, b: datetime) -> bool:
+    """Whether the poller's heartbeat never went quiet for longer than HEARTBEAT_FRESH_S between
+    a and b. The poller was alive at a and at b (it first saw a cycle at each), so those are the
+    reference points and every tick in between must follow the previous one within the limit."""
+    lo = bisect.bisect_left(ticks, a)
+    hi = bisect.bisect_right(ticks, b)
+    prev = a
+    for t in ticks[lo:hi]:
+        if (t - prev).total_seconds() > HEARTBEAT_FRESH_S:
+            return False
+        prev = t
+    return (b - prev).total_seconds() <= HEARTBEAT_FRESH_S
+
+
+def cadence_holds(cycles: list[dict], ticks: list[datetime]) -> tuple[int, int]:
+    """Intervals between consecutive first-seen times longer than CADENCE_HOLD_H, split by who was
+    watching: (holds the poller watched throughout, intervals it did not). An interval with a
+    heartbeat hole in it is the poller's own outage; it says nothing about the feed and is reported
+    apart. Two watcher outages in September 2026 were counted as feed holds before this."""
     seen = sorted(parse_utc(c["first_seen_utc"]) for c in cycles if c["first_seen_utc"])
-    return sum(1 for a, b in zip(seen, seen[1:]) if (b - a).total_seconds() > CADENCE_HOLD_H * 3600)
+    tk = sorted(ticks)
+    holds = unobserved = 0
+    for a, b in zip(seen, seen[1:]):
+        if (b - a).total_seconds() <= CADENCE_HOLD_H * 3600:
+            continue
+        if watched_throughout(tk, a, b):
+            holds += 1
+        else:
+            unobserved += 1
+    return holds, unobserved
 
 
 def witness_defect(c: dict) -> str | None:
@@ -260,7 +288,8 @@ def build_ledger(spool: Path, now: datetime, pack_base_url: str | None = None) -
             "bytes_stored_local": local,
             "bytes_stored_cold_only": stored - local,
             "files": sum(c["files_recorded"] for c in cycles),
-            "cadence_holds": cadence_holds(cycles),
+            "cadence_holds": cadence_holds(cycles, data["ticks"])[0],
+            "cadence_unobserved": cadence_holds(cycles, data["ticks"])[1],
         },
         "coverage_24h": coverage_24h(data["ticks"], now),
         "visibility": {"reports": data["scores"], "latest": data["scores"][0]["cycle"] if data["scores"] else None},
@@ -373,7 +402,7 @@ def main(argv: list[str] | None = None) -> int:
     t = ledger["totals"]
     print(f"built: {t['cycles']} cycles ({t['complete']} complete, {t['attested']} attested, "
           f"{t['witness_defects']} witness defects), coverage={ledger['coverage_24h']}, "
-          f"holds={t['cadence_holds']}, scored={len(ledger['visibility']['reports'])}, "
+          f"holds={t['cadence_holds']} (+{t['cadence_unobserved']} unwatched), scored={len(ledger['visibility']['reports'])}, "
           f"pages={len(written)} -> {args.out}")
     return 0
 

@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # P8: can Ephemera run from a datacentre IP? Run on a Linux host, never on the owner's machine.
 #
-#   CONTACT=you@example.org [PRESIGNED_PUT=<url>] bash probe.sh
+#   CONTACT=you@example.org [PRESIGNED_PUT=<url> | PRESIGNED_PUT_FILE=<file with the url>] bash probe.sh
 #
 # Measures, in the order the runbook gives, each one able to kill the plan:
 #   8.1 reachability of every endpoint the six components need, with the resolved addresses;
@@ -143,6 +143,11 @@ pull_slice 32 400
 
 # ------------------------------------------------------------------ 8.4 S3 upload over a presigned PUT
 echo; echo "== 8.4 S3 upload $(now)"
+# A presigned URL carries "&", so putting it in a file that is then sourced breaks (both runs skipped
+# this step that way). PRESIGNED_PUT_FILE names a file holding just the URL on its first line.
+if [ -z "${PRESIGNED_PUT:-}" ] && [ -n "${PRESIGNED_PUT_FILE:-}" ]; then
+  PRESIGNED_PUT="$(head -n 1 "$PRESIGNED_PUT_FILE")"
+fi
 if [ -n "${PRESIGNED_PUT:-}" ]; then
   dd if=/dev/urandom of="$WORK/blob.bin" bs=1M count=2048 status=none
   out="$(curl -sS -o /dev/null --max-time 1800 -T "$WORK/blob.bin" -w '%{http_code} %{speed_upload} %{time_total}' "$PRESIGNED_PUT")"
