@@ -431,4 +431,9 @@ document's tracking table, not here.
   key (public half handed to the owner), GitHub host keys from api.github.com/meta, git identity,
   fonts-dejavu-core, catalogue/score/ledger units installed but not enabled (the ledger unit's
   Environment= must be quoted; the runbook had it unquoted and systemd dropped the key). Suite
-  258 -> 273.
+  258 -> 273. Rehearsed at 20:18 UTC on the host in plan mode against the live spool: 1,547
+  copies, 19 keeps, one merge, no stops, the four overlap roots identical; a first-hand upload
+  record now stays over an adoption of it (three of the four). Also today: a cadence hold is
+  only a hold when the poller watched the whole interval (two September outages were counted
+  as feed holds); D21 proposed for the SupGP column; the Kelso reply drafted; probe.sh reads its
+  presigned URL from a file. Suite 274.

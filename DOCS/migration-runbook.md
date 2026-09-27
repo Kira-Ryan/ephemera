@@ -653,9 +653,14 @@ VPS watcher keeps pulling, so the archive never stops.
    mutation). Run it as the service user, `sudo -u ephemera`, or every copied file lands owned by
    root and the shipper and witness can no longer rewrite their own records. Staging lives on the
    volume, `/mnt/HC_Volume_106962304/staging/records`, owned by `ephemera`. Rehearsed on 27
-   September against the live spool in `plan` mode with a 2.26 GB tar of the Windows records
-   (1,942 members, no `files/`). The rules are the whole of what the earlier drafts got wrong, so
-   they are stated as a table:
+   September at 20:18 UTC against the live spool in `plan` mode with a 2.26 GB tar of the Windows
+   records (1,942 members, no `files/`, made with `tar --force-local --exclude='cycle_*/files'`;
+   a bare `Z:` path makes GNU tar look for a host called Z): 1,547 copies (83 Windows-only cycles,
+   28 daily roots, 257 catalogue snapshots, 244 score files), 19 keeps, one heartbeat merge, no
+   stops; the four overlap cycles' `root.txt` were byte-identical on both hosts; for three of them
+   the VPS's first-hand upload record stays and for `f91c62acebbb`, which Windows uploaded and the
+   VPS adopted, Windows's `ship.json` is taken. The rules are the whole of what the earlier drafts
+   got wrong, so they are stated as a table:
 
    | Path | Cycle only on Windows | Cycle on both hosts |
    |---|---|---|
