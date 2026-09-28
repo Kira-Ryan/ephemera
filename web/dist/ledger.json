@@ -1,13 +1,13 @@
 {
  "schema": 2,
- "generated_utc": "2026-09-28T00:20:38Z",
+ "generated_utc": "2026-09-28T04:20:25Z",
  "poller": "home (residential; single poller until poller A exists)",
  "method": "built from each cycle's cycle.json, witness.json and ship.json in the poller's spool; coverage is the fraction of the last 24 h's minutes with a watcher heartbeat under 10 minutes old (D18); a cadence hold is a manifest first-seen gap over 9 h; source bytes are the responses as served, stored bytes are the gzipped archive objects the shipper recorded",
  "totals": {
   "cycles": 88,
   "complete": 88,
-  "attested": 87,
-  "witness_defects": 47,
+  "attested": 88,
+  "witness_defects": 46,
   "bytes_raw": 2010668040893,
   "bytes_stored": 826510233600,
   "bytes_stored_local": 83618785280,
@@ -16522,8 +16522,18 @@
   ],
   "latest": "cycle_d10acbea39d9"
  },
- "catalogue_snapshots": 260,
+ "catalogue_snapshots": 262,
  "catalogue": [
+  {
+   "fetched_utc": "2026-09-28T04:10:13Z",
+   "records": 12892,
+   "sha12": "5dd7d1456f3d"
+  },
+  {
+   "fetched_utc": "2026-09-28T02:10:12Z",
+   "records": 12892,
+   "sha12": "b3788366284e"
+  },
   {
    "fetched_utc": "2026-09-28T00:10:14Z",
    "records": 12892,
@@ -16573,16 +16583,6 @@
    "fetched_utc": "2026-09-26T22:10:11Z",
    "records": 12892,
    "sha12": "4e480a22d04b"
-  },
-  {
-   "fetched_utc": "2026-09-26T20:10:11Z",
-   "records": 12892,
-   "sha12": "c1c9adfb7502"
-  },
-  {
-   "fetched_utc": "2026-09-26T18:10:11Z",
-   "records": 12892,
-   "sha12": "1647404f802f"
   }
  ],
  "cycles": [
@@ -16599,7 +16599,7 @@
    "merkle_root": "5ce6e6b72553727339b608877f930fca1b6bd83ca3afb9ba6a631c8526b429cc",
    "ots": {
     "stamped": true,
-    "attested_block": null
+    "attested_block": 968902
    },
    "wayback": {
     "attempted": true,
@@ -17371,15 +17371,15 @@
    },
    "wayback": {
     "attempted": true,
-    "manifest_verified": false,
+    "manifest_verified": true,
     "manifest_captured": true,
-    "manifest_error": "id_ fetch HTTP 404",
+    "manifest_error": null,
     "samples_verified": 10,
     "samples_total": 10,
     "losses": 0,
     "skipped": null,
     "manifest_copy_url": "https://web.archive.org/web/20260925054121id_/https://api.starlink.com/public-files/ephemerides/MANIFEST.txt?cycle=601f96dc4c9a",
-    "manifest_copy_sha256": null,
+    "manifest_copy_sha256": "601f96dc4c9aa7240af4816e637a3bd6fa54bc1c0a2a000e9bfebbbe0bc8c224",
     "samples": [
      {
       "name": "MEME_48642_STARLINK-2646_2680357_Operational_1474603080_UNCLASSIFIED.txt",
@@ -24859,7 +24859,7 @@
    "built_utc": "2026-09-28T00:03:49Z",
    "leaves": 3,
    "excluded": [],
-   "attested_block": null
+   "attested_block": 968908
   },
   {
    "date": "2026-09-26",
