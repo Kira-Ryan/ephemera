@@ -1,13 +1,13 @@
 {
  "schema": 2,
- "generated_utc": "2026-09-30T08:20:29Z",
+ "generated_utc": "2026-09-30T12:20:29Z",
  "poller": "home (residential; single poller until poller A exists)",
  "method": "built from each cycle's cycle.json, witness.json and ship.json in the poller's spool; coverage is the fraction of the last 24 h's minutes with a watcher heartbeat under 10 minutes old (D18); a cadence hold is a manifest first-seen gap over 9 h; source bytes are the responses as served, stored bytes are the gzipped archive objects the shipper recorded",
  "totals": {
   "cycles": 95,
   "complete": 95,
   "attested": 95,
-  "witness_defects": 48,
+  "witness_defects": 47,
   "bytes_raw": 2169117221012,
   "bytes_stored": 891713003520,
   "bytes_stored_local": 83792558080,
@@ -17916,8 +17916,18 @@
   ],
   "latest": "cycle_c7260f41f589"
  },
- "catalogue_snapshots": 284,
+ "catalogue_snapshots": 286,
  "catalogue": [
+  {
+   "fetched_utc": "2026-09-30T12:10:12Z",
+   "records": 12892,
+   "sha12": "476f7ba78d2b"
+  },
+  {
+   "fetched_utc": "2026-09-30T10:10:11Z",
+   "records": 12892,
+   "sha12": "43da56936afd"
+  },
   {
    "fetched_utc": "2026-09-30T08:10:11Z",
    "records": 12892,
@@ -17967,16 +17977,6 @@
    "fetched_utc": "2026-09-29T12:10:12Z",
    "records": 12892,
    "sha12": "b98207f157f5"
-  },
-  {
-   "fetched_utc": "2026-09-29T10:10:10Z",
-   "records": 12892,
-   "sha12": "4f9f91dba6ee"
-  },
-  {
-   "fetched_utc": "2026-09-29T08:10:11Z",
-   "records": 12892,
-   "sha12": "2ca8d6ee9533"
   }
  ],
  "cycles": [
@@ -18000,7 +18000,7 @@
     "manifest_verified": true,
     "manifest_captured": true,
     "manifest_error": null,
-    "samples_verified": 9,
+    "samples_verified": 10,
     "samples_total": 10,
     "losses": 0,
     "skipped": null,
@@ -18052,8 +18052,8 @@
      {
       "name": "MEME_64296_STARLINK-34443_2730207_Operational_1475028480_UNCLASSIFIED.txt",
       "copy_url": "https://web.archive.org/web/20260930051308id_/https://api.starlink.com/public-files/ephemerides/MEME_64296_STARLINK-34443_2730207_Operational_1475028480_UNCLASSIFIED.txt",
-      "sha256_of_copy": null,
-      "verified": false
+      "sha256_of_copy": "b45145c095f2778ddd02db8f19595d6589a4a64bef32638b047d968befa5d3b4",
+      "verified": true
      },
      {
       "name": "MEME_65902_STARLINK-35278_2730152_Operational_1475027580_UNCLASSIFIED.txt",
