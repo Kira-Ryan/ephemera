@@ -1,13 +1,13 @@
 {
  "schema": 2,
- "generated_utc": "2026-09-30T00:20:28Z",
+ "generated_utc": "2026-09-30T04:20:26Z",
  "poller": "home (residential; single poller until poller A exists)",
  "method": "built from each cycle's cycle.json, witness.json and ship.json in the poller's spool; coverage is the fraction of the last 24 h's minutes with a watcher heartbeat under 10 minutes old (D18); a cadence hold is a manifest first-seen gap over 9 h; source bytes are the responses as served, stored bytes are the gzipped archive objects the shipper recorded",
  "totals": {
   "cycles": 94,
   "complete": 94,
   "attested": 94,
-  "witness_defects": 48,
+  "witness_defects": 47,
   "bytes_raw": 2146462086577,
   "bytes_stored": 882385940480,
   "bytes_stored_local": 83764971520,
@@ -17719,8 +17719,18 @@
   ],
   "latest": "cycle_e47aba803b26"
  },
- "catalogue_snapshots": 280,
+ "catalogue_snapshots": 282,
  "catalogue": [
+  {
+   "fetched_utc": "2026-09-30T04:10:11Z",
+   "records": 12892,
+   "sha12": "232d36571e7d"
+  },
+  {
+   "fetched_utc": "2026-09-30T02:10:12Z",
+   "records": 12892,
+   "sha12": "c9b44219e112"
+  },
   {
    "fetched_utc": "2026-09-30T00:10:11Z",
    "records": 12892,
@@ -17770,16 +17780,6 @@
    "fetched_utc": "2026-09-29T02:10:10Z",
    "records": 12892,
    "sha12": "9f94055a0aae"
-  },
-  {
-   "fetched_utc": "2026-09-29T00:10:11Z",
-   "records": 12892,
-   "sha12": "3da21b927e93"
-  },
-  {
-   "fetched_utc": "2026-09-28T20:10:11Z",
-   "records": 12892,
-   "sha12": "2ef49de2fde6"
   }
  ],
  "cycles": [
@@ -17995,7 +17995,7 @@
     "manifest_verified": true,
     "manifest_captured": true,
     "manifest_error": null,
-    "samples_verified": 8,
+    "samples_verified": 10,
     "samples_total": 10,
     "losses": 0,
     "skipped": null,
@@ -18005,8 +18005,8 @@
      {
       "name": "MEME_46033_STARLINK-1556_2712159_Operational_1474927200_UNCLASSIFIED.txt",
       "copy_url": "https://web.archive.org/web/20260929023255id_/https://api.starlink.com/public-files/ephemerides/MEME_46033_STARLINK-1556_2712159_Operational_1474927200_UNCLASSIFIED.txt",
-      "sha256_of_copy": null,
-      "verified": false
+      "sha256_of_copy": "297fc7e0a92ba7bb231c49e63edadbddf672b02bfb38597c19d0ab435c772c31",
+      "verified": true
      },
      {
       "name": "MEME_56536_STARLINK-6312_2712319_Operational_1474932000_UNCLASSIFIED.txt",
@@ -18059,8 +18059,8 @@
      {
       "name": "MEME_69565_STARLINK-37916_2720146_Operational_1474940820_UNCLASSIFIED.txt",
       "copy_url": "https://web.archive.org/web/20260929023455id_/https://api.starlink.com/public-files/ephemerides/MEME_69565_STARLINK-37916_2720146_Operational_1474940820_UNCLASSIFIED.txt",
-      "sha256_of_copy": null,
-      "verified": false
+      "sha256_of_copy": "e1b09627e32df009fff7b22ebd6782352968042008fe1860b254401edf986f8b",
+      "verified": true
      }
     ]
    },
@@ -26632,7 +26632,7 @@
    "built_utc": "2026-09-30T00:01:13Z",
    "leaves": 3,
    "excluded": [],
-   "attested_block": null
+   "attested_block": 969230
   },
   {
    "date": "2026-09-28",
