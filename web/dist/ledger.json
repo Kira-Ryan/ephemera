@@ -1,19 +1,19 @@
 {
  "schema": 2,
- "generated_utc": "2026-09-30T20:20:29Z",
+ "generated_utc": "2026-10-01T00:20:36Z",
  "poller": "home (residential; single poller until poller A exists)",
  "method": "built from each cycle's cycle.json, witness.json and ship.json in the poller's spool; coverage is the fraction of the last 24 h's minutes with a watcher heartbeat under 10 minutes old (D18); a cadence hold is a manifest first-seen gap over 9 h; source bytes are the responses as served, stored bytes are the gzipped archive objects the shipper recorded",
  "totals": {
-  "cycles": 96,
+  "cycles": 97,
   "complete": 96,
   "attested": 96,
-  "witness_defects": 47,
+  "witness_defects": 46,
   "bytes_raw": 2191771149351,
   "bytes_stored": 901038745600,
-  "bytes_stored_local": 83820451840,
-  "bytes_stored_cold_only": 817218293760,
+  "bytes_stored_local": 74528512000,
+  "bytes_stored_cold_only": 826510233600,
   "files": 1079574,
-  "cadence_holds": 10,
+  "cadence_holds": 11,
   "cadence_unobserved": 3
  },
  "coverage_24h": 1.0,
@@ -18113,8 +18113,18 @@
   ],
   "latest": "cycle_bcb662c6b92e"
  },
- "catalogue_snapshots": 290,
+ "catalogue_snapshots": 292,
  "catalogue": [
+  {
+   "fetched_utc": "2026-10-01T00:10:14Z",
+   "records": 12892,
+   "sha12": "7493925404fa"
+  },
+  {
+   "fetched_utc": "2026-09-30T22:10:11Z",
+   "records": 12892,
+   "sha12": "4fe7004a80f9"
+  },
   {
    "fetched_utc": "2026-09-30T20:10:11Z",
    "records": 12892,
@@ -18164,19 +18174,44 @@
    "fetched_utc": "2026-09-30T02:10:12Z",
    "records": 12892,
    "sha12": "c9b44219e112"
-  },
-  {
-   "fetched_utc": "2026-09-30T00:10:11Z",
-   "records": 12892,
-   "sha12": "892994980fc2"
-  },
-  {
-   "fetched_utc": "2026-09-29T22:10:12Z",
-   "records": 12892,
-   "sha12": "6eefeb9ca912"
   }
  ],
  "cycles": [
+  {
+   "cycle": "cycle_22b9448926eb",
+   "manifest_sha256": "22b9448926ebd688b3d8811c78173a1e41a324dd4443a392f6645a87648477ea",
+   "first_seen_utc": "2026-10-01T00:02:52Z",
+   "status": "in-progress",
+   "files_listed": 11154,
+   "files_recorded": 0,
+   "files_failed": 0,
+   "bytes_raw": 0,
+   "wall_seconds": null,
+   "merkle_root": null,
+   "ots": {
+    "stamped": false,
+    "attested_block": null
+   },
+   "wayback": {
+    "attempted": false,
+    "manifest_verified": false,
+    "manifest_captured": false,
+    "manifest_error": null,
+    "samples_verified": 0,
+    "samples_total": 0,
+    "losses": 0,
+    "skipped": null,
+    "manifest_copy_url": null,
+    "manifest_copy_sha256": null,
+    "samples": []
+   },
+   "storage": {
+    "bytes_stored": 0,
+    "storage_class": null,
+    "local_files": true,
+    "deleted_locally_utc": null
+   }
+  },
   {
    "cycle": "cycle_bcb662c6b92e",
    "manifest_sha256": "bcb662c6b92e32a0d11032d9b789675cba5c9915aada0e9c3742645b15b25e52",
@@ -18485,7 +18520,7 @@
     "manifest_verified": true,
     "manifest_captured": true,
     "manifest_error": null,
-    "samples_verified": 9,
+    "samples_verified": 10,
     "samples_total": 10,
     "losses": 0,
     "skipped": null,
@@ -18549,8 +18584,8 @@
      {
       "name": "MEME_68824_STARLINK-37443_2720903_Operational_1474967040_UNCLASSIFIED.txt",
       "copy_url": "https://web.archive.org/web/20260929132203id_/https://api.starlink.com/public-files/ephemerides/MEME_68824_STARLINK-37443_2720903_Operational_1474967040_UNCLASSIFIED.txt",
-      "sha256_of_copy": null,
-      "verified": false
+      "sha256_of_copy": "aedbbe4344542428bf61bda76cd720c6841994355aff10cf31d0654aa7a54a84",
+      "verified": true
      }
     ]
    },
@@ -19037,8 +19072,8 @@
    "storage": {
     "bytes_stored": 9291939840,
     "storage_class": "DEEP_ARCHIVE",
-    "local_files": true,
-    "deleted_locally_utc": null
+    "local_files": false,
+    "deleted_locally_utc": "2026-09-30T20:37:01Z"
    }
   },
   {
@@ -27212,6 +27247,14 @@
   }
  ],
  "daily_roots": [
+  {
+   "date": "2026-09-30",
+   "merkle_root": "48400a2ede32532b8d8535b7bae9656366da6a2ab776fac89d64a4b3398508a7",
+   "built_utc": "2026-10-01T00:00:58Z",
+   "leaves": 2,
+   "excluded": [],
+   "attested_block": null
+  },
   {
    "date": "2026-09-29",
    "merkle_root": "208cc7bb5dd429f52a07a934057b80a6aff989999363acbf1db9cf34d236bfb9",
