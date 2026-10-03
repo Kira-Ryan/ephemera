@@ -698,6 +698,19 @@ FINDING_EXPLAINER = ("<p>The front page gives the headline. This page is the sha
                      "set propagated with SGP4, one from the operator's own published trajectory. It is not an "
                      "error of the satellite, and it is not a statement about which side is right.</p>")
 
+# The owner's wording, 3 Oct 2026, each statement checked that day against Dr Kelso's own pages: the
+# December 2007 report and the 20,000 km, his check against the NGA precise ephemerides ("As
+# expected, the almanac was correct"), the January 2007 paper, and the SupGP page being new in
+# January 2008 (all in the SDA TAP Lab talk of 26 Feb 2025). The three links are his pages.
+PRIOR_WORK = ('<p>The gap between GP and operator data is a known result, not a finding of mine. In December 2007 a '
+              "CelesTrak user reported a GPS satellite whose GP element set put it more than 20,000 km from where the "
+              "operator's own almanac did, and Dr T.S. Kelso confirmed the almanac was right. He had already measured "
+              'the problem that January (<a href="https://celestrak.org/publications/AAS/07-127/">AAS 07-127</a>), and '
+              'CelesTrak has published <a href="https://celestrak.org/NORAD/elements/supplemental/">supplemental '
+              "element sets</a> fitted to operator data since January 2008. His "
+              '<a href="https://celestrak.org/publications/SDA-TAP-Lab/2025/">2025 SDA TAP Lab talk</a> tells the '
+              "story and links the papers.</p>")
+
 
 def unwatched_note(t: dict) -> str:
     """Intervals longer than nine hours that fell while the poller itself was down say nothing about
@@ -1026,7 +1039,7 @@ def finding(ledger: dict, pack_mb: float | None) -> str:
     {esc(utc_min(head["as_of"]))} UTC against the public catalogue snapshot fetched {esc(utc_min(head["snapshot_fetched_utc"]))}
     UTC ({head["catalogue_sets"]:,} element sets).{esc(newer_not_comparable(reports, head))}</p>
   </header>
-  <div class="z-prose">{lede(start, far)}{FINDING_EXPLAINER}{lost_line(start)}</div>
+  <div class="z-prose">{lede(start, far)}{FINDING_EXPLAINER}{PRIOR_WORK}{lost_line(start)}</div>
   {visibility_curve(head, cls="z-full")}
   <div class="tablewrap"><table>
     <caption>The same curve as numbers, for cycle {esc(head["cycle"][6:])}. Scored {esc(utc_min(head["as_of"]))} UTC.</caption>
