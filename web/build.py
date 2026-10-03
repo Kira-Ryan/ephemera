@@ -272,7 +272,7 @@ def build_ledger(spool: Path, now: datetime, pack_base_url: str | None = None) -
     return {
         "schema": SCHEMA,
         "generated_utc": now.strftime("%Y-%m-%dT%H:%M:%SZ"),
-        "poller": "home (residential; single poller until poller A exists)",
+        "poller": "A (a datacentre host in the EU; the home poller was retired on 3 Oct 2026)",
         "method": "built from each cycle's cycle.json, witness.json and ship.json in the poller's "
                   "spool; coverage is the fraction of the last 24 h's minutes with a watcher "
                   "heartbeat under 10 minutes old (D18); a cadence hold is a manifest first-seen "
