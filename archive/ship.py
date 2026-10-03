@@ -237,6 +237,7 @@ def ship_cycle(cycle_dir: Path, s3, args) -> tuple[bool, bool]:
     uploaded = False
     try:
         why = needs_upload(state, rec)
+        first_time = why == "not yet shipped"
         if why == "not yet shipped":
             # Before packing nine gigabytes: is this cycle already in cold storage from another
             # host? Only the never-shipped case asks; a fingerprint mismatch on a cycle THIS host
@@ -272,13 +273,26 @@ def ship_cycle(cycle_dir: Path, s3, args) -> tuple[bool, bool]:
                 tar_path = pack(cycle_dir, args.spool / "outbox", rec)
             size = tar_path.stat().st_size
             digest = sha256_file(tar_path)
-            # Packing and hashing took minutes; the other host may have begun in the meantime. Asked
-            # again here, seconds before this host's first part, so the window is seconds, not minutes.
-            since = upload_in_progress(s3, args.bucket, key)
-            if since:
-                log.info("%s: packed, but another shipper began uploading this key at %s; deferred, the tar "
-                         "waits in the outbox for the next pass", cycle_dir.name, since)
+            # Packing and hashing took minutes; the other host may have begun in the meantime, or
+            # begun AND finished: on 2 Oct 2026 the VPS started and completed a 40 s upload while this
+            # host packed for 22 minutes, a check for uploads still in flight saw nothing, and a second
+            # tar went over the first. So both questions are asked again here, seconds before this
+            # host's first part: is the tar there now, and is one on its way.
+            adopted = adopt_remote(s3, args.bucket, key, rec) if first_time else None
+            if adopted:
+                state["shipped"] = adopted
+                state["error"] = None
+                poll.write_json_atomic(cycle_dir / "ship.json", state)
+                tar_path.unlink()
+                log.info("%s: the other host's tar landed while this one was packing (uploaded %s); adopted, "
+                         "the packed tar removed", cycle_dir.name, adopted["uploaded_utc"])
                 why = None
+            else:
+                since = upload_in_progress(s3, args.bucket, key)
+                if since:
+                    log.info("%s: packed, but another shipper began uploading this key at %s; deferred, the "
+                             "tar waits in the outbox for the next pass", cycle_dir.name, since)
+                    why = None
         if why:
             log.info("%s: uploading %.2f GB tar (sha256 %s...) to s3://%s/%s", cycle_dir.name, size / 1e9,
                      digest[:12], args.bucket, key)

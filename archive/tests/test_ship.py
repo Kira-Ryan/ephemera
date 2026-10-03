@@ -490,3 +490,30 @@ def test_adopting_a_cycle_removes_the_tar_this_host_had_packed(s3, cycle):
     state = json.loads((cyc / "ship.json").read_text())
     assert state["shipped"]["adopted_from_remote_utc"]
     assert not (spool / "outbox" / f"{cyc.name}.tar").exists()
+
+
+def test_a_tar_that_lands_while_this_host_is_packing_is_adopted_not_uploaded_over(s3, cycle, monkeypatch):
+    """2 Oct 2026, cycle d210271a3aef: both shippers found the key empty within two minutes of each
+    other. The VPS packed and uploaded in four minutes; Windows packed for 22, then asked only
+    whether an upload was still in flight, and put a second tar over the finished one. After
+    packing, the question "is it there now" is asked again.
+
+    Mutation: drop the second adopt_remote call from ship_cycle and this fails on two versions."""
+    _, spool, rec, cyc = cycle
+    key = f"cycles/{cyc.name[6:]}/files.tar"
+    s3.put_bucket_versioning(Bucket=BUCKET, VersioningConfiguration={"Status": "Enabled"})
+    real_pack = ship.pack
+
+    def pack_then_other_host_finishes(cycle_dir, outbox, rec_):
+        path = real_pack(cycle_dir, outbox, rec_)
+        s3.put_object(Bucket=BUCKET, Key=key, Body=b"the other host's tar", StorageClass="DEEP_ARCHIVE",
+                      Metadata={"sha256": "cd" * 32, "cycle": cyc.name, "merkle_root": rec["merkle_root"]})
+        return path
+
+    monkeypatch.setattr(ship, "pack", pack_then_other_host_finishes)
+    assert smain(spool) == 0
+    state = json.loads((cyc / "ship.json").read_text())
+    assert state["shipped"]["adopted_from_remote_utc"] and state["shipped"]["sha256"] == "cd" * 32
+    versions = s3.list_object_versions(Bucket=BUCKET, Prefix=key).get("Versions", [])
+    assert len(versions) == 1, "a second tar went over the one that landed during packing"
+    assert not list((spool / "outbox").glob("*.tar")), "the packed tar was left behind"
