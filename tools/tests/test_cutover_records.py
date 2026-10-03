@@ -75,6 +75,40 @@ def test_a_cycle_on_both_hosts_keeps_the_vps_record_and_takes_windows_proof_and_
     assert json.loads(after["cycle_bbbbbbbbbbbb/ship.json"])["shipped"] == {"key": "k"}
 
 
+def witness(manifest: bool, verified: int, total: int = 3) -> str:
+    return json.dumps({"wayback": {"manifest": {"verified": manifest},
+                                   "samples": {str(i): {"verified": i < verified} for i in range(total)}}})
+
+
+def test_the_vps_proof_and_captures_stay_as_a_set_when_its_record_is_the_more_complete_one(hosts):
+    """3 Oct 2026, cycles 0927096e9f13 and 512ed350b125: Windows's submission of one sample was
+    refused outright, the VPS's copy of it was verified. Taking Windows's witness.json there would
+    have recorded a capture that exists as lost. The three files describe each other, so they stay
+    or move together. Mutation: force vps_set_stays to False and Windows's set replaces it."""
+    staging, spool = hosts
+    cycle(staging, "aaaaaaaaaaaa", ROOT_A, shipped=True, ots=b"windows-proof")
+    (staging / "cycle_aaaaaaaaaaaa" / "witness.json").write_text(witness(True, 2))
+    cycle(spool, "aaaaaaaaaaaa", ROOT_A, shipped=True, ots=b"vps-proof")
+    (spool / "cycle_aaaaaaaaaaaa" / "witness.json").write_text(witness(True, 3))
+    before = snapshot(spool)
+    acts = cr.plan(staging, spool)
+    kept = [a for a in acts if a.src and a.src.name in cr.WINDOWS_WINS]
+    assert [a.verb for a in kept] == ["keep", "keep", "keep"] and "more complete" in kept[0].why
+    cr.apply(acts, spool)
+    after = snapshot(spool)
+    for n in cr.WINDOWS_WINS:
+        assert after[f"cycle_aaaaaaaaaaaa/{n}"] == before[f"cycle_aaaaaaaaaaaa/{n}"], n
+    # equal completeness: Windows's set is taken, as the table says
+    (staging / "cycle_aaaaaaaaaaaa" / "witness.json").write_text(witness(True, 3))
+    acts = cr.plan(staging, spool)
+    assert [a.verb for a in acts if a.src and a.src.name in cr.WINDOWS_WINS] == ["copy", "copy", "copy"]
+    # and a manifest copy counts for more than any number of samples
+    (staging / "cycle_aaaaaaaaaaaa" / "witness.json").write_text(witness(False, 3))
+    (spool / "cycle_aaaaaaaaaaaa" / "witness.json").write_text(witness(True, 0))
+    acts = cr.plan(staging, spool)
+    assert [a.verb for a in acts if a.src and a.src.name in cr.WINDOWS_WINS] == ["keep", "keep", "keep"]
+
+
 def test_ship_json_is_taken_from_windows_only_if_windows_shipped(hosts):
     staging, spool = hosts
     cycle(staging, "cccccccccccc", ROOT_A, shipped=False)
