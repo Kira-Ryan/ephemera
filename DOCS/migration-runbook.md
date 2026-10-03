@@ -291,8 +291,15 @@ copies shredded.
   `EPHEMERA_AWS_ACCOUNT_IDS`, `EPHEMERA_AWS_FORBIDDEN_IDS`, `ARCHIVE_ORG_ACCESS_KEY`,
   `ARCHIVE_ORG_SECRET_KEY`. Five names, but not the table's five: the Space-Track pair waits for
   phase B step 6, when the catalogue moves, and the archive.org pair, which the table predates, is
-  what the witness's SPN2 client reads (`spn2_credentials()` in `archive/witness.py`). No
-  Cloudflare, R2 or Space-Track value is on the host.
+  what the witness's SPN2 client reads (`spn2_credentials()` in `archive/witness.py`). That was
+  phase A. Since 27 September the file also holds the Space-Track pair, and since 3 October the R2
+  object settings (`EPHEMERA_CF_ACCOUNT_IDS`, `R2_ACCOUNT_ID`, `R2_ACCESS_KEY_ID`,
+  `R2_SECRET_ACCESS_KEY`, `R2_ENDPOINT`, `R2_BUCKET`, `R2_PUBLIC_HOST`): fourteen names in all.
+  The R2 settings are there because the host publishes the globe packs, and `web/publish.py`
+  without them builds a site with no pack links and a globe pointing at a file git ignores; this
+  runbook had missed that until the day of the cutover. The owner chose on 3 October to place the
+  existing R2 pair on the host and rotate it later, so a rotation now means updating this file
+  too. The Cloudflare API token and `R2_API_TOKEN` are not on the host.
 - `/etc/ephemera/aws-config`, 0600 ephemera: one `[profile ephemera]` section carrying the keys
   of IAM user `ephemera-shipper-a`, created by `infra/iam_shipper.py` under the guard. That user
   has one inline policy, `ephemera-shipper-bucket-only`: put, get, abort-multipart and list-parts
@@ -665,8 +672,8 @@ VPS watcher keeps pulling, so the archive never stops.
    | Path | Cycle only on Windows | Cycle on both hosts |
    |---|---|---|
    | `cycle.json`, `etag_cache.json`, `MANIFEST.txt`, `root.txt` | copy | keep the VPS's, after checking the two `root.txt` are byte-identical; a difference stops the script (see below) |
-   | `root.txt.ots`, `root.txt.ots.bak`, `witness.json` | copy | copy Windows's over the VPS's: same root, earlier proof, complete captures |
-   | `ship.json` | copy | copy Windows's if it records `shipped`; otherwise keep the VPS's |
+   | `root.txt.ots`, `root.txt.ots.bak`, `witness.json` | copy | as one set: copy Windows's over the VPS's (same root; the attestation already published), unless the VPS's witness record is the more complete one, in which case the VPS's set stays |
+   | `ship.json` | copy | copy Windows's if it records `shipped`, unless the VPS's is a first-hand upload record that Windows merely adopted; otherwise keep the VPS's |
    | `files/` | never | never |
    | `daily/*` | copy all | (not per cycle) |
    | `gp/*`, `score/*` | copy all | (not per cycle) |
@@ -681,8 +688,12 @@ VPS watcher keeps pulling, so the archive never stops.
    the complete record wins, together with its `files/` if the shipper has not yet run on it.
 5. **Check before starting anything.** On the VPS spool: every `cycle_*` with a `root.txt` also
    has a `root.txt.ots`; every complete cycle's `ship.json` records `shipped`; the count of
-   `daily/*` directories equals Windows's; `python archive/verify.py` passes on the oldest cycle,
-   the newest Windows-only cycle and one overlap cycle. Then `s3api list-object-versions` on the
+   `daily/*` directories equals Windows's; `python archive/verify.py` passes in full on an overlap
+   cycle whose `files/` are still on the host, and passes every check except the stored-files one on
+   the oldest cycle and the newest Windows-only cycle. Those two have no `files/` on any disk (the
+   raw bytes are in Deep Archive), and `verify.py` has no notion of that: it reports every file as a
+   failed re-hash and exits 1, at home exactly as on the host. An earlier wording here asked for a
+   pass on all three, which was never achievable. Then `s3api list-object-versions` on the
    overlap cycles' `files.tar` keys: exactly one version each. The record objects legitimately
    carry several versions and are not part of this check.
 6. **Start the rest of the VPS.** Catalogue timer, score service, ledger timer; restart the witness
@@ -698,6 +709,59 @@ VPS watcher keeps pulling, so the archive never stops.
 8. **Leave Windows stopped.** Its spool is untouched by all of this: the copy only read from it.
    Item 6b closes when the VPS has published three consecutive builds and shipped three consecutive
    cycles on its own.
+
+### Phase B as executed, 3 October 2026
+
+All times UTC. Nothing here was improvised on the spool: every deviation from the table above went
+into `tools/cutover_records.py` with a test before it was applied.
+
+| Time | Step |
+|---|---|
+| 11:26 | Pre-flight. Both hosts idle between cycles, 104 cycles at home, 21 on the host, nothing failed. |
+| 11:29:21 | The six Windows tasks stopped and disabled; no Ephemera process left; last home heartbeat 11:28:32. |
+| 11:30:19 | Host witness and ship timer stopped; watcher left running. |
+| 11:30 to 11:40 | Records packed at home (`tar --force-local --exclude='cycle_*/files' -czf`, 1.63 GB, 2,350 members, no `files/`), copied, SHA-256 equal at both ends, extracted into staging. |
+| 11:49:42 | `cutover_records.py apply` as `ephemera`: 1,784 copied, 109 kept, heartbeats 5,114 to 28,901 lines, no stops, checks 0 problems. |
+| 11:50 | `verify.py`: full pass on `363c1e721df5` (files on the host); every check but stored-files on `72bcd7796b49` and `b191dbc2ad33`. |
+| 11:54:32 | Catalogue timer (Space-Track accepted the host's first login: 12,918 records), score service, witness on `--daily-from 2026-10-03`, ship timer. |
+| 11:57:52 | First publish from the host, run by hand: 0 packs uploaded, 98 already published, 104 cycles, committed and pushed over the deploy key; the workflow deployed it. Ledger timer enabled at 11:58. |
+
+What the day found, in the order it found it:
+
+- **One double upload during the overlap.** On 2 October both shippers found the key for
+  `d210271a3aef` empty within two minutes of each other. The host packed and uploaded in four
+  minutes; Windows packed for 22, then asked only whether an upload was still in flight, saw none
+  because the host's had completed, and put a second tar over it. Same root; two versions at the
+  key (the current one is Windows's, 9,315,215,360 bytes; the noncurrent one is the host's). The
+  other 20 overlap cycles have exactly one. `ship_cycle` now asks `adopt_remote()` again after
+  packing. The noncurrent version is left where it is; removing an object from the archive bucket
+  is the owner's call.
+- **The table's "Windows's proof is the earlier one" was true of one cycle in 21.** From 27
+  September the host finished its pulls first and stamped first on 20 of them. Windows's set is
+  still the one taken, because it is the attestation the site had published, and the host's own
+  proofs and witness records for all 21, as they stood before the copy, are kept in the bucket at
+  `cutover/2026-10-03/vps-own-records-before-phase-b.tar` (2,191,360 bytes).
+- **Two cycles where Windows's witness record was the poorer one.** For `0927096e9f13` and
+  `512ed350b125` a sample Windows submitted was refused outright (the URL's daily capture quota
+  was spent by the host's retries) and the host had verified it. Copying Windows's record there
+  would have recorded an existing capture as lost. The host's set stays for those two.
+- **First-seen times of the 21 overlap rows are now the host's.** Within six minutes of the
+  published ones for 20 of them; 43 minutes later for `f91c62acebbb` (12:26 at home, 13:09 on the
+  host, which was switched on at 13:09 that day). Published as the host recorded it; whether that
+  one row should carry the home sighting instead is the owner's decision.
+- **`--daily-from` skips maintenance as well as building.** Days before it are never visited, so a
+  copied daily proof still waiting for its Bitcoin attestation would wait forever. All 34 copied
+  daily proofs and all 104 cycle proofs were already attested at the copy, so nothing is pending;
+  the gap is recorded, not fixed.
+- **The social card is rasterised per build**, and on Linux falls back to DejaVu where the home
+  build used Cascadia Mono and Georgia. Cleanly rendered, visibly different type; the icons are
+  pixel-identical.
+- **A flaky gate.** `web/tests/test_publish.py::test_a_second_publisher_is_refused_rather_than_merged`
+  failed once and passed on a full rerun of the same tree. Not diagnosed.
+
+Windows is stopped, not removed: the six tasks are disabled, the spool on `Z:` was only read, and
+the tar that crossed is at `Z:\ephemera\records-2026-10-03.tar.gz`. Item 6b closes after three
+consecutive publishes and three consecutive shipped cycles from the host alone.
 
 ### Rollback
 

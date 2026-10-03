@@ -437,3 +437,21 @@ document's tracking table, not here.
   only a hold when the poller watched the whole interval (two September outages were counted
   as feed holds); D21 proposed for the SupGP column; the Kelso reply drafted; probe.sh reads its
   presigned URL from a file. Suite 274.
+- 2026-10-03 - Phase B. Nothing of Ephemera runs on the home machine any more. The six Windows
+  tasks were stopped and disabled at 11:29 UTC; the records (104 cycles, 34 daily roots, 315
+  catalogue snapshots, the score outputs, the heartbeat history; never the raw files) crossed as
+  one 1.63 GB tar with the same SHA-256 at both ends and went into the host's spool through
+  tools/cutover_records.py: 1,784 copied, 109 kept, no stops, all 21 overlap roots byte-identical.
+  The host then started the catalogue (Space-Track accepted its first login), the scorer, the
+  witness on its own daily roots from 3 Oct, and at 11:57 published the site: 104 cycles, 98 pack
+  links, the poller line naming poller A. The workflow deployed it. Found on the way and fixed in
+  code with tests before use: a real double upload on 2 Oct (the second check asked only whether an
+  upload was in flight, not whether one had landed); the copy rule for proofs now leaves the host's
+  set where its witness record is the more complete one (two cycles); a variable collision the new
+  test caught before it reached the host. Found and recorded, not fixed: the runbook had no R2
+  settings on the host though the publisher needs them (the owner placed the existing pair, to
+  rotate later); verify.py reports a records-only cycle as failed; --daily-from skips proof
+  maintenance for earlier days (nothing pending); the social card's typeface differs on Linux; one
+  flaky publish test. The host's own pre-copy proofs for the 21 overlap cycles are in the bucket
+  under cutover/2026-10-03/. Suite 276. Next: three publishes and three shipped cycles from the
+  host alone close item 6b; then the home spool is an archive copy.
