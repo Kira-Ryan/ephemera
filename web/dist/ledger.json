@@ -1,17 +1,17 @@
 {
  "schema": 2,
- "generated_utc": "2026-10-03T08:20:33Z",
- "poller": "home (residential; single poller until poller A exists)",
+ "generated_utc": "2026-10-03T11:57:46Z",
+ "poller": "A (a datacentre host in the EU; the home poller was retired on 3 Oct 2026)",
  "method": "built from each cycle's cycle.json, witness.json and ship.json in the poller's spool; coverage is the fraction of the last 24 h's minutes with a watcher heartbeat under 10 minutes old (D18); a cadence hold is a manifest first-seen gap over 9 h; source bytes are the responses as served, stored bytes are the gzipped archive objects the shipper recorded",
  "totals": {
   "cycles": 104,
   "complete": 104,
   "attested": 104,
-  "witness_defects": 46,
+  "witness_defects": 44,
   "bytes_raw": 2372994781287,
   "bytes_stored": 975609088000,
-  "bytes_stored_local": 83896084480,
-  "bytes_stored_cold_only": 891713003520,
+  "bytes_stored_local": 27961374720,
+  "bytes_stored_cold_only": 947647713280,
   "files": 1168797,
   "cadence_holds": 11,
   "cadence_unobserved": 3
@@ -19734,8 +19734,18 @@
   ],
   "latest": "cycle_363c1e721df5"
  },
- "catalogue_snapshots": 314,
+ "catalogue_snapshots": 316,
  "catalogue": [
+  {
+   "fetched_utc": "2026-10-03T11:54:35Z",
+   "records": 12918,
+   "sha12": "654df0e30176"
+  },
+  {
+   "fetched_utc": "2026-10-03T10:10:12Z",
+   "records": 12918,
+   "sha12": "1d7bf2c6bdf9"
+  },
   {
    "fetched_utc": "2026-10-03T08:10:11Z",
    "records": 12918,
@@ -19785,29 +19795,19 @@
    "fetched_utc": "2026-10-02T08:10:10Z",
    "records": 12918,
    "sha12": "d180e94519be"
-  },
-  {
-   "fetched_utc": "2026-10-02T04:10:11Z",
-   "records": 12918,
-   "sha12": "0342d5a0637d"
-  },
-  {
-   "fetched_utc": "2026-10-02T02:10:11Z",
-   "records": 12918,
-   "sha12": "6f97298519da"
   }
  ],
  "cycles": [
   {
    "cycle": "cycle_363c1e721df5",
    "manifest_sha256": "363c1e721df5689502112d46f500fd53e282b247939cbe6711266589a06c1471",
-   "first_seen_utc": "2026-10-03T04:18:39Z",
+   "first_seen_utc": "2026-10-03T04:14:04Z",
    "status": "complete",
    "files_listed": 11151,
    "files_recorded": 11151,
    "files_failed": 0,
    "bytes_raw": 22651292636,
-   "wall_seconds": 2575.9,
+   "wall_seconds": 834.3,
    "merkle_root": "e92a44ce5061800b7f5664b09df94444cbe8e1d5948db56027cf98aa18807eb4",
    "ots": {
     "stamped": true,
@@ -19897,13 +19897,13 @@
   {
    "cycle": "cycle_d210271a3aef",
    "manifest_sha256": "d210271a3aef4203cd3538365c45db99a8b0a65808be519ae7945441ad2dae59",
-   "first_seen_utc": "2026-10-02T20:23:33Z",
+   "first_seen_utc": "2026-10-02T20:27:47Z",
    "status": "complete",
    "files_listed": 11152,
    "files_recorded": 11152,
    "files_failed": 0,
    "bytes_raw": 22651879861,
-   "wall_seconds": 2563.7,
+   "wall_seconds": 830.8,
    "merkle_root": "a2e70d4bd492e2bf136f0c19b369a5b9d2f52ec6a84f79fd7d47fc290d8bf6b5",
    "ots": {
     "stamped": true,
@@ -19993,13 +19993,13 @@
   {
    "cycle": "cycle_e95fb881cb65",
    "manifest_sha256": "e95fb881cb65771b4dacd4a6c14081445e5c35c7706bd10649eeba788062c61c",
-   "first_seen_utc": "2026-10-02T12:22:28Z",
+   "first_seen_utc": "2026-10-02T12:27:38Z",
    "status": "complete",
    "files_listed": 11153,
    "files_recorded": 11153,
    "files_failed": 0,
    "bytes_raw": 22652765881,
-   "wall_seconds": 2647.3,
+   "wall_seconds": 827.0,
    "merkle_root": "8c6aa02255792ced93c132ce47ce7d91757887ff1f20073a11ef476d3c3de9a9",
    "ots": {
     "stamped": true,
@@ -20089,13 +20089,13 @@
   {
    "cycle": "cycle_775998d297d8",
    "manifest_sha256": "775998d297d8b9eab80d7324e723b74eeb0aa68125faa76a9471d85d24bd0da3",
-   "first_seen_utc": "2026-10-02T04:37:46Z",
+   "first_seen_utc": "2026-10-02T04:35:04Z",
    "status": "complete",
    "files_listed": 11153,
    "files_recorded": 11153,
    "files_failed": 0,
    "bytes_raw": 22654565243,
-   "wall_seconds": 2980.6,
+   "wall_seconds": 821.7,
    "merkle_root": "a2cec00dee527f1f71710286c6d666b0337aa780bd681d77e772535608efc130",
    "ots": {
     "stamped": true,
@@ -20178,20 +20178,20 @@
    "storage": {
     "bytes_stored": 9320417280,
     "storage_class": "DEEP_ARCHIVE",
-    "local_files": true,
-    "deleted_locally_utc": null
+    "local_files": false,
+    "deleted_locally_utc": "2026-10-03T04:43:57Z"
    }
   },
   {
    "cycle": "cycle_c98ebe0b0a6c",
    "manifest_sha256": "c98ebe0b0a6c47a0f557fca4544538097b95b3bdd823429e2611015b3f94e67b",
-   "first_seen_utc": "2026-10-01T21:06:29Z",
+   "first_seen_utc": "2026-10-01T21:06:39Z",
    "status": "complete",
    "files_listed": 11153,
    "files_recorded": 11153,
    "files_failed": 0,
    "bytes_raw": 22653334061,
-   "wall_seconds": 2642.0,
+   "wall_seconds": 836.6,
    "merkle_root": "b9945280fba2024d7a17db0c4f354c3b675e554e6f6014227c8da0b1b62bba03",
    "ots": {
     "stamped": true,
@@ -20274,20 +20274,20 @@
    "storage": {
     "bytes_stored": 9321267200,
     "storage_class": "DEEP_ARCHIVE",
-    "local_files": true,
-    "deleted_locally_utc": null
+    "local_files": false,
+    "deleted_locally_utc": "2026-10-02T21:35:34Z"
    }
   },
   {
    "cycle": "cycle_a304b3b8fb65",
    "manifest_sha256": "a304b3b8fb6599a64ee6a9966cd4a24ce8db2be55af8cb83f10ebd28bf90c7e8",
-   "first_seen_utc": "2026-10-01T14:12:20Z",
+   "first_seen_utc": "2026-10-01T14:08:32Z",
    "status": "complete",
    "files_listed": 11153,
    "files_recorded": 11153,
    "files_failed": 0,
    "bytes_raw": 22652191891,
-   "wall_seconds": 2715.7,
+   "wall_seconds": 835.5,
    "merkle_root": "b509752b64d2040fea57472747ca0ba258dede789388ae09fbd1c4c8a1837ccd",
    "ots": {
     "stamped": true,
@@ -20370,20 +20370,20 @@
    "storage": {
     "bytes_stored": 9324800000,
     "storage_class": "DEEP_ARCHIVE",
-    "local_files": true,
-    "deleted_locally_utc": null
+    "local_files": false,
+    "deleted_locally_utc": "2026-10-02T14:30:53Z"
    }
   },
   {
    "cycle": "cycle_1da0dd1a9c26",
    "manifest_sha256": "1da0dd1a9c2696dfb0b60abb53931459939694c7edebe11708fb593ce145736f",
-   "first_seen_utc": "2026-10-01T07:13:06Z",
+   "first_seen_utc": "2026-10-01T07:12:38Z",
    "status": "complete",
    "files_listed": 11154,
    "files_recorded": 11154,
    "files_failed": 0,
    "bytes_raw": 22653265686,
-   "wall_seconds": 3126.6,
+   "wall_seconds": 828.8,
    "merkle_root": "b689b365335457eb934348f4dc38953481d44b5dde1f35b69915fee808ef9e75",
    "ots": {
     "stamped": true,
@@ -20466,20 +20466,20 @@
    "storage": {
     "bytes_stored": 9323120640,
     "storage_class": "DEEP_ARCHIVE",
-    "local_files": true,
-    "deleted_locally_utc": null
+    "local_files": false,
+    "deleted_locally_utc": "2026-10-02T07:26:02Z"
    }
   },
   {
    "cycle": "cycle_22b9448926eb",
    "manifest_sha256": "22b9448926ebd688b3d8811c78173a1e41a324dd4443a392f6645a87648477ea",
-   "first_seen_utc": "2026-10-01T00:02:52Z",
+   "first_seen_utc": "2026-10-01T00:00:07Z",
    "status": "complete",
    "files_listed": 11154,
    "files_recorded": 11154,
    "files_failed": 0,
    "bytes_raw": 22654336677,
-   "wall_seconds": 2983.9,
+   "wall_seconds": 845.6,
    "merkle_root": "f8fbfc222b6529c3c8661ed94fc044b5639ecca8f6ce469e319c613f1c9c6216",
    "ots": {
     "stamped": true,
@@ -20562,20 +20562,20 @@
    "storage": {
     "bytes_stored": 9319362560,
     "storage_class": "DEEP_ARCHIVE",
-    "local_files": true,
-    "deleted_locally_utc": null
+    "local_files": false,
+    "deleted_locally_utc": "2026-10-02T00:21:43Z"
    }
   },
   {
    "cycle": "cycle_bcb662c6b92e",
    "manifest_sha256": "bcb662c6b92e32a0d11032d9b789675cba5c9915aada0e9c3742645b15b25e52",
-   "first_seen_utc": "2026-09-30T12:22:29Z",
+   "first_seen_utc": "2026-09-30T12:22:03Z",
    "status": "complete",
    "files_listed": 11155,
    "files_recorded": 11155,
    "files_failed": 0,
    "bytes_raw": 22653928339,
-   "wall_seconds": 2767.6,
+   "wall_seconds": 855.2,
    "merkle_root": "75e9f993c7376f4e84eba44c26446ab21e33b42ed0825082f918778b3948e489",
    "ots": {
     "stamped": true,
@@ -20658,20 +20658,20 @@
    "storage": {
     "bytes_stored": 9325742080,
     "storage_class": "DEEP_ARCHIVE",
-    "local_files": true,
-    "deleted_locally_utc": null
+    "local_files": false,
+    "deleted_locally_utc": "2026-10-01T12:46:03Z"
    }
   },
   {
    "cycle": "cycle_c7260f41f589",
    "manifest_sha256": "c7260f41f589ed9791070584f548247ffe7ea5f04469951d0f51386682f4c8b8",
-   "first_seen_utc": "2026-09-30T04:44:30Z",
+   "first_seen_utc": "2026-09-30T04:45:06Z",
    "status": "complete",
    "files_listed": 11155,
    "files_recorded": 11155,
    "files_failed": 0,
    "bytes_raw": 22655134435,
-   "wall_seconds": 2590.0,
+   "wall_seconds": 863.2,
    "merkle_root": "f3ece3f7c7c3f94d504624c0befe19e9840939c5969ca466c8ebd1e8563affed",
    "ots": {
     "stamped": true,
@@ -20755,19 +20755,19 @@
     "bytes_stored": 9327063040,
     "storage_class": "DEEP_ARCHIVE",
     "local_files": false,
-    "deleted_locally_utc": "2026-10-03T05:07:21Z"
+    "deleted_locally_utc": "2026-10-01T05:11:53Z"
    }
   },
   {
    "cycle": "cycle_e47aba803b26",
    "manifest_sha256": "e47aba803b266dfee68f312964bf1cca5c7cfc9a881268e83f7228390c782853",
-   "first_seen_utc": "2026-09-29T20:54:41Z",
+   "first_seen_utc": "2026-09-29T21:00:01Z",
    "status": "complete",
    "files_listed": 11155,
    "files_recorded": 11155,
    "files_failed": 0,
    "bytes_raw": 22656594517,
-   "wall_seconds": 2323.5,
+   "wall_seconds": 854.1,
    "merkle_root": "689d17625f3d17204af274e4e254ed289abc005de7e7bf3a0f9c9b44e045edef",
    "ots": {
     "stamped": true,
@@ -20851,19 +20851,19 @@
     "bytes_stored": 9322321920,
     "storage_class": "DEEP_ARCHIVE",
     "local_files": false,
-    "deleted_locally_utc": "2026-10-02T21:52:24Z"
+    "deleted_locally_utc": "2026-09-30T21:06:16Z"
    }
   },
   {
    "cycle": "cycle_a35e340f4ab7",
    "manifest_sha256": "a35e340f4ab735586af8caf8e72ad38461876374ced0f4337b50b0a478f627a4",
-   "first_seen_utc": "2026-09-29T12:48:22Z",
+   "first_seen_utc": "2026-09-29T12:50:31Z",
    "status": "complete",
    "files_listed": 11155,
    "files_recorded": 11155,
    "files_failed": 0,
    "bytes_raw": 22657305235,
-   "wall_seconds": 2924.2,
+   "wall_seconds": 872.9,
    "merkle_root": "c0f4d08268cb5d5785687225d97e2865a03ea7393aca8476736e12eaeccc22b3",
    "ots": {
     "stamped": true,
@@ -20947,19 +20947,19 @@
     "bytes_stored": 9325967360,
     "storage_class": "DEEP_ARCHIVE",
     "local_files": false,
-    "deleted_locally_utc": "2026-10-02T13:06:59Z"
+    "deleted_locally_utc": "2026-09-30T13:01:03Z"
    }
   },
   {
    "cycle": "cycle_d0a285756b95",
    "manifest_sha256": "d0a285756b959a162763cc1abce426c9327dd228ea6098c4d3f40ffb9084d38e",
-   "first_seen_utc": "2026-09-29T02:17:15Z",
+   "first_seen_utc": "2026-09-29T02:16:31Z",
    "status": "complete",
    "files_listed": 11155,
    "files_recorded": 11155,
    "files_failed": 0,
    "bytes_raw": 22637984706,
-   "wall_seconds": 2658.2,
+   "wall_seconds": 858.6,
    "merkle_root": "3fcc10a5538481758ebfa85a3e9dc3f9a7fd799df3982dea2eca99c184bbecdc",
    "ots": {
     "stamped": true,
@@ -21043,19 +21043,19 @@
     "bytes_stored": 9314088960,
     "storage_class": "DEEP_ARCHIVE",
     "local_files": false,
-    "deleted_locally_utc": "2026-10-02T02:37:04Z"
+    "deleted_locally_utc": "2026-09-30T02:25:29Z"
    }
   },
   {
    "cycle": "cycle_38ecbec30192",
    "manifest_sha256": "38ecbec3019234e5cbf3f6419c0b539e493bd32171e723e4af72cbc66a0092f9",
-   "first_seen_utc": "2026-09-28T20:31:16Z",
+   "first_seen_utc": "2026-09-28T20:32:04Z",
    "status": "complete",
    "files_listed": 11155,
    "files_recorded": 11155,
    "files_failed": 0,
    "bytes_raw": 22637363900,
-   "wall_seconds": 2663.6,
+   "wall_seconds": 863.2,
    "merkle_root": "7408e3ecdcdef49ccdfca0656ff6b98de362db648b2a6b7c0e4552c709c843b5",
    "ots": {
     "stamped": true,
@@ -21139,19 +21139,19 @@
     "bytes_stored": 9312000000,
     "storage_class": "DEEP_ARCHIVE",
     "local_files": false,
-    "deleted_locally_utc": "2026-10-01T20:36:55Z"
+    "deleted_locally_utc": "2026-09-29T20:50:42Z"
    }
   },
   {
    "cycle": "cycle_4c553f173852",
    "manifest_sha256": "4c553f173852cbd4fb2e7e984fa05acb490106470ee73b8e09716b78d2131f20",
-   "first_seen_utc": "2026-09-28T12:23:52Z",
+   "first_seen_utc": "2026-09-28T12:20:36Z",
    "status": "complete",
    "files_listed": 11130,
    "files_recorded": 11130,
    "files_failed": 0,
    "bytes_raw": 22601949307,
-   "wall_seconds": 2764.9,
+   "wall_seconds": 868.0,
    "merkle_root": "fd7e8b35b45a9ed6d72574bc00adcc7fcf78b9617ef3ae607d159289c900543f",
    "ots": {
     "stamped": true,
@@ -21235,19 +21235,19 @@
     "bytes_stored": 9303285760,
     "storage_class": "DEEP_ARCHIVE",
     "local_files": false,
-    "deleted_locally_utc": "2026-10-01T12:36:55Z"
+    "deleted_locally_utc": "2026-09-29T12:44:32Z"
    }
   },
   {
    "cycle": "cycle_78241bbc0577",
    "manifest_sha256": "78241bbc057791819129b339ac39d27474bf0a25187ae5dee24152738cb63826",
-   "first_seen_utc": "2026-09-28T04:23:51Z",
+   "first_seen_utc": "2026-09-28T04:19:24Z",
    "status": "complete",
    "files_listed": 11131,
    "files_recorded": 11131,
    "files_failed": 0,
    "bytes_raw": 22602848019,
-   "wall_seconds": 2683.4,
+   "wall_seconds": 858.9,
    "merkle_root": "59507fa9090f95a64b4d3281569f2a0375d8b840dd820c0f9fe28cab50d5d6de",
    "ots": {
     "stamped": true,
@@ -21331,19 +21331,19 @@
     "bytes_stored": 9298042880,
     "storage_class": "DEEP_ARCHIVE",
     "local_files": false,
-    "deleted_locally_utc": "2026-10-01T04:37:01Z"
+    "deleted_locally_utc": "2026-09-29T04:37:53Z"
    }
   },
   {
    "cycle": "cycle_d10acbea39d9",
    "manifest_sha256": "d10acbea39d9b7e8d4469dadfa9232346b4a111a3c6e8e79b8931bdbd8f655ae",
-   "first_seen_utc": "2026-09-27T20:16:32Z",
+   "first_seen_utc": "2026-09-27T20:16:17Z",
    "status": "complete",
    "files_listed": 11131,
    "files_recorded": 11131,
    "files_failed": 0,
    "bytes_raw": 22604372446,
-   "wall_seconds": 4551.7,
+   "wall_seconds": 859.7,
    "merkle_root": "5ce6e6b72553727339b608877f930fca1b6bd83ca3afb9ba6a631c8526b429cc",
    "ots": {
     "stamped": true,
@@ -21427,32 +21427,32 @@
     "bytes_stored": 9291939840,
     "storage_class": "DEEP_ARCHIVE",
     "local_files": false,
-    "deleted_locally_utc": "2026-09-30T20:37:01Z"
+    "deleted_locally_utc": "2026-09-28T20:32:03Z"
    }
   },
   {
    "cycle": "cycle_512ed350b125",
    "manifest_sha256": "512ed350b1253b1bf66bfb1dc632deb4d0e871e292efc80a94e89706d9c58bf2",
-   "first_seen_utc": "2026-09-27T12:18:44Z",
+   "first_seen_utc": "2026-09-27T12:23:26Z",
    "status": "complete",
    "files_listed": 11133,
    "files_recorded": 11133,
    "files_failed": 0,
    "bytes_raw": 22604980284,
-   "wall_seconds": 3460.8,
+   "wall_seconds": 852.5,
    "merkle_root": "ab7df35695246e67c780c5f9e64a00ccc6a9814b593c5e4508008b89ad1c05db",
    "ots": {
     "stamped": true,
-    "attested_block": 968848
+    "attested_block": 968844
    },
    "wayback": {
     "attempted": true,
     "manifest_verified": true,
     "manifest_captured": true,
     "manifest_error": null,
-    "samples_verified": 9,
+    "samples_verified": 10,
     "samples_total": 10,
-    "losses": 1,
+    "losses": 0,
     "skipped": null,
     "manifest_copy_url": "https://web.archive.org/web/20260927123831id_/https://api.starlink.com/public-files/ephemerides/MANIFEST.txt?cycle=512ed350b125",
     "manifest_copy_sha256": "512ed350b1253b1bf66bfb1dc632deb4d0e871e292efc80a94e89706d9c58bf2",
@@ -21507,9 +21507,9 @@
      },
      {
       "name": "MEME_66942_STARLINK-36100_2700929_Operational_1474795800_UNCLASSIFIED.txt",
-      "copy_url": null,
-      "sha256_of_copy": null,
-      "verified": false
+      "copy_url": "https://web.archive.org/web/20260927123915id_/https://api.starlink.com/public-files/ephemerides/MEME_66942_STARLINK-36100_2700929_Operational_1474795800_UNCLASSIFIED.txt",
+      "sha256_of_copy": "f646e823f8a9b1be14c81a80c260578f5f742019bfe00baa4259975601b2cf7a",
+      "verified": true
      },
      {
       "name": "MEME_68519_STARLINK-36326_2700922_Operational_1474795380_UNCLASSIFIED.txt",
@@ -21523,19 +21523,19 @@
     "bytes_stored": 9297848320,
     "storage_class": "DEEP_ARCHIVE",
     "local_files": false,
-    "deleted_locally_utc": "2026-09-30T12:37:01Z"
+    "deleted_locally_utc": "2026-09-28T12:26:41Z"
    }
   },
   {
    "cycle": "cycle_b6455ce25bb1",
    "manifest_sha256": "b6455ce25bb1af4c8dc4e5c62cd8983e485a916e849d4685b3ff95ada2ae7071",
-   "first_seen_utc": "2026-09-27T04:15:26Z",
+   "first_seen_utc": "2026-09-27T04:15:19Z",
    "status": "complete",
    "files_listed": 11133,
    "files_recorded": 11133,
    "files_failed": 0,
    "bytes_raw": 22607313303,
-   "wall_seconds": 2532.1,
+   "wall_seconds": 846.0,
    "merkle_root": "878d849eb8da0b5a3336981eec13193adbe93a63f48ad0e25a42fcd251b24ce3",
    "ots": {
     "stamped": true,
@@ -21619,19 +21619,19 @@
     "bytes_stored": 9299476480,
     "storage_class": "DEEP_ARCHIVE",
     "local_files": false,
-    "deleted_locally_utc": "2026-09-30T04:37:00Z"
+    "deleted_locally_utc": "2026-09-28T04:23:03Z"
    }
   },
   {
    "cycle": "cycle_0927096e9f13",
    "manifest_sha256": "0927096e9f13c5fb9a6d127e82747d954499f227c9564afefb25cb9badafa8e0",
-   "first_seen_utc": "2026-09-26T20:17:15Z",
+   "first_seen_utc": "2026-09-26T20:14:06Z",
    "status": "complete",
    "files_listed": 11133,
    "files_recorded": 11133,
    "files_failed": 0,
    "bytes_raw": 22608829107,
-   "wall_seconds": 2596.9,
+   "wall_seconds": 855.5,
    "merkle_root": "e2c72f5ed31c515f6805d624ec7419bfa3b504a7060f7fb7969338bfbf57e3a3",
    "ots": {
     "stamped": true,
@@ -21642,9 +21642,9 @@
     "manifest_verified": true,
     "manifest_captured": true,
     "manifest_error": null,
-    "samples_verified": 9,
+    "samples_verified": 10,
     "samples_total": 10,
-    "losses": 1,
+    "losses": 0,
     "skipped": null,
     "manifest_copy_url": "https://web.archive.org/web/20260926203158id_/https://api.starlink.com/public-files/ephemerides/MANIFEST.txt?cycle=0927096e9f13",
     "manifest_copy_sha256": "0927096e9f13c5fb9a6d127e82747d954499f227c9564afefb25cb9badafa8e0",
@@ -21705,9 +21705,9 @@
      },
      {
       "name": "MEME_67003_STARLINK-35660_2691735_Operational_1474738560_UNCLASSIFIED.txt",
-      "copy_url": null,
-      "sha256_of_copy": null,
-      "verified": false
+      "copy_url": "https://web.archive.org/web/20260926203316id_/https://api.starlink.com/public-files/ephemerides/MEME_67003_STARLINK-35660_2691735_Operational_1474738560_UNCLASSIFIED.txt",
+      "sha256_of_copy": "c6bd1ed3c72ec3e681aa2b8ea837ff77147bf7e32d1133928947e12134b47bbb",
+      "verified": true
      }
     ]
    },
@@ -21715,19 +21715,19 @@
     "bytes_stored": 9288212480,
     "storage_class": "DEEP_ARCHIVE",
     "local_files": false,
-    "deleted_locally_utc": "2026-09-29T20:36:53Z"
+    "deleted_locally_utc": "2026-09-27T20:18:07Z"
    }
   },
   {
    "cycle": "cycle_f91c62acebbb",
    "manifest_sha256": "f91c62acebbb095d170b07c63c3f46e2ca9405be7f1ec5c0585e4e593709450b",
-   "first_seen_utc": "2026-09-26T12:26:57Z",
+   "first_seen_utc": "2026-09-26T13:09:05Z",
    "status": "complete",
    "files_listed": 11133,
    "files_recorded": 11133,
    "files_failed": 0,
    "bytes_raw": 22609906821,
-   "wall_seconds": 3073.6,
+   "wall_seconds": 714.5,
    "merkle_root": "4e9f5b042f20d2e671c49907d52cf37e3542afe17bd2fb47c912e9d5eeeb41e5",
    "ots": {
     "stamped": true,
