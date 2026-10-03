@@ -9,9 +9,11 @@ ownership table, and check the result.
 
 The table, as code: a cycle only Windows had is copied whole. A cycle both hosts had keeps the
 VPS's cycle.json, etag_cache.json, MANIFEST.txt and root.txt after the two root.txt are found byte
-for byte identical, takes Windows's root.txt.ots, root.txt.ots.bak and witness.json (same root,
-earlier proof, complete captures), and takes Windows's ship.json only if it records shipped and
-the VPS's is not a first-hand upload record that Windows merely adopted.
+for byte identical, takes Windows's root.txt.ots, root.txt.ots.bak and witness.json as a set (same
+root; the attestation the site has already published) unless the VPS's witness record holds
+verified captures Windows's lacks, in which case the VPS's set stays, and takes Windows's
+ship.json only if it records shipped and the VPS's is not a first-hand upload record that Windows
+merely adopted.
 daily/, gp/ and score/ are copied whole; an existing file may only be identical. heartbeats.jsonl
 is the union of both, by utc, never an overwrite. files/ is never touched, and a staging directory
 that contains any is refused outright. A root that differs between hosts, a cycle only one host
@@ -58,6 +60,18 @@ def shipped_state(path: Path) -> dict:
         return {}
 
 
+def witness_score(path: Path) -> tuple[int, int]:
+    """How complete a witness record is: (manifest copy verified, sample copies verified). A file
+    that is absent or unreadable scores below any real record."""
+    try:
+        wb = json.loads(path.read_text(encoding="utf-8")).get("wayback") or {}
+    except (OSError, ValueError):
+        return (-1, -1)
+    samples = wb.get("samples") or {}
+    return (1 if (wb.get("manifest") or {}).get("verified") else 0,
+            sum(1 for e in samples.values() if isinstance(e, dict) and e.get("verified")))
+
+
 def record_summary(path: Path) -> str:
     try:
         r = json.loads(path.read_text(encoding="utf-8"))
@@ -85,12 +99,21 @@ def plan_cycle(cdir: Path, dst: Path) -> list[Action]:
         return [Action("stop", sr, dr, f"root.txt differs between hosts; Windows {record_summary(cdir / 'cycle.json')}; "
                                        f"VPS {record_summary(dst / 'cycle.json')}")]
     actions = []
+    # The proof and the witness record describe each other, so they move or stay as one set. On 3 Oct
+    # 2026 two overlap cycles had a sample Windows was refused outright (the URL's daily capture quota
+    # was spent by the VPS's retries) and the VPS had verified: Windows's record must not replace that.
+    w_ours, w_theirs = witness_score(dst / "witness.json"), witness_score(cdir / "witness.json")
+    vps_set_stays = w_ours > w_theirs
     for n in names:
         s = cdir / n
         if n in VPS_KEEPS:
             actions.append(Action("keep", s, dst / n, "cycle on both hosts; the VPS's stays"))
         elif n in WINDOWS_WINS:
-            actions.append(Action("copy", s, dst / n, "same root; Windows's proof and captures win"))
+            if vps_set_stays:
+                actions.append(Action("keep", s, dst / n, f"the VPS's witness record is the more complete one "
+                                                          f"({w_ours[1]} verified samples against {w_theirs[1]}); its proof and captures stay"))
+            else:
+                actions.append(Action("copy", s, dst / n, "same root; Windows's proof and captures win"))
         elif n == "ship.json":
             theirs, ours = shipped_state(s), shipped_state(dst / n)
             if not theirs:
