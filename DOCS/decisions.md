@@ -245,10 +245,17 @@ policy); attribution is given on the page and in `check/` regardless, and `licen
 (the folder is the owner's to create; it does not exist yet) records: source, URL, the usage
 policy's cadence and stop rule, the date read, and that no licence text was found.
 
-The page also cites the prior work, in this wording or the owner's: "The shape of the GP result is
-not new. T.S. Kelso showed in 2007 that operator-provided data outperforms radar-derived element
-sets for manoeuvring satellites, and CelesTrak has published supplemental element sets fitted to
-operator ephemerides since (celestrak.org/publications)." Rationale: his reply of 27 September
+The finding page cites the prior work in the owner's wording of 3 October 2026, on the page from
+that day, ahead of the column: "The gap between GP and operator data is a known result, not a
+finding of mine. In December 2007 a CelesTrak user reported a GPS satellite whose GP element set
+put it more than 20,000 km from where the operator's own almanac did, and Dr T.S. Kelso confirmed
+the almanac was right. He had already measured the problem that January (AAS 07-127), and CelesTrak
+has published supplemental element sets fitted to operator data since January 2008. His 2025 SDA
+TAP Lab talk tells the story and links the papers." Each statement was checked on 3 October against
+his own pages: the December 2007 report, the 20,000 km and his check against the NGA precise
+ephemerides are in the SDA TAP Lab talk of 26 February 2025, as is the sentence that the results
+"were written up on the new SupGP page and reported to JSpOC in January 2008"; AAS 07-127 is his
+paper of 29 January 2007. Rationale: his reply of 27 September
 made two things plain, that a comparison against GP alone repeats a result he published, and that
 SupGP is the public product actually built for this; a reader deserves both columns and the
 reference. Follow-on, not part of this entry: whether the SupGP RMS itself belongs on the page.

@@ -811,3 +811,22 @@ def test_a_long_gap_the_poller_did_not_watch_is_not_a_cadence_hold(tmp_path, mon
     assert (t["cadence_holds"], t["cadence_unobserved"]) == (0, 1)
     home = (out / "index.html").read_text(encoding="utf-8")
     assert "fell while the poller was down" in home and "not counted as a hold" in home
+
+
+def test_the_finding_page_says_whose_result_the_gp_gap_is(tmp_path):
+    """The comparison against the public catalogue repeats a result T.S. Kelso published in 2007.
+    The finding page says so in the owner's words and links his paper, the supplemental element
+    sets and the talk; the front page does not grow the paragraph.
+
+    Mutation: drop {PRIOR_WORK} from the finding page's template and this fails."""
+    _, page, out = build_site(tmp_path)
+    finding = page_at(out, "finding")
+    said = text(finding)
+    assert "The gap between GP and operator data is a known result, not a finding of mine." in said
+    assert "more than 20,000 km" in said and "Dr T.S. Kelso confirmed the almanac was right" in said
+    assert "fitted to operator data since January 2008" in said
+    for url in ("https://celestrak.org/publications/AAS/07-127/",
+                "https://celestrak.org/NORAD/elements/supplemental/",
+                "https://celestrak.org/publications/SDA-TAP-Lab/2025/"):
+        assert f'<a href="{url}">' in finding, url
+    assert "a known result" not in text(page)
