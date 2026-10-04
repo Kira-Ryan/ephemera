@@ -1,12 +1,12 @@
 {
  "schema": 2,
- "generated_utc": "2026-10-03T21:31:16Z",
+ "generated_utc": "2026-10-04T01:31:23Z",
  "poller": "A (a datacentre host in the EU; the home poller was retired on 3 Oct 2026)",
  "method": "built from each cycle's cycle.json, witness.json and ship.json in the poller's spool; coverage is the fraction of the last 24 h's minutes with a watcher heartbeat under 10 minutes old (D18); a cadence hold is a manifest first-seen gap over 9 h; source bytes are the responses as served, stored bytes are the gzipped archive objects the shipper recorded",
  "totals": {
   "cycles": 106,
   "complete": 106,
-  "attested": 105,
+  "attested": 106,
   "witness_defects": 44,
   "bytes_raw": 2418292574205,
   "bytes_stored": 994240686080,
@@ -20143,8 +20143,18 @@
   ],
   "latest": "cycle_d4cbe092d970"
  },
- "catalogue_snapshots": 320,
+ "catalogue_snapshots": 322,
  "catalogue": [
+  {
+   "fetched_utc": "2026-10-04T00:11:04Z",
+   "records": 12918,
+   "sha12": "b35f378d5d75"
+  },
+  {
+   "fetched_utc": "2026-10-03T22:09:54Z",
+   "records": 12918,
+   "sha12": "fb8acb930785"
+  },
   {
    "fetched_utc": "2026-10-03T20:04:54Z",
    "records": 12918,
@@ -20194,16 +20204,6 @@
    "fetched_utc": "2026-10-03T00:10:14Z",
    "records": 12918,
    "sha12": "e23a4ac663cd"
-  },
-  {
-   "fetched_utc": "2026-10-02T22:10:12Z",
-   "records": 12918,
-   "sha12": "97c454cce2d6"
-  },
-  {
-   "fetched_utc": "2026-10-02T20:10:11Z",
-   "records": 12918,
-   "sha12": "2134b9c3b7c9"
   }
  ],
  "cycles": [
@@ -20220,7 +20220,7 @@
    "merkle_root": "154dca0e826aa52dced41005dd61dcf8d6e8c7e601ab3c65faca951e70ba51e8",
    "ots": {
     "stamped": true,
-    "attested_block": null
+    "attested_block": 969762
    },
    "wayback": {
     "attempted": true,
@@ -30202,6 +30202,14 @@
   }
  ],
  "daily_roots": [
+  {
+   "date": "2026-10-03",
+   "merkle_root": "97d33f20a0f3a9b22a306622d843e512fd18545695b263e7591fd28caacd61fc",
+   "built_utc": "2026-10-04T00:00:55Z",
+   "leaves": 3,
+   "excluded": [],
+   "attested_block": null
+  },
   {
    "date": "2026-10-02",
    "merkle_root": "f7b22bb76b60de8f1656f592422474464303f9081b86fb49c3a2985b41eb2484",
