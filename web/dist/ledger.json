@@ -1,13 +1,13 @@
 {
  "schema": 2,
- "generated_utc": "2026-10-04T21:33:16Z",
+ "generated_utc": "2026-10-05T01:34:16Z",
  "poller": "A (a datacentre host in the EU; the home poller was retired on 3 Oct 2026)",
  "method": "built from each cycle's cycle.json, witness.json and ship.json in the poller's spool; coverage is the fraction of the last 24 h's minutes with a watcher heartbeat under 10 minutes old (D18); a cadence hold is a manifest first-seen gap over 9 h; source bytes are the responses as served, stored bytes are the gzipped archive objects the shipper recorded",
  "totals": {
   "cycles": 109,
   "complete": 109,
-  "attested": 108,
-  "witness_defects": 45,
+  "attested": 109,
+  "witness_defects": 44,
   "bytes_raw": 2486223411318,
   "bytes_stored": 1022159646720,
   "bytes_stored_local": 27918960640,
@@ -20856,7 +20856,7 @@
    "merkle_root": "8d6f107f88cf549a3ab41fbb30598075e5ca711d39a5612a1e7900b87393defa",
    "ots": {
     "stamped": true,
-    "attested_block": null
+    "attested_block": 969900
    },
    "wayback": {
     "attempted": true,
@@ -20959,7 +20959,7 @@
     "manifest_verified": true,
     "manifest_captured": true,
     "manifest_error": null,
-    "samples_verified": 9,
+    "samples_verified": 10,
     "samples_total": 10,
     "losses": 0,
     "skipped": null,
@@ -21011,8 +21011,8 @@
      {
       "name": "MEME_62926_STARLINK-32922_2771011_Operational_1475403120_UNCLASSIFIED.txt",
       "copy_url": "https://web.archive.org/web/20261004124845id_/https://api.starlink.com/public-files/ephemerides/MEME_62926_STARLINK-32922_2771011_Operational_1475403120_UNCLASSIFIED.txt",
-      "sha256_of_copy": null,
-      "verified": false
+      "sha256_of_copy": "2e7ff36a5851be6c5f95e5de4b62efbc7d3c5e2548e41016b271a548ae4e244e",
+      "verified": true
      },
      {
       "name": "MEME_64366_STARLINK-34484_2770945_Operational_1475401560_UNCLASSIFIED.txt",
@@ -31126,6 +31126,14 @@
   }
  ],
  "daily_roots": [
+  {
+   "date": "2026-10-04",
+   "merkle_root": "015c77ea6293f5ad046e0a7fd576d386e51a8d8c370142b76cb9fa1392ceebd9",
+   "built_utc": "2026-10-05T00:02:50Z",
+   "leaves": 3,
+   "excluded": [],
+   "attested_block": 969925
+  },
   {
    "date": "2026-10-03",
    "merkle_root": "97d33f20a0f3a9b22a306622d843e512fd18545695b263e7591fd28caacd61fc",
