@@ -1,12 +1,12 @@
 {
  "schema": 2,
- "generated_utc": "2026-10-05T21:36:17Z",
+ "generated_utc": "2026-10-06T01:36:24Z",
  "poller": "A (a datacentre host in the EU; the home poller was retired on 3 Oct 2026)",
  "method": "built from each cycle's cycle.json, witness.json and ship.json in the poller's spool; coverage is the fraction of the last 24 h's minutes with a watcher heartbeat under 10 minutes old (D18); a cadence hold is a manifest first-seen gap over 9 h; source bytes are the responses as served, stored bytes are the gzipped archive objects the shipper recorded",
  "totals": {
   "cycles": 112,
   "complete": 112,
-  "attested": 111,
+  "attested": 112,
   "witness_defects": 46,
   "bytes_raw": 2554134795060,
   "bytes_stored": 1050146693120,
@@ -21370,8 +21370,18 @@
   ],
   "latest": "cycle_87bc92d4867f"
  },
- "catalogue_snapshots": 341,
+ "catalogue_snapshots": 343,
  "catalogue": [
+  {
+   "fetched_utc": "2026-10-06T01:28:44Z",
+   "records": 12918,
+   "sha12": "6cc616b087b7"
+  },
+  {
+   "fetched_utc": "2026-10-05T23:26:54Z",
+   "records": 12918,
+   "sha12": "61306f04ad57"
+  },
   {
    "fetched_utc": "2026-10-05T21:26:32Z",
    "records": 12918,
@@ -21421,16 +21431,6 @@
    "fetched_utc": "2026-10-04T20:44:56Z",
    "records": 12918,
    "sha12": "911848489e66"
-  },
-  {
-   "fetched_utc": "2026-10-04T18:42:05Z",
-   "records": 12918,
-   "sha12": "d85225bc9221"
-  },
-  {
-   "fetched_utc": "2026-10-04T16:37:24Z",
-   "records": 12918,
-   "sha12": "7f1141e4a7eb"
   }
  ],
  "cycles": [
@@ -21447,7 +21447,7 @@
    "merkle_root": "3168d907ad86689f48fc8f52e5d344781f1a7e21be9f027cc172a1275bdb3d80",
    "ots": {
     "stamped": true,
-    "attested_block": null
+    "attested_block": 970080
    },
    "wayback": {
     "attempted": true,
@@ -32005,6 +32005,14 @@
   }
  ],
  "daily_roots": [
+  {
+   "date": "2026-10-05",
+   "merkle_root": "08998be17ff3eb966a53d0501104af81d6f42cb6969f326f8d79608eec941311",
+   "built_utc": "2026-10-06T00:04:52Z",
+   "leaves": 3,
+   "excluded": [],
+   "attested_block": 970103
+  },
   {
    "date": "2026-10-04",
    "merkle_root": "015c77ea6293f5ad046e0a7fd576d386e51a8d8c370142b76cb9fa1392ceebd9",
