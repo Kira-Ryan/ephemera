@@ -1,13 +1,13 @@
 {
  "schema": 2,
- "generated_utc": "2026-10-07T13:39:08Z",
+ "generated_utc": "2026-10-07T17:39:16Z",
  "poller": "A (a datacentre host in the EU; the home poller was retired on 3 Oct 2026)",
  "method": "built from each cycle's cycle.json, witness.json and ship.json in the poller's spool; coverage is the fraction of the last 24 h's minutes with a watcher heartbeat under 10 minutes old (D18); a cadence hold is a manifest first-seen gap over 9 h; source bytes are the responses as served, stored bytes are the gzipped archive objects the shipper recorded",
  "totals": {
   "cycles": 117,
   "complete": 117,
-  "attested": 116,
-  "witness_defects": 49,
+  "attested": 117,
+  "witness_defects": 47,
   "bytes_raw": 2667264713519,
   "bytes_stored": 1096764805120,
   "bytes_stored_local": 27930286080,
@@ -22355,8 +22355,18 @@
   ],
   "latest": "cycle_54a99a2a32ac"
  },
- "catalogue_snapshots": 360,
+ "catalogue_snapshots": 362,
  "catalogue": [
+  {
+   "fetched_utc": "2026-10-07T16:23:04Z",
+   "records": 12918,
+   "sha12": "740fa8a72c9e"
+  },
+  {
+   "fetched_utc": "2026-10-07T14:22:06Z",
+   "records": 12918,
+   "sha12": "f0a53c6df6f1"
+  },
   {
    "fetched_utc": "2026-10-07T12:17:09Z",
    "records": 12918,
@@ -22406,16 +22416,6 @@
    "fetched_utc": "2026-10-06T17:53:04Z",
    "records": 12918,
    "sha12": "015642f2b61f"
-  },
-  {
-   "fetched_utc": "2026-10-06T15:48:34Z",
-   "records": 12918,
-   "sha12": "54edffc668ad"
-  },
-  {
-   "fetched_utc": "2026-10-06T13:46:14Z",
-   "records": 12918,
-   "sha12": "9e937062a461"
   }
  ],
  "cycles": [
@@ -22432,7 +22432,7 @@
    "merkle_root": "b3ebe0a9ef3e0a227943157d13e0599a3f9b712595b24017c96fcde18e8d4c9c",
    "ots": {
     "stamped": true,
-    "attested_block": null
+    "attested_block": 970345
    },
    "wayback": {
     "attempted": true,
@@ -22535,7 +22535,7 @@
     "manifest_verified": true,
     "manifest_captured": true,
     "manifest_error": null,
-    "samples_verified": 9,
+    "samples_verified": 10,
     "samples_total": 10,
     "losses": 0,
     "skipped": null,
@@ -22551,8 +22551,8 @@
      {
       "name": "MEME_56409_STARLINK-6241_2800329_Operational_1475638200_UNCLASSIFIED.txt",
       "copy_url": "https://web.archive.org/web/20261007045120id_/https://api.starlink.com/public-files/ephemerides/MEME_56409_STARLINK-6241_2800329_Operational_1475638200_UNCLASSIFIED.txt",
-      "sha256_of_copy": null,
-      "verified": false
+      "sha256_of_copy": "175d858bf9fc6df3059f28e93b333570104a22ab5a47ca9d2950fa53db39c3f4",
+      "verified": true
      },
      {
       "name": "MEME_66177_STARLINK-35352_2800148_Operational_1475632140_UNCLASSIFIED.txt",
@@ -23015,7 +23015,7 @@
     "manifest_verified": true,
     "manifest_captured": true,
     "manifest_error": null,
-    "samples_verified": 9,
+    "samples_verified": 10,
     "samples_total": 10,
     "losses": 0,
     "skipped": null,
@@ -23037,8 +23037,8 @@
      {
       "name": "MEME_54002_STARLINK-5109_2781130_Operational_1475494260_UNCLASSIFIED.txt",
       "copy_url": "https://web.archive.org/web/20261005124844id_/https://api.starlink.com/public-files/ephemerides/MEME_54002_STARLINK-5109_2781130_Operational_1475494260_UNCLASSIFIED.txt",
-      "sha256_of_copy": null,
-      "verified": false
+      "sha256_of_copy": "02563a40ccdae638be5d389df598232ef5619079f53e3d08688aca74fac813ee",
+      "verified": true
      },
      {
       "name": "MEME_55639_STARLINK-5508_2781125_Operational_1475493960_UNCLASSIFIED.txt",
