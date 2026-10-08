@@ -830,3 +830,13 @@ def test_the_finding_page_says_whose_result_the_gp_gap_is(tmp_path):
                 "https://celestrak.org/publications/SDA-TAP-Lab/2025/"):
         assert f'<a href="{url}">' in finding, url
     assert "a known result" not in text(page)
+
+
+def test_the_colophon_says_where_the_archive_runs(tmp_path):
+    """Since 3 Oct 2026 the whole pipeline runs on one rented server; every page's colophon went on
+    saying "on a home computer" until 8 Oct. Mutation: put the old words back and this fails."""
+    _, page, out = build_site(tmp_path)
+    for doc in (page, page_at(out, "finding"), page_at(out, "archive")):
+        said = text(doc)
+        assert "on one rented server" in said
+        assert "home computer" not in said
