@@ -419,10 +419,10 @@ def masthead(gen: str, rel: str, standfirst: bool) -> str:
 
 def colophon(ledger: dict, rel: str, full: bool) -> str:
     gen = utc_min(ledger["generated_utc"])
-    who = (f"<p>{esc(CONTACT_NAME)}, on my own time, on a home computer, with no funding and no "
+    who = (f"<p>{esc(CONTACT_NAME)}, on my own time, on one rented server, with no funding and no "
            "affiliation to any operator or agency. If a figure here is wrong I want to know, and corrections get "
            "published rather than quietly fixed.</p>" if full else
-           f"<p>{esc(CONTACT_NAME)}, on my own time, on a home computer, with no funding and no "
+           f"<p>{esc(CONTACT_NAME)}, on my own time, on one rented server, with no funding and no "
            "affiliation to any operator or agency.</p>")
     return f"""  <footer class="z-full colophon">
     <div class="who">

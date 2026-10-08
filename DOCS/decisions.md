@@ -259,3 +259,18 @@ paper of 29 January 2007. Rationale: his reply of 27 September
 made two things plain, that a comparison against GP alone repeats a result he published, and that
 SupGP is the public product actually built for this; a reader deserves both columns and the
 reference. Follow-on, not part of this entry: whether the SupGP RMS itself belongs on the page.
+
+## D21 amendment: what SupGP is fitted to (2026-10-08, proposed)
+
+D21 says SupGP "is derived from the same files this archive holds, so the archive is also what lets
+anyone check a SupGP fit against its source". That is wrong, and the sentence is withdrawn. SupGP for
+Starlink is fitted to the per-object files SpaceX serves by satellite name, not to the manifest-listed
+files this archive keeps (Dr Kelso, 7 Oct 2026; the per-object set measured as probe P9, 8 Oct 2026). The two sets differ in format (CCSDS
+OCM 3.0 against the manifest set's MEME text), in reference frame (ITRF2000 in the per-object files),
+in horizon (seven days against two to three) and in timing; whether they agree at a common epoch has
+not been measured. For the column, which is not built: until the archive holds the version a SupGP fit
+was made from, the SupGP column compares CelesTrak's fit of one operator file with a different
+operator file written at a different time, and the page says so in those words; the pairing rule is
+restated when the column is built. The GP column, D04 and D05 are unchanged. Whether the archive takes
+in any of the per-object set is the owner's decision, open as of this entry.
+

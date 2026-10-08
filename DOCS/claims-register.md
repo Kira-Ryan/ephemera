@@ -39,9 +39,9 @@ the site's browser tests so a regression cannot ship.
   live page that morning).
 - Whether CelesTrak will share or co-publish a SupGP / ephemeris history archive. Asked: **13 Sep
   2026**, to TS.Kelso@celestrak.org (address confirmed the same day from celestrak.org/webmaster.php),
-  from the personal address; sent text in `DOCS/outreach/kelso-2026-09-13.md`. Answer: **received 27 Sep 2026**
-  (the launch gate's seven-day clock had elapsed on 20 Sep). CelesTrak already downloads the 11k+
-  ephemerides every two hours from its own feed and finds all but a few new each time (SpaceX
+  from the personal address; sent text in `DOCS/outreach/kelso-2026-09-13.md`. Answer: **26 Sep 2026**, reported to the
+  project on 27 Sep (the launch gate's seven-day clock had elapsed on 20 Sep). CelesTrak already downloads the 11k+
+  ephemerides every two hours and finds all but a few new each time (SpaceX
   says hourly or less); it fits the first six hours of each with SGP4 and publishes the fit RMS as
   part of SupGP; propagating standard GP from Space-Track for this purpose is, in his words, "a
   horrible idea", with the papers at celestrak.org/publications (the SDA-TAP-Lab 2025 one, section
@@ -50,12 +50,21 @@ the site's browser tests so a regression cannot ship.
   the public folder's manifest changes about every eight hours (the seven cycles to 27 Sep 04:15
   UTC were 7.7, 8.2, 4.6, 11.3, 7.8 and 8.0 h apart, each detected 2 to 5 min after its
   Last-Modified) and each cycle's files carry Last-Modified times spread over about three hours
-  before the manifest, so the two-hour cadence is his feed's, not the public folder's; to be
-  confirmed with him before any page says so. No site text changes on this reply alone. Follow-ups
+  before the manifest. We read that as his feed being a direct provision rather than the public
+  folder, and asked rather than stated it; the reading was wrong (his reply of 7 Oct, below). No
+  page ever stated it. Follow-ups
   in hand on 27 Sep: read the papers he named against the visibility page; a SupGP column beside
   the GP column (the owner said yes on 27 Sep; decision entry to follow); a reply with two
   questions (is the two-hourly feed the public folder or a direct provision; does CelesTrak keep
   the raw files) and one commitment (cite, add SupGP).
+  Follow-up **sent 3 Oct 2026** (the owner's revision of `DOCS/outreach/kelso-2026-09-27-reply.md`);
+  the finding page has cited his 2007 work since 3 Oct 17:30 UTC. **Answered 7 Oct 2026.** The
+  answer corrected the inference above: his source is the same public folder, not a direct
+  provision, but a set of per-object files requested by name that the manifest does not list.
+  Our own measurement of that set is probe P9 (`probes/p9_per_object_feed/`, 8 Oct 2026). How much
+  of private correspondence this public register quotes or paraphrases is the owner's decision,
+  open on 8 Oct; until then it records only what bears on the project's own claims. The SupGP
+  column (D21) is affected: see the D21 amendment of 8 Oct.
   This is the first ally contact (PLAN item 11) and it starts the 7-day clock in the public launch
   gate. The figures quoted in it are from the ledger of 2026-09-13 08:20 UTC and are repeated here
   so a later correction can find them: 90 percent of scored Starlink satellites within 10 km of the
@@ -93,8 +102,9 @@ the site's browser tests so a regression cannot ship.
 
 ## Corrections log
 
-Every correction is appended here with date, what was wrong, and what replaced it. Nothing below
-was public at the time; the entries exist so the first public version already carries its history.
+Every correction is appended here with date, what was wrong, and what replaced it. Entries before
+7 Sep 2026 predate the public repository and exist so its first public version carried its history;
+later entries were public when made.
 
 - 2026-08-30 — Gzipped bytes per file was quoted as 848,660 in `DOCS/concept.md` and here; the only
   measurement in the repository is ~821,000 (`gzip -6`, one file, P1). Replaced everywhere; the
@@ -112,3 +122,11 @@ was public at the time; the entries exist so the first public version already ca
   register; it never was, by choice. Replaced with "deliberately not recorded".
 - 2026-08-30 — The P5 email draft described a daily Merkle root, a hash chain, cold storage and DOIs
   in the present tense before any of them existed. Rewritten to state only what runs at send time.
+- 2026-10-08 - The Kelso entry (written 27 Sep, public since) read CelesTrak's two-hourly download as
+  a direct provision from SpaceX rather than the public folder. His reply of 7 Oct showed it is the
+  public folder: per-object files requested by name, which the manifest does not list (measured as
+  probe P9). The entry now says the reading was wrong; no page ever stated it. D21's sentence that
+  SupGP "is derived from the same files this archive holds" was wrong for the same reason and is
+  withdrawn by the D21 amendment of 8 Oct (proposed). The site's colophon said the project ran "on a
+  home computer" from 3 Oct, when the home machine stopped running anything, until 8 Oct; it now says
+  "on one rented server".

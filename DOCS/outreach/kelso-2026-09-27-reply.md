@@ -1,8 +1,9 @@
 # Reply to Dr Kelso - DRAFT for the owner
 
-**Status:** drafted 27 Sep 2026, not sent. Owner sends from kiraryan27@gmail.com, as a reply in
-the same thread. Two questions, one commitment, no second pitch (DOCS/claims-register.md, the
-Kelso entry, and PLAN.md 27 Sep).
+**Status:** drafted 27 Sep 2026. The owner sent their own revision on 3 Oct 2026 (the SupGP
+paragraph dropped; the cadence question asked as a request for permission; thanks added for
+Revisiting Spacetrack Report #3); answered 7 Oct 2026 (the claims register's Kelso entry). The
+text below is the draft, not what was sent.
 
 **What it must not do:** re-offer co-authorship, argue about the scoreboard, or claim anything
 about his feed before he says what it is. The public-folder numbers are offered as our data, not
