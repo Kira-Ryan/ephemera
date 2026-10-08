@@ -455,3 +455,18 @@ document's tracking table, not here.
   flaky publish test. The host's own pre-copy proofs for the 21 overlap cycles are in the bucket
   under cutover/2026-10-03/. Suite 276. Next: three publishes and three shipped cycles from the
   host alone close item 6b; then the home spool is an archive copy.
+- 2026-10-08 - Item 6b closed, and a second public set. From the published ledger: the 16 cycles
+  first seen since the cutover are all complete, stamped (15 attested), in Deep Archive, with every
+  manifest copy verified and no sample lost; the host has pushed 33 site builds. Dr Kelso answered
+  on 7 Oct: CelesTrak's source is the same public folder, but per-object files requested by name,
+  not the manifest set. Probe P9 the next day: 27 of 27 names served; CCSDS OCM 3.0, seven days in
+  ITRF2000 with covariance and the operator's planned manoeuvres; a new version about every two hours
+  per object; about 56 GB raw a full set; HEAD answers 404. Corrected the same day: the colophon (said
+  "on a home computer" since the cutover), the README (still named the owner's city and was frozen
+  at 31 Aug), the claims register's wrong inference about his feed, and D21's premise (amendment
+  proposed). Proposed to the owner: rewording the finding sentence that attributes most of the spread
+  to planned manoeuvres, which was never measured. Open for the owner: whether to archive any of the
+  per-object set, whether to tell SpaceX first, and how the public record treats private
+  correspondence. SSH to the host has been blocked from the owner's address since about 16:00 UTC; the
+  host kept publishing. Suite 277 -> 278.
+

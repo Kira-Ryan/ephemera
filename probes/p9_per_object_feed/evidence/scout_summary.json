@@ -1,0 +1,274 @@
+{
+ "probe": "P9",
+ "run_utc": "2026-10-08T16:19:23Z",
+ "finished_utc": "2026-10-08T16:21:55Z",
+ "user_agent": "ephemera-probe/0.1 (+archive of published ephemerides; contact: kiraryan27@gmail.com)",
+ "requests": 106,
+ "reference_cycle": {
+  "cycle": "cycle_363c1e721df5",
+  "first_seen_utc": "2026-10-03T04:18:39Z",
+  "files_listed": 11151,
+  "manifest_last_modified": "Sat, 03 Oct 2026 04:12:57 GMT"
+ },
+ "manifest": {
+  "files": 11151,
+  "parsed_STARLINK_names": 11151,
+  "distinct_object_names": 11151,
+  "not_matching_pattern_count": 0,
+  "status_words": [
+   [
+    "Operational",
+    11151
+   ]
+  ]
+ },
+ "per_object_fetches": {
+  "STARLINK-37299": {
+   "status": 200,
+   "seconds": 4.69,
+   "in_reference_manifest": true,
+   "headers": {
+    "Content-Type": "application/json",
+    "Content-Length": "1922913",
+    "Content-Encoding": "gzip",
+    "Last-Modified": "Thu, 08 Oct 2026 15:14:58 GMT",
+    "ETag": "\"cf235fc5ed597d49bdbb1a241185da3e\"",
+    "Cache-Control": "max-age=60, must-revalidate",
+    "Date": "Thu, 08 Oct 2026 16:19:36 GMT",
+    "X-Cache": "MISS"
+   },
+   "sha256": "36ec4ebddaa50d0176acfbeb99f87b3f812a599e5bf8f6c13695cb117eef3a7c",
+   "raw_bytes": 5026792,
+   "lines": 20224,
+   "rows_by_token_count": {
+    "7": 10081,
+    "22": 10081,
+    "5": 3
+   },
+   "first_row_utc": "2026-10-08T15:06:42Z",
+   "step_seconds_mode": 60,
+   "header_keyword_lines": [
+    "CCSDS_OCM_VERS = 3.0",
+    "COMMENT TIME_LAST_OBSERVATION_GPS_NS = 1475507487623412213",
+    "CREATION_DATE = 2026-10-08T15:14:57.444334Z",
+    "ORIGINATOR = SPACEX/USA",
+    "MESSAGE_ID = STARLINK-37299_1791472002",
+    "META_START",
+    "OBJECT_NAME = STARLINK-37299",
+    "OBJECT_DESIGNATOR = 100015",
+    "OPERATOR = SPACEX",
+    "TIME_SYSTEM = UTC",
+    "EPOCH_TZERO = 2026-10-08T15:06:42.000000Z",
+    "START_TIME = 2026-10-08T15:06:42.000000Z",
+    "STOP_TIME = 2026-10-15T15:06:42.000000Z"
+   ],
+   "manifest_file_same_object": {
+    "file": "MEME_100015_STARLINK-37299_2760101_Operational_1475283720_UNCLASSIFIED.txt",
+    "sha256": "6b7eec3810f6fa01bb725be3ce5b3f2c3f80520a071954f7204685f7620a6293",
+    "raw_bytes": 2040247,
+    "lines": 17288,
+    "span_hours": 72.0,
+    "first_row_utc": "2026-10-03T01:01:42Z",
+    "last_row_utc": "2026-10-06T01:01:42Z",
+    "covariance_rows": 12963,
+    "last_modified": "Sat, 03 Oct 2026 01:21:38 GMT",
+    "header_lines": [
+     "created:2026-10-03 01:21:37 UTC",
+     "ephemeris_start:2026-10-03 01:01:42 UTC ephemeris_stop:2026-10-06 01:01:42 UTC step_size:60",
+     "ephemeris_source:blend",
+     "UVW"
+    ],
+    "note": "written about five days before the per-object file was fetched; no common epoch was compared"
+   }
+  },
+  "STARLINK-1008": {
+   "status": 200,
+   "seconds": 3.47,
+   "in_reference_manifest": true,
+   "headers": {
+    "Content-Type": "application/json",
+    "Content-Length": "1917698",
+    "Content-Encoding": "gzip",
+    "Last-Modified": "Thu, 08 Oct 2026 16:04:16 GMT",
+    "ETag": "\"583554c258c10cde503e7a3430c53116\"",
+    "Cache-Control": "max-age=60, must-revalidate",
+    "Date": "Thu, 08 Oct 2026 16:19:41 GMT",
+    "X-Cache": "MISS"
+   },
+   "sha256": "2235580880db904c98d88abb44b1d3fa8ab3bb01a436dc1eb3acbdcae6275370",
+   "raw_bytes": 5025760,
+   "lines": 20191,
+   "rows_by_token_count": {
+    "7": 10081,
+    "22": 10081
+   },
+   "first_row_utc": "2026-10-08T15:28:42Z",
+   "step_seconds_mode": 60,
+   "header_keyword_lines": [
+    "CCSDS_OCM_VERS = 3.0",
+    "COMMENT TIME_LAST_OBSERVATION_GPS_NS = 1475508504483000000",
+    "CREATION_DATE = 2026-10-08T16:04:15.725572Z",
+    "ORIGINATOR = SPACEX/USA",
+    "MESSAGE_ID = STARLINK-1008_1791473322",
+    "META_START",
+    "OBJECT_NAME = STARLINK-1008",
+    "OBJECT_DESIGNATOR = 44714",
+    "OPERATOR = SPACEX",
+    "TIME_SYSTEM = UTC",
+    "EPOCH_TZERO = 2026-10-08T15:28:42.000000Z",
+    "START_TIME = 2026-10-08T15:28:42.000000Z",
+    "STOP_TIME = 2026-10-15T15:28:42.000000Z"
+   ],
+   "manifest_file_same_object": {
+    "file": "MEME_44714_STARLINK-1008_2760357_Operational_1475207820_UNCLASSIFIED.txt",
+    "sha256": "e34957a14d50bc79b787c9bf3c683cc0a761b520cc00ffeaa847b76c7e46019a",
+    "raw_bytes": 1362495,
+    "lines": 11524,
+    "span_hours": 47.98,
+    "first_row_utc": "2026-10-03T03:57:42Z",
+    "last_row_utc": "2026-10-05T03:56:42Z",
+    "covariance_rows": 8640,
+    "last_modified": "Sat, 03 Oct 2026 04:12:47 GMT",
+    "header_lines": [
+     "created:2026-10-03 04:12:46 UTC",
+     "ephemeris_start:2026-10-03 03:57:42 UTC ephemeris_stop:2026-10-05 03:56:42 UTC step_size:60",
+     "ephemeris_source:blend",
+     "UVW"
+    ],
+    "note": "written about five days before the per-object file was fetched; no common epoch was compared"
+   }
+  },
+  "STARLINK-35066": {
+   "status": 200,
+   "seconds": 2.66,
+   "in_reference_manifest": true,
+   "headers": {
+    "Content-Type": "application/json",
+    "Content-Length": "1927779",
+    "Content-Encoding": "gzip",
+    "Last-Modified": "Thu, 08 Oct 2026 14:32:06 GMT",
+    "ETag": "\"e85fb61c85c942adc44f1d1b55cdc00b\"",
+    "Cache-Control": "max-age=60, must-revalidate",
+    "Date": "Thu, 08 Oct 2026 16:19:44 GMT",
+    "X-Cache": "MISS"
+   },
+   "sha256": "db7b1b5c0b2a3c915347d82b97cd420228781bc9f8db2c2280901f18b85bd4ce",
+   "raw_bytes": 5026423,
+   "lines": 20213,
+   "rows_by_token_count": {
+    "7": 10081,
+    "22": 10081,
+    "5": 2
+   },
+   "first_row_utc": "2026-10-08T14:23:42Z",
+   "step_seconds_mode": 60,
+   "header_keyword_lines": [
+    "CCSDS_OCM_VERS = 3.0",
+    "COMMENT TIME_LAST_OBSERVATION_GPS_NS = 1475504905153341235",
+    "CREATION_DATE = 2026-10-08T14:32:05.436665Z",
+    "ORIGINATOR = SPACEX/USA",
+    "MESSAGE_ID = STARLINK-35066_1791469422",
+    "META_START",
+    "OBJECT_NAME = STARLINK-35066",
+    "OBJECT_DESIGNATOR = 65386",
+    "OPERATOR = SPACEX",
+    "TIME_SYSTEM = UTC",
+    "EPOCH_TZERO = 2026-10-08T14:23:42.000000Z",
+    "START_TIME = 2026-10-08T14:23:42.000000Z",
+    "STOP_TIME = 2026-10-15T14:23:42.000000Z"
+   ],
+   "manifest_file_same_object": {
+    "file": "MEME_65386_STARLINK-35066_2760151_Operational_1475286720_UNCLASSIFIED.txt",
+    "sha256": "a2600bf110d1e9729e20b26ff49e466c391f03d319e6475575e0dc1a12ebda3c",
+    "raw_bytes": 2041229,
+    "lines": 17288,
+    "span_hours": 72.0,
+    "first_row_utc": "2026-10-03T01:51:42Z",
+    "last_row_utc": "2026-10-06T01:51:42Z",
+    "covariance_rows": 12963,
+    "last_modified": "Sat, 03 Oct 2026 01:59:50 GMT",
+    "header_lines": [
+     "created:2026-10-03 01:59:49 UTC",
+     "ephemeris_start:2026-10-03 01:51:42 UTC ephemeris_stop:2026-10-06 01:51:42 UTC step_size:60",
+     "ephemeris_source:blend",
+     "UVW"
+    ],
+    "note": "written about five days before the per-object file was fetched; no common epoch was compared"
+   }
+  },
+  "STARLINK-6380": {
+   "status": 200,
+   "seconds": 3.73,
+   "in_reference_manifest": true,
+   "headers": {
+    "Content-Type": "application/json",
+    "Content-Length": "1912023",
+    "Content-Encoding": "gzip",
+    "Last-Modified": "Thu, 08 Oct 2026 15:09:05 GMT",
+    "ETag": "\"bf6a86a32d7f7766596db7eff3720db5\"",
+    "Cache-Control": "max-age=60, must-revalidate",
+    "Date": "Thu, 08 Oct 2026 16:19:48 GMT",
+    "X-Cache": "MISS"
+   },
+   "sha256": "f6ea4d1725ebb07f40ae24e40c940518e2d4056a680866972c035b67eda05589",
+   "raw_bytes": 5026532,
+   "lines": 20213,
+   "rows_by_token_count": {
+    "7": 10081,
+    "22": 10081,
+    "5": 2
+   },
+   "first_row_utc": "2026-10-08T14:58:42Z",
+   "step_seconds_mode": 60,
+   "header_keyword_lines": [
+    "CCSDS_OCM_VERS = 3.0",
+    "COMMENT TIME_LAST_OBSERVATION_GPS_NS = 1475507041238704108",
+    "CREATION_DATE = 2026-10-08T15:09:04.715656Z",
+    "ORIGINATOR = SPACEX/USA",
+    "MESSAGE_ID = STARLINK-6380_1791471522",
+    "META_START",
+    "OBJECT_NAME = STARLINK-6380",
+    "OBJECT_DESIGNATOR = 57344",
+    "OPERATOR = SPACEX",
+    "TIME_SYSTEM = UTC",
+    "EPOCH_TZERO = 2026-10-08T14:58:42.000000Z",
+    "START_TIME = 2026-10-08T14:58:42.000000Z",
+    "STOP_TIME = 2026-10-15T14:58:42.000000Z"
+   ],
+   "manifest_file_same_object": {
+    "file": "MEME_57344_STARLINK-6380_2760310_Operational_1475291460_UNCLASSIFIED.txt",
+    "sha256": "3d0be6f423aad906de4b4b737ba6491e954ed51acde4bf710acdf5ac3e9b0289",
+    "raw_bytes": 2041757,
+    "lines": 17288,
+    "span_hours": 72.0,
+    "first_row_utc": "2026-10-03T03:10:42Z",
+    "last_row_utc": "2026-10-06T03:10:42Z",
+    "covariance_rows": 12963,
+    "last_modified": "Sat, 03 Oct 2026 03:20:12 GMT",
+    "header_lines": [
+     "created:2026-10-03 03:20:11 UTC",
+     "ephemeris_start:2026-10-03 03:10:42 UTC ephemeris_stop:2026-10-06 03:10:42 UTC step_size:60",
+     "ephemeris_source:blend",
+     "UVW"
+    ],
+    "note": "written about five days before the per-object file was fetched; no common epoch was compared"
+   }
+  }
+ },
+ "nonexistent_name": {
+  "status": 404,
+  "content_type": "application/xml; charset=UTF-8",
+  "body": "an object-store NoSuchKey error (withheld: it names the operator's bucket)"
+ },
+ "folder_root": {
+  "status": 404,
+  "body": "the same NoSuchKey error; no listing"
+ },
+ "head_requests": {
+  "sent": 100,
+  "status_counts": {
+   "404": 100
+  },
+  "note": "HEAD answers 404 for objects GET serves"
+ }
+}

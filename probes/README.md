@@ -14,6 +14,7 @@ A probe that fails is a finding, not a failure.
 | P6 | Is `ephemeris_source:blend` the only manoeuvre-content marker? | Manoeuvre content is unlabelled in every file | Diff headers and record structure across a full cycle and across two consecutive cycles for the same satellite |
 | P7 | Can the June 2026 degradation be reproduced from what still exists? | No source retains the period | Query CelesTrak history statistics and any SupGP archive Kelso will share; if reproducible, it becomes the scoreboard's first replay |
 | P8 | Can the whole pipeline run from a datacentre IP? | The feed refuses a hosting address, a cycle projects past 6 h, S3 under 3 MB/s, or Wayback throttles the second capture | On a throwaway Linux host: reachability of every endpoint, the manifest and its 304, the pull rate with the real poller at 16 and 32 connections, a 2 GiB S3 PUT, the native OTS client, three Wayback captures at the witness's gap |
+| P9 | What does the ephemerides folder serve besides the manifest? (Dr Kelso, 7 Oct 2026) | The site's statements about what the archive keeps turn out false | Request by name; compare format, horizon, size and cadence with the manifest set; result 8 Oct 2026 in `p9_per_object_feed/` |
 
 Order: P5 is an email and goes out first; P1 and P2 run the same day, because the archive starts the
 moment they pass (D03); P3 is bulletin #1; P4, P6 and P7 fill the rest of the week.

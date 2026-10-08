@@ -1,0 +1,756 @@
+{
+ "summary": {
+  "window_utc": [
+   "2026-10-08T16:25:21Z",
+   "2026-10-08T18:21:45Z"
+  ],
+  "window_minutes": 116.4,
+  "polls": 24,
+  "objects": 27,
+  "requests": 648,
+  "status_counts": {
+   "200": 52,
+   "304": 596
+  },
+  "head_check": {
+   "utc": "2026-10-08T16:25:21Z",
+   "check": "HEAD on a file GET serves",
+   "obj": "STARLINK-1008",
+   "status": 404
+  },
+  "objects_with_a_new_version_in_window": 25,
+  "minutes_between_consecutive_versions": {
+   "n": 25,
+   "min": 38.7,
+   "median": 120.9,
+   "mean": 122.7,
+   "max": 200.2
+  },
+  "versions_by_manoeuvre_row_count": {
+   "0": 2,
+   "1": 4,
+   "2": 19,
+   "3": 23,
+   "5": 2,
+   "8": 2
+  },
+  "consecutive_versions_whose_manoeuvre_rows_changed": 24,
+  "consecutive_versions_whose_manoeuvre_rows_were_identical": 1,
+  "creation_minus_epoch_tzero_minutes": {
+   "median": 7.9,
+   "max": 35.6
+  },
+  "note": "versions are identified by CREATION_DATE; manoeuvre rows are counted, never stored"
+ },
+ "objects": {
+  "STARLINK-1008": {
+   "statuses": {
+    "200": 2,
+    "304": 22
+   },
+   "versions": [
+    {
+     "seen_utc": "2026-10-08T16:25:21Z",
+     "creation_date": "2026-10-08T16:04:15.725572Z",
+     "epoch_tzero": "2026-10-08T15:28:42.000000Z",
+     "last_modified": "Thu, 08 Oct 2026 16:04:16 GMT",
+     "etag": "\"583554c258c10cde503e7a3430c53116\"",
+     "manoeuvre_rows": 0
+    },
+    {
+     "seen_utc": "2026-10-08T18:05:21Z",
+     "creation_date": "2026-10-08T17:59:43.041980Z",
+     "epoch_tzero": "2026-10-08T17:58:42.000000Z",
+     "last_modified": "Thu, 08 Oct 2026 17:59:44 GMT",
+     "etag": "\"2a0e77d48a9d6b0a5b2625ff150c704d\"",
+     "manoeuvre_rows": 0
+    }
+   ],
+   "minutes_between_versions": [
+    115.5
+   ]
+  },
+  "STARLINK-11544": {
+   "statuses": {
+    "200": 2,
+    "304": 22
+   },
+   "versions": [
+    {
+     "seen_utc": "2026-10-08T16:25:28Z",
+     "creation_date": "2026-10-08T16:15:59.211908Z",
+     "epoch_tzero": "2026-10-08T16:10:42.000000Z",
+     "last_modified": "Thu, 08 Oct 2026 16:16:00 GMT",
+     "etag": "\"bf0a094aa697047acfafc5c3037e01b2\"",
+     "manoeuvre_rows": 5
+    },
+    {
+     "seen_utc": "2026-10-08T18:20:27Z",
+     "creation_date": "2026-10-08T18:11:58.816666Z",
+     "epoch_tzero": "2026-10-08T18:05:42.000000Z",
+     "last_modified": "Thu, 08 Oct 2026 18:11:59 GMT",
+     "etag": "\"0481314f713721970079dc842ffab215\"",
+     "manoeuvre_rows": 5
+    }
+   ],
+   "minutes_between_versions": [
+    116.0
+   ]
+  },
+  "STARLINK-2235": {
+   "statuses": {
+    "200": 2,
+    "304": 22
+   },
+   "versions": [
+    {
+     "seen_utc": "2026-10-08T16:25:34Z",
+     "creation_date": "2026-10-08T14:29:39.464268Z",
+     "epoch_tzero": "2026-10-08T14:19:42.000000Z",
+     "last_modified": "Thu, 08 Oct 2026 14:29:40 GMT",
+     "etag": "\"de3097abde8163b5ca8f059e30c03ea1\"",
+     "manoeuvre_rows": 1
+    },
+    {
+     "seen_utc": "2026-10-08T16:35:27Z",
+     "creation_date": "2026-10-08T16:32:30.194109Z",
+     "epoch_tzero": "2026-10-08T16:11:42.000000Z",
+     "last_modified": "Thu, 08 Oct 2026 16:32:30 GMT",
+     "etag": "\"09fce5f3140e17c429afb316d6afe12f\"",
+     "manoeuvre_rows": 1
+    }
+   ],
+   "minutes_between_versions": [
+    122.8
+   ]
+  },
+  "STARLINK-30260": {
+   "statuses": {
+    "200": 2,
+    "304": 22
+   },
+   "versions": [
+    {
+     "seen_utc": "2026-10-08T16:25:41Z",
+     "creation_date": "2026-10-08T16:07:29.590957Z",
+     "epoch_tzero": "2026-10-08T15:59:42.000000Z",
+     "last_modified": "Thu, 08 Oct 2026 16:07:31 GMT",
+     "etag": "\"72fd94aa88c994f338c8c163f03b1df9\"",
+     "manoeuvre_rows": 3
+    },
+    {
+     "seen_utc": "2026-10-08T18:05:32Z",
+     "creation_date": "2026-10-08T18:03:23.015898Z",
+     "epoch_tzero": "2026-10-08T17:54:42.000000Z",
+     "last_modified": "Thu, 08 Oct 2026 18:03:23 GMT",
+     "etag": "\"27e94a99734a0dee1e901bed137196f3\"",
+     "manoeuvre_rows": 3
+    }
+   ],
+   "minutes_between_versions": [
+    115.9
+   ]
+  },
+  "STARLINK-30847": {
+   "statuses": {
+    "200": 2,
+    "304": 22
+   },
+   "versions": [
+    {
+     "seen_utc": "2026-10-08T16:25:47Z",
+     "creation_date": "2026-10-08T15:48:40.805214Z",
+     "epoch_tzero": "2026-10-08T15:42:42.000000Z",
+     "last_modified": "Thu, 08 Oct 2026 15:48:41 GMT",
+     "etag": "\"36f5e74184b567aed91fb4e0c6f5c8a1\"",
+     "manoeuvre_rows": 3
+    },
+    {
+     "seen_utc": "2026-10-08T17:50:33Z",
+     "creation_date": "2026-10-08T17:49:35.449393Z",
+     "epoch_tzero": "2026-10-08T17:43:42.000000Z",
+     "last_modified": "Thu, 08 Oct 2026 17:49:36 GMT",
+     "etag": "\"d15d2cc71c8a3c67429481dca210952a\"",
+     "manoeuvre_rows": 3
+    }
+   ],
+   "minutes_between_versions": [
+    120.9
+   ]
+  },
+  "STARLINK-31315": {
+   "statuses": {
+    "200": 2,
+    "304": 22
+   },
+   "versions": [
+    {
+     "seen_utc": "2026-10-08T16:25:55Z",
+     "creation_date": "2026-10-08T15:03:35.512728Z",
+     "epoch_tzero": "2026-10-08T14:55:42.000000Z",
+     "last_modified": "Thu, 08 Oct 2026 15:03:36 GMT",
+     "etag": "\"428a550ec3b51c7020709b659f98fa5b\"",
+     "manoeuvre_rows": 2
+    },
+    {
+     "seen_utc": "2026-10-08T17:35:34Z",
+     "creation_date": "2026-10-08T17:26:32.802828Z",
+     "epoch_tzero": "2026-10-08T17:20:42.000000Z",
+     "last_modified": "Thu, 08 Oct 2026 17:26:33 GMT",
+     "etag": "\"a89ddb4b1b5f4a3a3490954512cc1b31\"",
+     "manoeuvre_rows": 3
+    }
+   ],
+   "minutes_between_versions": [
+    143.0
+   ]
+  },
+  "STARLINK-31774": {
+   "statuses": {
+    "200": 2,
+    "304": 22
+   },
+   "versions": [
+    {
+     "seen_utc": "2026-10-08T16:26:02Z",
+     "creation_date": "2026-10-08T15:42:26.823294Z",
+     "epoch_tzero": "2026-10-08T15:34:42.000000Z",
+     "last_modified": "Thu, 08 Oct 2026 15:42:27 GMT",
+     "etag": "\"189fde985d05ae6ca14f8e1dc8b8df7c\"",
+     "manoeuvre_rows": 3
+    },
+    {
+     "seen_utc": "2026-10-08T17:20:36Z",
+     "creation_date": "2026-10-08T17:11:09.403002Z",
+     "epoch_tzero": "2026-10-08T17:04:42.000000Z",
+     "last_modified": "Thu, 08 Oct 2026 17:11:11 GMT",
+     "etag": "\"070d9588aaea9566b487d550ab127d88\"",
+     "manoeuvre_rows": 3
+    }
+   ],
+   "minutes_between_versions": [
+    88.7
+   ]
+  },
+  "STARLINK-32269": {
+   "statuses": {
+    "200": 2,
+    "304": 22
+   },
+   "versions": [
+    {
+     "seen_utc": "2026-10-08T16:26:08Z",
+     "creation_date": "2026-10-08T14:21:37.007663Z",
+     "epoch_tzero": "2026-10-08T14:15:42.000000Z",
+     "last_modified": "Thu, 08 Oct 2026 14:21:38 GMT",
+     "etag": "\"dfa14c2d8a5d74b9e3b3ae638dd042b8\"",
+     "manoeuvre_rows": 2
+    },
+    {
+     "seen_utc": "2026-10-08T17:11:02Z",
+     "creation_date": "2026-10-08T17:10:35.706145Z",
+     "epoch_tzero": "2026-10-08T17:01:42.000000Z",
+     "last_modified": "Thu, 08 Oct 2026 17:10:36 GMT",
+     "etag": "\"597e013dc99bfe8ff5018757029355a6\"",
+     "manoeuvre_rows": 2
+    }
+   ],
+   "minutes_between_versions": [
+    169.0
+   ]
+  },
+  "STARLINK-3271": {
+   "statuses": {
+    "200": 2,
+    "304": 22
+   },
+   "versions": [
+    {
+     "seen_utc": "2026-10-08T16:26:15Z",
+     "creation_date": "2026-10-08T15:47:39.099045Z",
+     "epoch_tzero": "2026-10-08T15:39:42.000000Z",
+     "last_modified": "Thu, 08 Oct 2026 15:47:39 GMT",
+     "etag": "\"1546f1d09f860779f8ab64137f2640d1\"",
+     "manoeuvre_rows": 3
+    },
+    {
+     "seen_utc": "2026-10-08T17:05:43Z",
+     "creation_date": "2026-10-08T17:00:47.226782Z",
+     "epoch_tzero": "2026-10-08T16:49:42.000000Z",
+     "last_modified": "Thu, 08 Oct 2026 17:00:49 GMT",
+     "etag": "\"03d985c96b3031d4135b4f785013f797\"",
+     "manoeuvre_rows": 3
+    }
+   ],
+   "minutes_between_versions": [
+    73.1
+   ]
+  },
+  "STARLINK-33693": {
+   "statuses": {
+    "200": 2,
+    "304": 22
+   },
+   "versions": [
+    {
+     "seen_utc": "2026-10-08T16:26:20Z",
+     "creation_date": "2026-10-08T16:01:48.010064Z",
+     "epoch_tzero": "2026-10-08T15:51:42.000000Z",
+     "last_modified": "Thu, 08 Oct 2026 16:01:48 GMT",
+     "etag": "\"1ab7b0059831381219869ee2cffd0011\"",
+     "manoeuvre_rows": 2
+    },
+    {
+     "seen_utc": "2026-10-08T18:05:53Z",
+     "creation_date": "2026-10-08T17:57:14.125437Z",
+     "epoch_tzero": "2026-10-08T17:48:42.000000Z",
+     "last_modified": "Thu, 08 Oct 2026 17:57:14 GMT",
+     "etag": "\"94b2ada0bc49b0f5665da68d29d53683\"",
+     "manoeuvre_rows": 2
+    }
+   ],
+   "minutes_between_versions": [
+    115.4
+   ]
+  },
+  "STARLINK-34145": {
+   "statuses": {
+    "200": 2,
+    "304": 22
+   },
+   "versions": [
+    {
+     "seen_utc": "2026-10-08T16:26:26Z",
+     "creation_date": "2026-10-08T15:27:23.284127Z",
+     "epoch_tzero": "2026-10-08T15:17:42.000000Z",
+     "last_modified": "Thu, 08 Oct 2026 15:27:24 GMT",
+     "etag": "\"55b0feb77f83eaedb787354f33662bb0\"",
+     "manoeuvre_rows": 2
+    },
+    {
+     "seen_utc": "2026-10-08T16:35:54Z",
+     "creation_date": "2026-10-08T16:28:29.944096Z",
+     "epoch_tzero": "2026-10-08T16:17:42.000000Z",
+     "last_modified": "Thu, 08 Oct 2026 16:28:31 GMT",
+     "etag": "\"4dd663fccd32a848b3d3d4e78dc7e258\"",
+     "manoeuvre_rows": 2
+    }
+   ],
+   "minutes_between_versions": [
+    61.1
+   ]
+  },
+  "STARLINK-34599": {
+   "statuses": {
+    "200": 2,
+    "304": 22
+   },
+   "versions": [
+    {
+     "seen_utc": "2026-10-08T16:26:33Z",
+     "creation_date": "2026-10-08T14:13:46.959136Z",
+     "epoch_tzero": "2026-10-08T14:09:42.000000Z",
+     "last_modified": "Thu, 08 Oct 2026 14:13:47 GMT",
+     "etag": "\"4f0fb569896909d9582d2af0511e6b96\"",
+     "manoeuvre_rows": 2
+    },
+    {
+     "seen_utc": "2026-10-08T17:35:55Z",
+     "creation_date": "2026-10-08T17:30:15.380131Z",
+     "epoch_tzero": "2026-10-08T17:20:42.000000Z",
+     "last_modified": "Thu, 08 Oct 2026 17:30:16 GMT",
+     "etag": "\"7f25f3e920ff57abcc1c4ba152c1ca42\"",
+     "manoeuvre_rows": 2
+    }
+   ],
+   "minutes_between_versions": [
+    196.5
+   ]
+  },
+  "STARLINK-3506": {
+   "statuses": {
+    "200": 2,
+    "304": 22
+   },
+   "versions": [
+    {
+     "seen_utc": "2026-10-08T16:26:38Z",
+     "creation_date": "2026-10-08T15:11:33.441020Z",
+     "epoch_tzero": "2026-10-08T14:58:42.000000Z",
+     "last_modified": "Thu, 08 Oct 2026 15:11:34 GMT",
+     "etag": "\"53a06ebabe4c97e2781499e853f140a9\"",
+     "manoeuvre_rows": 3
+    },
+    {
+     "seen_utc": "2026-10-08T16:50:54Z",
+     "creation_date": "2026-10-08T16:45:43.451075Z",
+     "epoch_tzero": "2026-10-08T16:23:42.000000Z",
+     "last_modified": "Thu, 08 Oct 2026 16:45:44 GMT",
+     "etag": "\"783d4a798f805d3587734493969b3cb9\"",
+     "manoeuvre_rows": 3
+    }
+   ],
+   "minutes_between_versions": [
+    94.2
+   ]
+  },
+  "STARLINK-35488": {
+   "statuses": {
+    "200": 2,
+    "304": 22
+   },
+   "versions": [
+    {
+     "seen_utc": "2026-10-08T16:26:45Z",
+     "creation_date": "2026-10-08T15:49:58.003269Z",
+     "epoch_tzero": "2026-10-08T15:38:42.000000Z",
+     "last_modified": "Thu, 08 Oct 2026 15:49:58 GMT",
+     "etag": "\"059efd6a92c7fff30a32fab71488e850\"",
+     "manoeuvre_rows": 2
+    },
+    {
+     "seen_utc": "2026-10-08T17:36:03Z",
+     "creation_date": "2026-10-08T17:32:52.640103Z",
+     "epoch_tzero": "2026-10-08T17:23:42.000000Z",
+     "last_modified": "Thu, 08 Oct 2026 17:32:53 GMT",
+     "etag": "\"bae789421d334b44660204607a07a662\"",
+     "manoeuvre_rows": 3
+    }
+   ],
+   "minutes_between_versions": [
+    102.9
+   ]
+  },
+  "STARLINK-35913": {
+   "statuses": {
+    "200": 1,
+    "304": 23
+   },
+   "versions": [
+    {
+     "seen_utc": "2026-10-08T16:26:51Z",
+     "creation_date": "2026-10-08T16:24:20.364414Z",
+     "epoch_tzero": "2026-10-08T16:18:42.000000Z",
+     "last_modified": "Thu, 08 Oct 2026 16:24:21 GMT",
+     "etag": "\"ac6c96f93049bb94f7abf6437d141863\"",
+     "manoeuvre_rows": 2
+    }
+   ],
+   "minutes_between_versions": []
+  },
+  "STARLINK-36376": {
+   "statuses": {
+    "200": 2,
+    "304": 22
+   },
+   "versions": [
+    {
+     "seen_utc": "2026-10-08T16:26:58Z",
+     "creation_date": "2026-10-08T14:12:59.289006Z",
+     "epoch_tzero": "2026-10-08T14:04:42.000000Z",
+     "last_modified": "Thu, 08 Oct 2026 14:13:00 GMT",
+     "etag": "\"91df39a11e21a8eed62bbb4b808bebae\"",
+     "manoeuvre_rows": 3
+    },
+    {
+     "seen_utc": "2026-10-08T16:36:11Z",
+     "creation_date": "2026-10-08T16:34:53.271320Z",
+     "epoch_tzero": "2026-10-08T16:25:42.000000Z",
+     "last_modified": "Thu, 08 Oct 2026 16:34:54 GMT",
+     "etag": "\"70e185044c33fbf10c1c7f6975a5e3e1\"",
+     "manoeuvre_rows": 3
+    }
+   ],
+   "minutes_between_versions": [
+    141.9
+   ]
+  },
+  "STARLINK-36811": {
+   "statuses": {
+    "200": 2,
+    "304": 22
+   },
+   "versions": [
+    {
+     "seen_utc": "2026-10-08T16:27:03Z",
+     "creation_date": "2026-10-08T14:15:21.447073Z",
+     "epoch_tzero": "2026-10-08T14:05:42.000000Z",
+     "last_modified": "Thu, 08 Oct 2026 14:15:22 GMT",
+     "etag": "\"6f590a0d0c75cb41efb4e2484790d321\"",
+     "manoeuvre_rows": 3
+    },
+    {
+     "seen_utc": "2026-10-08T16:36:17Z",
+     "creation_date": "2026-10-08T16:33:17.976757Z",
+     "epoch_tzero": "2026-10-08T16:24:42.000000Z",
+     "last_modified": "Thu, 08 Oct 2026 16:33:18 GMT",
+     "etag": "\"f485d7b365ce7f68a1720dff45fee193\"",
+     "manoeuvre_rows": 3
+    }
+   ],
+   "minutes_between_versions": [
+    137.9
+   ]
+  },
+  "STARLINK-37243": {
+   "statuses": {
+    "200": 2,
+    "304": 22
+   },
+   "versions": [
+    {
+     "seen_utc": "2026-10-08T16:27:09Z",
+     "creation_date": "2026-10-08T14:39:47.632151Z",
+     "epoch_tzero": "2026-10-08T14:32:42.000000Z",
+     "last_modified": "Thu, 08 Oct 2026 14:39:48 GMT",
+     "etag": "\"c5831bb69a9380d5aa03f28dee02b4c4\"",
+     "manoeuvre_rows": 2
+    },
+    {
+     "seen_utc": "2026-10-08T17:36:18Z",
+     "creation_date": "2026-10-08T17:32:23.325503Z",
+     "epoch_tzero": "2026-10-08T17:24:42.000000Z",
+     "last_modified": "Thu, 08 Oct 2026 17:32:24 GMT",
+     "etag": "\"435fdd7283fbda88a8d1d2e12b71fded\"",
+     "manoeuvre_rows": 3
+    }
+   ],
+   "minutes_between_versions": [
+    172.6
+   ]
+  },
+  "STARLINK-37671": {
+   "statuses": {
+    "200": 2,
+    "304": 22
+   },
+   "versions": [
+    {
+     "seen_utc": "2026-10-08T16:27:16Z",
+     "creation_date": "2026-10-08T15:54:55.441144Z",
+     "epoch_tzero": "2026-10-08T15:50:42.000000Z",
+     "last_modified": "Thu, 08 Oct 2026 15:54:56 GMT",
+     "etag": "\"c9572556247c60e267574954137a6f88\"",
+     "manoeuvre_rows": 2
+    },
+    {
+     "seen_utc": "2026-10-08T16:36:27Z",
+     "creation_date": "2026-10-08T16:33:36.790156Z",
+     "epoch_tzero": "2026-10-08T16:25:42.000000Z",
+     "last_modified": "Thu, 08 Oct 2026 16:33:37 GMT",
+     "etag": "\"68c6dd5d5f271e5324a8ec62625627a2\"",
+     "manoeuvre_rows": 3
+    }
+   ],
+   "minutes_between_versions": [
+    38.7
+   ]
+  },
+  "STARLINK-38103": {
+   "statuses": {
+    "200": 2,
+    "304": 22
+   },
+   "versions": [
+    {
+     "seen_utc": "2026-10-08T16:27:22Z",
+     "creation_date": "2026-10-08T15:15:06.188342Z",
+     "epoch_tzero": "2026-10-08T15:07:42.000000Z",
+     "last_modified": "Thu, 08 Oct 2026 15:15:06 GMT",
+     "etag": "\"06c80ed73abbc3a920abb9d1260ccd16\"",
+     "manoeuvre_rows": 3
+    },
+    {
+     "seen_utc": "2026-10-08T17:36:25Z",
+     "creation_date": "2026-10-08T17:32:44.737331Z",
+     "epoch_tzero": "2026-10-08T17:23:42.000000Z",
+     "last_modified": "Thu, 08 Oct 2026 17:32:45 GMT",
+     "etag": "\"e13cdc8cc184ac298c0b80a5d13987f8\"",
+     "manoeuvre_rows": 2
+    }
+   ],
+   "minutes_between_versions": [
+    137.6
+   ]
+  },
+  "STARLINK-40086": {
+   "statuses": {
+    "200": 2,
+    "304": 22
+   },
+   "versions": [
+    {
+     "seen_utc": "2026-10-08T16:27:29Z",
+     "creation_date": "2026-10-08T16:14:20.651866Z",
+     "epoch_tzero": "2026-10-08T16:14:42.000000Z",
+     "last_modified": "Thu, 08 Oct 2026 16:14:21 GMT",
+     "etag": "\"7c2bed022e5327b0d0e3c617b42b26cb\"",
+     "manoeuvre_rows": 8
+    },
+    {
+     "seen_utc": "2026-10-08T18:12:02Z",
+     "creation_date": "2026-10-08T18:10:30.723465Z",
+     "epoch_tzero": "2026-10-08T18:05:42.000000Z",
+     "last_modified": "Thu, 08 Oct 2026 18:10:32 GMT",
+     "etag": "\"29e77d5a1b5822a57df632bd2a0bb008\"",
+     "manoeuvre_rows": 8
+    }
+   ],
+   "minutes_between_versions": [
+    116.2
+   ]
+  },
+  "STARLINK-4564": {
+   "statuses": {
+    "200": 2,
+    "304": 22
+   },
+   "versions": [
+    {
+     "seen_utc": "2026-10-08T16:27:35Z",
+     "creation_date": "2026-10-08T15:23:41.556087Z",
+     "epoch_tzero": "2026-10-08T15:05:42.000000Z",
+     "last_modified": "Thu, 08 Oct 2026 15:23:42 GMT",
+     "etag": "\"2aaafce1a9474cd2e80c19d50a38ba63\"",
+     "manoeuvre_rows": 3
+    },
+    {
+     "seen_utc": "2026-10-08T16:51:22Z",
+     "creation_date": "2026-10-08T16:49:29.828415Z",
+     "epoch_tzero": "2026-10-08T16:41:42.000000Z",
+     "last_modified": "Thu, 08 Oct 2026 16:49:30 GMT",
+     "etag": "\"a43ec0b90ea9931e0b1a17cc6bdca600\"",
+     "manoeuvre_rows": 2
+    }
+   ],
+   "minutes_between_versions": [
+    85.8
+   ]
+  },
+  "STARLINK-5333": {
+   "statuses": {
+    "200": 1,
+    "304": 23
+   },
+   "versions": [
+    {
+     "seen_utc": "2026-10-08T16:27:42Z",
+     "creation_date": "2026-10-08T16:25:36.242378Z",
+     "epoch_tzero": "2026-10-08T16:18:42.000000Z",
+     "last_modified": "Thu, 08 Oct 2026 16:25:37 GMT",
+     "etag": "\"68050d7c54e333793a968b1e1f1f0150\"",
+     "manoeuvre_rows": 3
+    }
+   ],
+   "minutes_between_versions": []
+  },
+  "STARLINK-5838": {
+   "statuses": {
+    "200": 2,
+    "304": 22
+   },
+   "versions": [
+    {
+     "seen_utc": "2026-10-08T16:27:48Z",
+     "creation_date": "2026-10-08T14:10:37.295081Z",
+     "epoch_tzero": "2026-10-08T14:02:42.000000Z",
+     "last_modified": "Thu, 08 Oct 2026 14:10:38 GMT",
+     "etag": "\"5eee92ec4905234c47aa42434f6f2147\"",
+     "manoeuvre_rows": 1
+    },
+    {
+     "seen_utc": "2026-10-08T16:42:14Z",
+     "creation_date": "2026-10-08T16:37:04.842579Z",
+     "epoch_tzero": "2026-10-08T16:29:42.000000Z",
+     "last_modified": "Thu, 08 Oct 2026 16:37:06 GMT",
+     "etag": "\"6771a00e252befba898fd8e412c9dfa3\"",
+     "manoeuvre_rows": 1
+    }
+   ],
+   "minutes_between_versions": [
+    146.5
+   ]
+  },
+  "STARLINK-37299": {
+   "statuses": {
+    "200": 2,
+    "304": 22
+   },
+   "versions": [
+    {
+     "seen_utc": "2026-10-08T16:27:53Z",
+     "creation_date": "2026-10-08T15:14:57.444334Z",
+     "epoch_tzero": "2026-10-08T15:06:42.000000Z",
+     "last_modified": "Thu, 08 Oct 2026 15:14:58 GMT",
+     "etag": "\"cf235fc5ed597d49bdbb1a241185da3e\"",
+     "manoeuvre_rows": 3
+    },
+    {
+     "seen_utc": "2026-10-08T17:21:22Z",
+     "creation_date": "2026-10-08T17:20:56.536370Z",
+     "epoch_tzero": "2026-10-08T17:15:42.000000Z",
+     "last_modified": "Thu, 08 Oct 2026 17:20:57 GMT",
+     "etag": "\"07209c0fd18e0f6e17ccd8b4f2bd2a95\"",
+     "manoeuvre_rows": 2
+    }
+   ],
+   "minutes_between_versions": [
+    126.0
+   ]
+  },
+  "STARLINK-35066": {
+   "statuses": {
+    "200": 2,
+    "304": 22
+   },
+   "versions": [
+    {
+     "seen_utc": "2026-10-08T16:28:00Z",
+     "creation_date": "2026-10-08T14:32:05.436665Z",
+     "epoch_tzero": "2026-10-08T14:23:42.000000Z",
+     "last_modified": "Thu, 08 Oct 2026 14:32:06 GMT",
+     "etag": "\"e85fb61c85c942adc44f1d1b55cdc00b\"",
+     "manoeuvre_rows": 2
+    },
+    {
+     "seen_utc": "2026-10-08T17:57:46Z",
+     "creation_date": "2026-10-08T17:52:17.284392Z",
+     "epoch_tzero": "2026-10-08T17:44:42.000000Z",
+     "last_modified": "Thu, 08 Oct 2026 17:52:18 GMT",
+     "etag": "\"7158869cf005242ac6cf1e16e222735c\"",
+     "manoeuvre_rows": 3
+    }
+   ],
+   "minutes_between_versions": [
+    200.2
+   ]
+  },
+  "STARLINK-6380": {
+   "statuses": {
+    "200": 2,
+    "304": 22
+   },
+   "versions": [
+    {
+     "seen_utc": "2026-10-08T16:28:06Z",
+     "creation_date": "2026-10-08T15:09:04.715656Z",
+     "epoch_tzero": "2026-10-08T14:58:42.000000Z",
+     "last_modified": "Thu, 08 Oct 2026 15:09:05 GMT",
+     "etag": "\"bf6a86a32d7f7766596db7eff3720db5\"",
+     "manoeuvre_rows": 2
+    },
+    {
+     "seen_utc": "2026-10-08T17:21:31Z",
+     "creation_date": "2026-10-08T17:19:24.274041Z",
+     "epoch_tzero": "2026-10-08T17:10:42.000000Z",
+     "last_modified": "Thu, 08 Oct 2026 17:19:25 GMT",
+     "etag": "\"b8d055e4b5400a83de181fd3b8d66988\"",
+     "manoeuvre_rows": 2
+    }
+   ],
+   "minutes_between_versions": [
+    130.3
+   ]
+  }
+ }
+}
