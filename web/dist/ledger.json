@@ -1,12 +1,12 @@
 {
  "schema": 2,
- "generated_utc": "2026-10-09T13:44:09Z",
+ "generated_utc": "2026-10-09T17:44:16Z",
  "poller": "A (a datacentre host in the EU; the home poller was retired on 3 Oct 2026)",
  "method": "built from each cycle's cycle.json, witness.json and ship.json in the poller's spool; coverage is the fraction of the last 24 h's minutes with a watcher heartbeat under 10 minutes old (D18); a cadence hold is a manifest first-seen gap over 9 h; source bytes are the responses as served, stored bytes are the gzipped archive objects the shipper recorded",
  "totals": {
   "cycles": 123,
   "complete": 123,
-  "attested": 122,
+  "attested": 123,
   "witness_defects": 46,
   "bytes_raw": 2802959644462,
   "bytes_stored": 1152553052160,
@@ -19,6 +19,218 @@
  "coverage_24h": 1.0,
  "visibility": {
   "reports": [
+   {
+    "cycle": "cycle_15e885eb2b96",
+    "first_seen_utc": "2026-10-09T13:09:35Z",
+    "as_of": "2026-10-09T13:56:18Z",
+    "method": "Public element set (Space-Track gp snapshot) propagated with SGP4 (skyfield 1.55, python-sgp4 2.27; TEME to GCRS by Skyfield, taken as J2000) and differenced against the operator-published trajectory (EME2000) at the file's own record epochs every 360 min. Distance in km; components in the operator's radial/in-track/cross-track frame; altitude is geocentric radius minus 6378.137 km; element age is evaluation epoch minus element-set epoch, signed. A comparison beyond 1000 km is counted as lost: the public set is not on the file's trajectory at all. at_file_start takes each satellite once, at the first epoch of its own file, which is the only cut comparable between cycles. Both inputs are predictions; the operator's includes planned trajectory changes the public set cannot know about.",
+    "eval_step_min": 360.0,
+    "snapshot": "20261009T111604Z_2a7929276848",
+    "snapshot_fetched_utc": "2026-10-09T11:16:04Z",
+    "snapshot_relation": "before_cycle",
+    "catalogue_sets": 12918,
+    "counts": {
+     "files": 11131,
+     "scored": 11131,
+     "no_public_set": 0,
+     "uncatalogued": 0,
+     "decayed_set": 0,
+     "propagation_failed": 0,
+     "unreadable": 0,
+     "corrupt": 0
+    },
+    "overall": {
+     "n": 143899,
+     "median_km": 15.502,
+     "p90_km": 113.821,
+     "mean_age_h": 48.1,
+     "median_age_h": 47.83,
+     "within_km": {
+      "1": 0.0634,
+      "10": 0.4027,
+      "30": 0.6309
+     },
+     "lost": 1559,
+     "lost_fraction": 0.0108
+    },
+    "at_file_start": {
+     "median_km": 2.805,
+     "p90_km": 12.513,
+     "mean_age_h": 12.23,
+     "median_age_h": 10.04,
+     "within_km": {
+      "1": 0.2164,
+      "10": 0.8587,
+      "30": 0.9743
+     },
+     "lost": 10,
+     "lost_fraction": 0.0009,
+     "satellites": 11131
+    },
+    "catalogue_age": {
+     "sets": 11131,
+     "mean_h": 12.11,
+     "median_h": 10.1,
+     "p90_h": 22.89,
+     "over_72h": 4
+    },
+    "by_age": [
+     {
+      "bin": "set newer than epoch",
+      "n": 2,
+      "median_km": 32.19,
+      "p90_km": 53.128,
+      "mean_age_h": -8.61,
+      "median_age_h": -8.61,
+      "within_km": {
+       "1": 0.0,
+       "10": 0.0,
+       "30": 0.5
+      },
+      "lost": 0,
+      "lost_fraction": 0.0
+     },
+     {
+      "bin": "0-6 h",
+      "n": 2217,
+      "median_km": 1.419,
+      "p90_km": 5.306,
+      "mean_age_h": 4.57,
+      "median_age_h": 4.64,
+      "within_km": {
+       "1": 0.3717,
+       "10": 0.9594,
+       "30": 0.995
+      },
+      "lost": 0,
+      "lost_fraction": 0.0
+     },
+     {
+      "bin": "6-12 h",
+      "n": 6692,
+      "median_km": 2.91,
+      "p90_km": 8.922,
+      "mean_age_h": 9.37,
+      "median_age_h": 9.58,
+      "within_km": {
+       "1": 0.2128,
+       "10": 0.9127,
+       "30": 0.9806
+      },
+      "lost": 1,
+      "lost_fraction": 0.0001
+     },
+     {
+      "bin": "12-24 h",
+      "n": 19229,
+      "median_km": 6.172,
+      "p90_km": 19.174,
+      "mean_age_h": 18.4,
+      "median_age_h": 18.33,
+      "within_km": {
+       "1": 0.1241,
+       "10": 0.6767,
+       "30": 0.9418
+      },
+      "lost": 10,
+      "lost_fraction": 0.0005
+     },
+     {
+      "bin": "24-48 h",
+      "n": 44152,
+      "median_km": 15.469,
+      "p90_km": 55.596,
+      "mean_age_h": 36.21,
+      "median_age_h": 36.09,
+      "within_km": {
+       "1": 0.0625,
+       "10": 0.407,
+       "30": 0.724
+      },
+      "lost": 105,
+      "lost_fraction": 0.0024
+     },
+     {
+      "bin": "48-72 h",
+      "n": 44065,
+      "median_km": 38.425,
+      "p90_km": 120.588,
+      "mean_age_h": 60.12,
+      "median_age_h": 59.97,
+      "within_km": {
+       "1": 0.0282,
+       "10": 0.2821,
+       "30": 0.4548
+      },
+      "lost": 675,
+      "lost_fraction": 0.0153
+     },
+     {
+      "bin": "over 72 h",
+      "n": 27542,
+      "median_km": 54.809,
+      "p90_km": 172.747,
+      "mean_age_h": 81.6,
+      "median_age_h": 79.74,
+      "within_km": {
+       "1": 0.0175,
+       "10": 0.2288,
+       "30": 0.432
+      },
+      "lost": 768,
+      "lost_fraction": 0.0279
+     }
+    ],
+    "by_shell": [
+     {
+      "bin": "under 400 km",
+      "n": 11571,
+      "median_km": 55.27,
+      "p90_km": 719.232,
+      "mean_age_h": 46.74,
+      "median_age_h": 45.97,
+      "within_km": {
+       "1": 0.0449,
+       "10": 0.2776,
+       "30": 0.4413
+      },
+      "lost": 425,
+      "lost_fraction": 0.0367
+     },
+     {
+      "bin": "400-500 km",
+      "n": 125853,
+      "median_km": 15.169,
+      "p90_km": 95.916,
+      "mean_age_h": 48.29,
+      "median_age_h": 48.09,
+      "within_km": {
+       "1": 0.0619,
+       "10": 0.4053,
+       "30": 0.6409
+      },
+      "lost": 589,
+      "lost_fraction": 0.0047
+     },
+     {
+      "bin": "500-600 km",
+      "n": 6475,
+      "median_km": 6.98,
+      "p90_km": 758.151,
+      "mean_age_h": 46.86,
+      "median_age_h": 46.56,
+      "within_km": {
+       "1": 0.1256,
+       "10": 0.5761,
+       "30": 0.7744
+      },
+      "lost": 545,
+      "lost_fraction": 0.0842
+     }
+    ],
+    "pack": "globe_15e885eb2b96.json",
+    "pack_url": "https://packs.ephemera.space/globe/15e885eb2b96.json"
+   },
    {
     "cycle": "cycle_5ca351cce68c",
     "first_seen_utc": "2026-10-09T06:29:06Z",
@@ -23368,10 +23580,20 @@
     "pack_url": "https://packs.ephemera.space/globe/513b92c4683e.json"
    }
   ],
-  "latest": "cycle_5ca351cce68c"
+  "latest": "cycle_15e885eb2b96"
  },
- "catalogue_snapshots": 380,
+ "catalogue_snapshots": 382,
  "catalogue": [
+  {
+   "fetched_utc": "2026-10-09T17:24:14Z",
+   "records": 12918,
+   "sha12": "96c4144d5e5c"
+  },
+  {
+   "fetched_utc": "2026-10-09T15:19:15Z",
+   "records": 12918,
+   "sha12": "8d4330ab6339"
+  },
   {
    "fetched_utc": "2026-10-09T13:17:29Z",
    "records": 12918,
@@ -23421,16 +23643,6 @@
    "fetched_utc": "2026-10-08T12:50:41Z",
    "records": 12918,
    "sha12": "5e9a64e8a355"
-  },
-  {
-   "fetched_utc": "2026-10-08T10:48:54Z",
-   "records": 12918,
-   "sha12": "1678834a3a9d"
-  },
-  {
-   "fetched_utc": "2026-10-08T08:45:04Z",
-   "records": 12918,
-   "sha12": "49641dc190e8"
   }
  ],
  "cycles": [
@@ -23447,14 +23659,14 @@
    "merkle_root": "b53a622a2e012be9bf4b8529933a82c6ceb360e497de82c25b33606d3b8a32c4",
    "ots": {
     "stamped": true,
-    "attested_block": null
+    "attested_block": 970639
    },
    "wayback": {
     "attempted": true,
     "manifest_verified": true,
     "manifest_captured": true,
     "manifest_error": null,
-    "samples_verified": 8,
+    "samples_verified": 9,
     "samples_total": 10,
     "losses": 0,
     "skipped": null,
@@ -23517,9 +23729,9 @@
      },
      {
       "name": "MEME_68722_STARLINK-37271_2821009_Operational_1475835000_UNCLASSIFIED.txt",
-      "copy_url": null,
-      "sha256_of_copy": null,
-      "verified": false
+      "copy_url": "https://web.archive.org/web/20261009134757id_/https://api.starlink.com/public-files/ephemerides/MEME_68722_STARLINK-37271_2821009_Operational_1475835000_UNCLASSIFIED.txt",
+      "sha256_of_copy": "e6bdbad6f3f04973d19674066a88380d4c7dd4fa35c6367cbda2d45fa89d3cfa",
+      "verified": true
      }
     ]
    },
