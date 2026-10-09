@@ -1,13 +1,13 @@
 {
  "schema": 2,
- "generated_utc": "2026-10-09T01:43:18Z",
+ "generated_utc": "2026-10-09T05:43:46Z",
  "poller": "A (a datacentre host in the EU; the home poller was retired on 3 Oct 2026)",
  "method": "built from each cycle's cycle.json, witness.json and ship.json in the poller's spool; coverage is the fraction of the last 24 h's minutes with a watcher heartbeat under 10 minutes old (D18); a cadence hold is a manifest first-seen gap over 9 h; source bytes are the responses as served, stored bytes are the gzipped archive objects the shipper recorded",
  "totals": {
   "cycles": 121,
   "complete": 121,
   "attested": 121,
-  "witness_defects": 45,
+  "witness_defects": 44,
   "bytes_raw": 2757729532133,
   "bytes_stored": 1133964892160,
   "bytes_stored_local": 27891916800,
@@ -23173,8 +23173,13 @@
   ],
   "latest": "cycle_9544c9a320b7"
  },
- "catalogue_snapshots": 375,
+ "catalogue_snapshots": 376,
  "catalogue": [
+  {
+   "fetched_utc": "2026-10-09T03:07:04Z",
+   "records": 12918,
+   "sha12": "3fec82ed42e2"
+  },
   {
    "fetched_utc": "2026-10-08T23:02:49Z",
    "records": 12918,
@@ -23229,11 +23234,6 @@
    "fetched_utc": "2026-10-07T22:30:04Z",
    "records": 12918,
    "sha12": "f5ada57a37c5"
-  },
-  {
-   "fetched_utc": "2026-10-07T20:28:33Z",
-   "records": 12918,
-   "sha12": "b6f60b7ebda8"
   }
  ],
  "cycles": [
@@ -23833,7 +23833,7 @@
     "manifest_verified": true,
     "manifest_captured": true,
     "manifest_error": null,
-    "samples_verified": 9,
+    "samples_verified": 10,
     "samples_total": 10,
     "losses": 0,
     "skipped": null,
@@ -23843,8 +23843,8 @@
      {
       "name": "MEME_51804_STARLINK-3601_2791819_Operational_1475605200_UNCLASSIFIED.txt",
       "copy_url": "https://web.archive.org/web/20261006215526id_/https://api.starlink.com/public-files/ephemerides/MEME_51804_STARLINK-3601_2791819_Operational_1475605200_UNCLASSIFIED.txt",
-      "sha256_of_copy": null,
-      "verified": false
+      "sha256_of_copy": "46a3133d79f845c6d3c45ef1a66e82fecfa84db652ed88d36bffb9cfc6f1fe82",
+      "verified": true
      },
      {
       "name": "MEME_53916_STARLINK-5051_2791848_Operational_1475606940_UNCLASSIFIED.txt",
