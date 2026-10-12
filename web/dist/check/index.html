@@ -254,7 +254,7 @@
   <header class="masthead">
     <svg class="mark" width="40" height="40" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" aria-hidden="true" focusable="false"><g fill="none" stroke="#ffb347" stroke-width="8"><path d="M40.60 11.75A22 22 0 0 0 11.46 24.12"/><path d="M10.00 31.62A22 22 0 0 0 32.38 54.00" opacity="0.52"/><path d="M39.88 52.54A22 22 0 0 0 52.25 23.40" opacity="0.26"/></g><circle cx="47.56" cy="16.44" r="6" fill="#ffb347"/><rect x="24" y="24" width="16" height="16" fill="#ffb347"/></svg>
     <h1><a href="../">Ephemera</a></h1>
-    <span class="where">ephemera.space<br>built 2026-10-11 21:48 UTC</span>
+    <span class="where">ephemera.space<br>built 2026-10-12 01:48 UTC</span>
   </header>
   <p class="standfirst">An archive of the public Starlink ephemerides, hashed and anchored in Bitcoin, with a daily measure of what the public satellite catalogue can see.</p>
 
@@ -268,15 +268,15 @@
 </nav>
   <header class="z-full section" id="check">
     <h2>Check it yourself</h2>
-    <p class="stamp">Cycle <b>135bf1655d27</b>, block 970932. As of 2026-10-11 21:48 UTC.</p>
+    <p class="stamp">Cycle <b>ac8933a49366</b>, block 970984. As of 2026-10-12 01:48 UTC.</p>
   </header>
   <div class="z-prose">
     <p>None of this is worth anything if you have to take my word for it. Here is what you can run right now, and
-    what still needs data this site does not publish yet. I would rather say which is which. Cycle 135bf1655d27 was first seen 2026-10-11 12:15 UTC and is not the newest one. It is the most recent cycle whose independent copy verified, and the copies have been failing since then.</p>
+    what still needs data this site does not publish yet. I would rather say which is which.</p>
     <p><b>Fetch an independent copy and hash it.</b> Each cycle's file list is pushed into the Wayback Machine the
-    moment it is caught, so a copy exists that I do not control. For cycle <span class="mono">135bf1655d27</span>
-    that copy is <a href="https://web.archive.org/web/20261011123312id_/https://api.starlink.com/public-files/ephemerides/MANIFEST.txt?cycle=135bf1655d27">here</a>, and its SHA-256 is
-    <code>135bf1655d27093e6badb6d5f5b94f0c0a52262f4c4f6045bb973a9ae246979f</code>. Download it, hash it, and you have checked that the list of
+    moment it is caught, so a copy exists that I do not control. For cycle <span class="mono">ac8933a49366</span>
+    that copy is <a href="https://web.archive.org/web/20261011202428id_/https://api.starlink.com/public-files/ephemerides/MANIFEST.txt?cycle=ac8933a49366">here</a>, and its SHA-256 is
+    <code>ac8933a493663daa2615c7ed7517e8f8660aa2ee6b656200de93ff0255a205aa</code>. Download it, hash it, and you have checked that the list of
     files I claim to have caught is the list the source was actually serving. Ten files from each cycle are copied the
     same way, and every copy URL and digest is in <a href="../ledger.json">ledger.json</a>.</p>
     <p><b>Check which ten files were copied.</b> I do not get to choose them. File number
@@ -284,7 +284,7 @@
     you just downloaded. Run that and you get the same ten names this site published.</p>
     <p><b>Check the timestamp.</b> Each cycle root is stamped through OpenTimestamps. Running
     <code>ots verify root.txt.ots</code> against a Bitcoin node shows this cycle's root committed in block
-    970932, which fixes the latest moment it could have been written. Nobody, including me,
+    970984, which fixes the latest moment it could have been written. Nobody, including me,
     can move a root backwards once it is in a block. The proof files ship with the data release.</p>
     <p class="fine">What you cannot do from this page alone is rebuild the Merkle root, because that needs the SHA-256
     of every one of the 11,129 files in the cycle and this site publishes the summary rather than the
@@ -293,21 +293,21 @@
     as SHA-256 of the two digests joined end to end, and an odd trailing node is paired with a copy of itself.</p>
   </div>
   <aside class="z-side note">
-    <h3>The kit for cycle 135bf1655d27</h3>
+    <h3>The kit for cycle ac8933a49366</h3>
     <ul>
-      <li>manifest copy: <a href="https://web.archive.org/web/20261011123312id_/https://api.starlink.com/public-files/ephemerides/MANIFEST.txt?cycle=135bf1655d27">web.archive.org</a></li>
-      <li>SHA-256 of the copy: <code>135bf1655d27093e6badb6d5f5b94f0c0a52262f4c4f6045bb973a9ae246979f</code></li>
-      <li>Bitcoin block: 970932</li>
+      <li>manifest copy: <a href="https://web.archive.org/web/20261011202428id_/https://api.starlink.com/public-files/ephemerides/MANIFEST.txt?cycle=ac8933a49366">web.archive.org</a></li>
+      <li>SHA-256 of the copy: <code>ac8933a493663daa2615c7ed7517e8f8660aa2ee6b656200de93ff0255a205aa</code></li>
+      <li>Bitcoin block: 970984</li>
       <li>files in the cycle: 11,129</li>
-      <li>root: <code>7c4994e216200b49e2f092579891f59fd7816d52d3a4531e2ff9e0af8b6d6c48</code></li>
-      <li>first seen: 2026-10-11 12:15 UTC</li>
-      <li><a href="../archive/#c-135bf1655d27">its row on the archive page</a></li>
+      <li>root: <code>21c47e309740fdccf94a6b6b691dc6176b4a935a4a5bd30cb95d4e7139108322</code></li>
+      <li>first seen: 2026-10-11 20:08 UTC</li>
+      <li><a href="../archive/#c-ac8933a49366">its row on the archive page</a></li>
     </ul>
   </aside>
 
   <header class="z-full section" id="data">
     <h2>Data, licence and citation</h2>
-    <p class="stamp">As of 2026-10-11 21:48 UTC.</p>
+    <p class="stamp">As of 2026-10-12 01:48 UTC.</p>
   </header>
   <div class="z-prose">
     <ul>
@@ -328,7 +328,7 @@
     sets come from Space-Track.org and are redistributed
     under Space-Track's blanket approval for basic space situational awareness data, with citation.</p>
     <p class="fine"><b>Citation.</b> Ryan, K. (2026). <i>Ephemera: an archive of the public Starlink ephemerides and a
-    daily measure of public catalogue visibility.</i> https://ephemera.space, retrieved 2026-10-11 21:48 UTC.</p>
+    daily measure of public catalogue visibility.</i> https://ephemera.space, retrieved 2026-10-12 01:48 UTC.</p>
   </div>
 
   <footer class="z-full colophon">
@@ -339,10 +339,10 @@
       <a href="https://www.linkedin.com/in/kira-ryan/">linkedin.com/in/kira-ryan</a></p>
     </div>
     <div class="build">
-      <p>Built 2026-10-11 21:48 UTC from <a href="../ledger.json">ledger.json</a>. Every figure on this page
+      <p>Built 2026-10-12 01:48 UTC from <a href="../ledger.json">ledger.json</a>. Every figure on this page
       carries the time it was true at.</p>
       <p>Cite as: Ryan, K. (2026). Ephemera: an archive of the public Starlink ephemerides and a daily measure
-      of public catalogue visibility. https://ephemera.space, retrieved 2026-10-11 21:48 UTC.</p>
+      of public catalogue visibility. https://ephemera.space, retrieved 2026-10-12 01:48 UTC.</p>
     </div>
     <div class="caveats"><p>Operator ephemerides are predictions, not observations. Starlink is the only operator with public covariance; other operators enter via CelesTrak SupGP without covariance. Public GP data is too noisy to test sub-metre covariance; the self-consistency scoreboard measures prediction-versus-later-prediction. That scoreboard is not built yet. Inputs are archived by this project and witnessed by OpenTimestamps and the Wayback Machine; they are not re-fetchable from the source after one cycle. Gapped or lost items are printed, never hidden.</p></div>
   </footer>
