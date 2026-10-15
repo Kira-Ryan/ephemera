@@ -1,17 +1,17 @@
 {
  "schema": 2,
- "generated_utc": "2026-10-15T01:54:22Z",
+ "generated_utc": "2026-10-15T05:55:01Z",
  "poller": "A (a datacentre host in the EU; the home poller was retired on 3 Oct 2026)",
  "method": "built from each cycle's cycle.json, witness.json and ship.json in the poller's spool; coverage is the fraction of the last 24 h's minutes with a watcher heartbeat under 10 minutes old (D18); a cadence hold is a manifest first-seen gap over 9 h; source bytes are the responses as served, stored bytes are the gzipped archive objects the shipper recorded",
  "totals": {
   "cycles": 142,
   "complete": 142,
-  "attested": 141,
+  "attested": 142,
   "witness_defects": 44,
   "bytes_raw": 3232843981450,
   "bytes_stored": 1329549598720,
-  "bytes_stored_local": 37254000640,
-  "bytes_stored_cold_only": 1292295598080,
+  "bytes_stored_local": 27936768000,
+  "bytes_stored_cold_only": 1301612830720,
   "files": 1592088,
   "cadence_holds": 14,
   "cadence_unobserved": 3
@@ -27370,8 +27370,13 @@
   ],
   "latest": "cycle_34310e06ad79"
  },
- "catalogue_snapshots": 426,
+ "catalogue_snapshots": 427,
  "catalogue": [
+  {
+   "fetched_utc": "2026-10-15T02:21:24Z",
+   "records": 12918,
+   "sha12": "8bf86b0041c5"
+  },
   {
    "fetched_utc": "2026-10-15T00:20:04Z",
    "records": 12918,
@@ -27426,11 +27431,6 @@
    "fetched_utc": "2026-10-13T17:40:43Z",
    "records": 12918,
    "sha12": "08fbbeb85533"
-  },
-  {
-   "fetched_utc": "2026-10-13T15:40:04Z",
-   "records": 12918,
-   "sha12": "2730aa9ca758"
   }
  ],
  "cycles": [
@@ -27447,7 +27447,7 @@
    "merkle_root": "08d45cb0271143ba35fbf7a78b46bf2371e9baebb5fc4516ba66f796871df3b0",
    "ots": {
     "stamped": true,
-    "attested_block": null
+    "attested_block": 971487
    },
    "wayback": {
     "attempted": true,
@@ -27814,8 +27814,8 @@
    "storage": {
     "bytes_stored": 9317232640,
     "storage_class": "DEEP_ARCHIVE",
-    "local_files": true,
-    "deleted_locally_utc": null
+    "local_files": false,
+    "deleted_locally_utc": "2026-10-15T04:15:54Z"
    }
   },
   {
@@ -40891,7 +40891,7 @@
    "built_utc": "2026-10-15T00:01:28Z",
    "leaves": 3,
    "excluded": [],
-   "attested_block": null
+   "attested_block": 971484
   },
   {
    "date": "2026-10-13",
