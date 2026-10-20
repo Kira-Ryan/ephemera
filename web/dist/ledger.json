@@ -1,17 +1,17 @@
 {
  "schema": 2,
- "generated_utc": "2026-10-20T02:03:35Z",
+ "generated_utc": "2026-10-20T06:03:42Z",
  "poller": "A (a datacentre host in the EU; the home poller was retired on 3 Oct 2026)",
  "method": "built from each cycle's cycle.json, witness.json and ship.json in the poller's spool; coverage is the fraction of the last 24 h's minutes with a watcher heartbeat under 10 minutes old (D18); a cadence hold is a manifest first-seen gap over 9 h; source bytes are the responses as served, stored bytes are the gzipped archive objects the shipper recorded",
  "totals": {
   "cycles": 158,
   "complete": 158,
-  "attested": 157,
+  "attested": 158,
   "witness_defects": 44,
   "bytes_raw": 3594571545315,
   "bytes_stored": 1478180925440,
-  "bytes_stored_local": 37104609280,
-  "bytes_stored_cold_only": 1441076316160,
+  "bytes_stored_local": 27826862080,
+  "bytes_stored_cold_only": 1450354063360,
   "files": 1770511,
   "cadence_holds": 14,
   "cadence_unobserved": 3
@@ -30552,8 +30552,18 @@
   ],
   "latest": "cycle_56a935c60418"
  },
- "catalogue_snapshots": 475,
+ "catalogue_snapshots": 477,
  "catalogue": [
+  {
+   "fetched_utc": "2026-10-20T05:19:04Z",
+   "records": 12945,
+   "sha12": "a8dd60bb1132"
+  },
+  {
+   "fetched_utc": "2026-10-20T03:15:04Z",
+   "records": 12945,
+   "sha12": "ed7ed5c9bb2e"
+  },
   {
    "fetched_utc": "2026-10-20T01:11:04Z",
    "records": 12945,
@@ -30603,16 +30613,6 @@
    "fetched_utc": "2026-10-19T06:46:04Z",
    "records": 12945,
    "sha12": "91c236a1b299"
-  },
-  {
-   "fetched_utc": "2026-10-19T04:44:54Z",
-   "records": 12945,
-   "sha12": "a99117e63699"
-  },
-  {
-   "fetched_utc": "2026-10-19T02:40:05Z",
-   "records": 12945,
-   "sha12": "49c3a0d9496f"
   }
  ],
  "cycles": [
@@ -30629,7 +30629,7 @@
    "merkle_root": "7edf8fc4c676dc4b83bb7257364e025234ce443b940b23035cc7f30766733371",
    "ots": {
     "stamped": true,
-    "attested_block": null
+    "attested_block": 972234
    },
    "wayback": {
     "attempted": true,
@@ -30996,8 +30996,8 @@
    "storage": {
     "bytes_stored": 9277747200,
     "storage_class": "DEEP_ARCHIVE",
-    "local_files": true,
-    "deleted_locally_utc": null
+    "local_files": false,
+    "deleted_locally_utc": "2026-10-20T04:47:46Z"
    }
   },
   {
@@ -45614,7 +45614,7 @@
      "still pulling when the root was built"
     ]
    ],
-   "attested_block": null
+   "attested_block": 972234
   },
   {
    "date": "2026-10-18",
