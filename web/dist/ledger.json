@@ -1,18 +1,18 @@
 {
  "schema": 2,
- "generated_utc": "2026-10-22T18:08:17Z",
+ "generated_utc": "2026-10-22T22:08:22Z",
  "poller": "A (a datacentre host in the EU; the home poller was retired on 3 Oct 2026)",
  "method": "built from each cycle's cycle.json, witness.json and ship.json in the poller's spool; coverage is the fraction of the last 24 h's minutes with a watcher heartbeat under 10 minutes old (D18); a cadence hold is a manifest first-seen gap over 9 h; source bytes are the responses as served, stored bytes are the gzipped archive objects the shipper recorded",
  "totals": {
-  "cycles": 168,
-  "complete": 168,
+  "cycles": 169,
+  "complete": 169,
   "attested": 168,
-  "witness_defects": 44,
-  "bytes_raw": 3820059399239,
-  "bytes_stored": 1570829445120,
-  "bytes_stored_local": 37042575360,
-  "bytes_stored_cold_only": 1533786869760,
-  "files": 1881969,
+  "witness_defects": 45,
+  "bytes_raw": 3841979010392,
+  "bytes_stored": 1579831429120,
+  "bytes_stored_local": 36783390720,
+  "bytes_stored_cold_only": 1543048038400,
+  "files": 1892751,
   "cadence_holds": 14,
   "cadence_unobserved": 3
  },
@@ -32552,8 +32552,18 @@
   ],
   "latest": "cycle_3fcc6f86ff40"
  },
- "catalogue_snapshots": 503,
+ "catalogue_snapshots": 505,
  "catalogue": [
+  {
+   "fetched_utc": "2026-10-22T20:37:54Z",
+   "records": 12945,
+   "sha12": "cdf98b5afc31"
+  },
+  {
+   "fetched_utc": "2026-10-22T18:33:34Z",
+   "records": 12945,
+   "sha12": "2a4926ba57bb"
+  },
   {
    "fetched_utc": "2026-10-22T16:31:04Z",
    "records": 12945,
@@ -32603,19 +32613,105 @@
    "fetched_utc": "2026-10-21T17:59:54Z",
    "records": 12945,
    "sha12": "435deffcd34f"
-  },
-  {
-   "fetched_utc": "2026-10-21T15:59:31Z",
-   "records": 12945,
-   "sha12": "c3ad971dcde2"
-  },
-  {
-   "fetched_utc": "2026-10-21T13:55:04Z",
-   "records": 12945,
-   "sha12": "e3b47c59307e"
   }
  ],
  "cycles": [
+  {
+   "cycle": "cycle_e1d77c723401",
+   "manifest_sha256": "e1d77c72340103eebe4746e3548c039570ad856a55d602cc82102c0e5a5e9a57",
+   "first_seen_utc": "2026-10-22T21:47:09Z",
+   "status": "complete",
+   "files_listed": 10782,
+   "files_recorded": 10782,
+   "files_failed": 0,
+   "bytes_raw": 21919611153,
+   "wall_seconds": 797.4,
+   "merkle_root": "136d76a537e4ca7817158d59d401479795f7a236d5857a76bcdafbed61ca2004",
+   "ots": {
+    "stamped": true,
+    "attested_block": null
+   },
+   "wayback": {
+    "attempted": true,
+    "manifest_verified": true,
+    "manifest_captured": true,
+    "manifest_error": null,
+    "samples_verified": 4,
+    "samples_total": 10,
+    "losses": 0,
+    "skipped": null,
+    "manifest_copy_url": "https://web.archive.org/web/20261022220145id_/https://api.starlink.com/public-files/ephemerides/MANIFEST.txt?cycle=e1d77c723401",
+    "manifest_copy_sha256": "e1d77c72340103eebe4746e3548c039570ad856a55d602cc82102c0e5a5e9a57",
+    "samples": [
+     {
+      "name": "MEME_51795_STARLINK-3586_2951830_Operational_1476988260_UNCLASSIFIED.txt",
+      "copy_url": "https://web.archive.org/web/20261022220155id_/https://api.starlink.com/public-files/ephemerides/MEME_51795_STARLINK-3586_2951830_Operational_1476988260_UNCLASSIFIED.txt",
+      "sha256_of_copy": "0e3243cab4b4247df0db32e9d4e283a486e1567f5f98b054e3cf810b7ebd3687",
+      "verified": true
+     },
+     {
+      "name": "MEME_54763_STARLINK-5191_2951850_Operational_1476989460_UNCLASSIFIED.txt",
+      "copy_url": "https://web.archive.org/web/20261022220202id_/https://api.starlink.com/public-files/ephemerides/MEME_54763_STARLINK-5191_2951850_Operational_1476989460_UNCLASSIFIED.txt",
+      "sha256_of_copy": "1359975b791c4cb9c1089f3de85002dbbaf3fa32363ea4c413081f8d31ac343e",
+      "verified": true
+     },
+     {
+      "name": "MEME_56460_STARLINK-6047_2951905_Operational_1476990360_UNCLASSIFIED.txt",
+      "copy_url": "https://web.archive.org/web/20261022220209id_/https://api.starlink.com/public-files/ephemerides/MEME_56460_STARLINK-6047_2951905_Operational_1476990360_UNCLASSIFIED.txt",
+      "sha256_of_copy": "fc2afaad00aa260bccefaed123a7f668cd94f5a756afebb3f082ca7c47dfc7fb",
+      "verified": true
+     },
+     {
+      "name": "MEME_57746_STARLINK-30350_2951921_Operational_1476991320_UNCLASSIFIED.txt",
+      "copy_url": "https://web.archive.org/web/20261022220222id_/https://api.starlink.com/public-files/ephemerides/MEME_57746_STARLINK-30350_2951921_Operational_1476991320_UNCLASSIFIED.txt",
+      "sha256_of_copy": "66edc2d3179abc8eee08bc2cbf31f9e8f679b7d63940cb4572c221fad733b117",
+      "verified": true
+     },
+     {
+      "name": "MEME_59923_STARLINK-31972_2951949_Operational_1476993000_UNCLASSIFIED.txt",
+      "copy_url": null,
+      "sha256_of_copy": null,
+      "verified": false
+     },
+     {
+      "name": "MEME_60936_STARLINK-11241_2951910_Operational_1476990660_UNCLASSIFIED.txt",
+      "copy_url": null,
+      "sha256_of_copy": null,
+      "verified": false
+     },
+     {
+      "name": "MEME_62907_STARLINK-11552_2951918_Operational_1476991140_UNCLASSIFIED.txt",
+      "copy_url": null,
+      "sha256_of_copy": null,
+      "verified": false
+     },
+     {
+      "name": "MEME_64731_STARLINK-34552_2952023_Operational_1476995040_UNCLASSIFIED.txt",
+      "copy_url": null,
+      "sha256_of_copy": null,
+      "verified": false
+     },
+     {
+      "name": "MEME_64944_STARLINK-34373_2952017_Operational_1476994680_UNCLASSIFIED.txt",
+      "copy_url": null,
+      "sha256_of_copy": null,
+      "verified": false
+     },
+     {
+      "name": "MEME_67660_STARLINK-36673_2952100_Operational_1476997260_UNCLASSIFIED.txt",
+      "copy_url": null,
+      "sha256_of_copy": null,
+      "verified": false
+     }
+    ]
+   },
+   "storage": {
+    "bytes_stored": 9001984000,
+    "storage_class": "DEEP_ARCHIVE",
+    "local_files": true,
+    "deleted_locally_utc": null
+   }
+  },
   {
    "cycle": "cycle_3fcc6f86ff40",
    "manifest_sha256": "3fcc6f86ff408e57ef0175219eb14dab6498117968e7a3ee4b0ff9bd274f82f8",
@@ -32996,8 +33092,8 @@
    "storage": {
     "bytes_stored": 9261168640,
     "storage_class": "DEEP_ARCHIVE",
-    "local_files": true,
-    "deleted_locally_utc": null
+    "local_files": false,
+    "deleted_locally_utc": "2026-10-22T21:01:04Z"
    }
   },
   {
