@@ -1,12 +1,12 @@
 {
  "schema": 2,
- "generated_utc": "2026-10-23T22:10:15Z",
+ "generated_utc": "2026-10-24T02:10:12Z",
  "poller": "A (a datacentre host in the EU; the home poller was retired on 3 Oct 2026)",
  "method": "built from each cycle's cycle.json, witness.json and ship.json in the poller's spool; coverage is the fraction of the last 24 h's minutes with a watcher heartbeat under 10 minutes old (D18); a cadence hold is a manifest first-seen gap over 9 h; source bytes are the responses as served, stored bytes are the gzipped archive objects the shipper recorded",
  "totals": {
   "cycles": 172,
   "complete": 172,
-  "attested": 171,
+  "attested": 172,
   "witness_defects": 44,
   "bytes_raw": 3909662399612,
   "bytes_stored": 1607669084160,
@@ -33355,8 +33355,18 @@
   ],
   "latest": "cycle_4050a631c4e0"
  },
- "catalogue_snapshots": 515,
+ "catalogue_snapshots": 517,
  "catalogue": [
+  {
+   "fetched_utc": "2026-10-24T01:21:05Z",
+   "records": 12945,
+   "sha12": "5d782a070e98"
+  },
+  {
+   "fetched_utc": "2026-10-23T23:15:44Z",
+   "records": 12945,
+   "sha12": "eaf5a9b52612"
+  },
   {
    "fetched_utc": "2026-10-23T21:12:04Z",
    "records": 12945,
@@ -33406,16 +33416,6 @@
    "fetched_utc": "2026-10-22T22:41:54Z",
    "records": 12945,
    "sha12": "6bd5dac5c0e1"
-  },
-  {
-   "fetched_utc": "2026-10-22T20:37:54Z",
-   "records": 12945,
-   "sha12": "cdf98b5afc31"
-  },
-  {
-   "fetched_utc": "2026-10-22T18:33:34Z",
-   "records": 12945,
-   "sha12": "2a4926ba57bb"
   }
  ],
  "cycles": [
@@ -33432,7 +33432,7 @@
    "merkle_root": "ed192939112441e0721aecfbc821eea38381d6283abf9c8f7ef9e3c2df965ae0",
    "ots": {
     "stamped": true,
-    "attested_block": null
+    "attested_block": 972834
    },
    "wayback": {
     "attempted": true,
@@ -49750,6 +49750,14 @@
   }
  ],
  "daily_roots": [
+  {
+   "date": "2026-10-23",
+   "merkle_root": "6484d84839dd06fc1d4103b4f21004c26f2ccdebc7885739eb153205ba142a76",
+   "built_utc": "2026-10-24T00:01:10Z",
+   "leaves": 3,
+   "excluded": [],
+   "attested_block": 972850
+  },
   {
    "date": "2026-10-22",
    "merkle_root": "18b809d845c128d3946867ea8126e74aee51d18d61a7eceea2629fd57db51a9c",
