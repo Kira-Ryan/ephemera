@@ -1,17 +1,17 @@
 {
  "schema": 2,
- "generated_utc": "2026-10-28T22:20:08Z",
+ "generated_utc": "2026-10-29T02:20:14Z",
  "poller": "A (a datacentre host in the EU; the home poller was retired on 3 Oct 2026)",
  "method": "built from each cycle's cycle.json, witness.json and ship.json in the poller's spool; coverage is the fraction of the last 24 h's minutes with a watcher heartbeat under 10 minutes old (D18); a cadence hold is a manifest first-seen gap over 9 h; source bytes are the responses as served, stored bytes are the gzipped archive objects the shipper recorded",
  "totals": {
   "cycles": 188,
   "complete": 188,
-  "attested": 187,
+  "attested": 188,
   "witness_defects": 44,
   "bytes_raw": 4272528603556,
   "bytes_stored": 1756868321280,
-  "bytes_stored_local": 37360353280,
-  "bytes_stored_cold_only": 1719507968000,
+  "bytes_stored_local": 28027514880,
+  "bytes_stored_cold_only": 1728840806400,
   "files": 2104956,
   "cadence_holds": 15,
   "cadence_unobserved": 3
@@ -36537,8 +36537,18 @@
   ],
   "latest": "cycle_a879013f0100"
  },
- "catalogue_snapshots": 568,
+ "catalogue_snapshots": 570,
  "catalogue": [
+  {
+   "fetched_utc": "2026-10-29T00:24:33Z",
+   "records": 12972,
+   "sha12": "09a46bf19740"
+  },
+  {
+   "fetched_utc": "2026-10-28T22:21:53Z",
+   "records": 12972,
+   "sha12": "f54e625a77b8"
+  },
   {
    "fetched_utc": "2026-10-28T20:18:05Z",
    "records": 12972,
@@ -36588,16 +36598,6 @@
    "fetched_utc": "2026-10-27T23:45:04Z",
    "records": 12972,
    "sha12": "ae5353df1188"
-  },
-  {
-   "fetched_utc": "2026-10-27T21:42:04Z",
-   "records": 12972,
-   "sha12": "0d5ce047740f"
-  },
-  {
-   "fetched_utc": "2026-10-27T19:37:04Z",
-   "records": 12972,
-   "sha12": "d2f52300fe66"
   }
  ],
  "cycles": [
@@ -36614,7 +36614,7 @@
    "merkle_root": "f1829681ab0bd4c850af2720c641fc6792d9fbcbbe2b6f920264c7d17922bf94",
    "ots": {
     "stamped": true,
-    "attested_block": null
+    "attested_block": 973603
    },
    "wayback": {
     "attempted": true,
@@ -36981,8 +36981,8 @@
    "storage": {
     "bytes_stored": 9332838400,
     "storage_class": "DEEP_ARCHIVE",
-    "local_files": true,
-    "deleted_locally_utc": null
+    "local_files": false,
+    "deleted_locally_utc": "2026-10-29T01:09:05Z"
    }
   },
   {
@@ -54468,6 +54468,14 @@
   }
  ],
  "daily_roots": [
+  {
+   "date": "2026-10-28",
+   "merkle_root": "e7e4d93a02072c05d78efbce23bedac1176e8ae5bf650d8d8251bdb1f366d580",
+   "built_utc": "2026-10-29T00:01:13Z",
+   "leaves": 4,
+   "excluded": [],
+   "attested_block": 973617
+  },
   {
    "date": "2026-10-27",
    "merkle_root": "872c0fa9623c2fd7474179311e1084e8469d7aee1c7209d523da7627129ff3ed",
