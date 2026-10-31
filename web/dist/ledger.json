@@ -1,12 +1,12 @@
 {
  "schema": 2,
- "generated_utc": "2026-10-31T06:24:39Z",
+ "generated_utc": "2026-10-31T10:24:45Z",
  "poller": "A (a datacentre host in the EU; the home poller was retired on 3 Oct 2026)",
  "method": "built from each cycle's cycle.json, witness.json and ship.json in the poller's spool; coverage is the fraction of the last 24 h's minutes with a watcher heartbeat under 10 minutes old (D18); a cadence hold is a manifest first-seen gap over 9 h; source bytes are the responses as served, stored bytes are the gzipped archive objects the shipper recorded",
  "totals": {
   "cycles": 195,
   "complete": 195,
-  "attested": 194,
+  "attested": 195,
   "witness_defects": 44,
   "bytes_raw": 4431561802397,
   "bytes_stored": 1822278031360,
@@ -37931,8 +37931,13 @@
   ],
   "latest": "cycle_ef0599f4eb00"
  },
- "catalogue_snapshots": 591,
+ "catalogue_snapshots": 592,
  "catalogue": [
+  {
+   "fetched_utc": "2026-10-31T09:37:05Z",
+   "records": 12972,
+   "sha12": "90b5953b0c9f"
+  },
   {
    "fetched_utc": "2026-10-31T05:31:03Z",
    "records": 12972,
@@ -37987,11 +37992,6 @@
    "fetched_utc": "2026-10-30T05:01:57Z",
    "records": 12972,
    "sha12": "9951405a87ad"
-  },
-  {
-   "fetched_utc": "2026-10-30T02:58:03Z",
-   "records": 12972,
-   "sha12": "3c6cf603a43d"
   }
  ],
  "cycles": [
@@ -38008,7 +38008,7 @@
    "merkle_root": "c5ab92abb7aa9eee7a80eb42d0a9d888d740b4135171b00f5cc15c6d66a6cd2a",
    "ots": {
     "stamped": true,
-    "attested_block": null
+    "attested_block": 973930
    },
    "wayback": {
     "attempted": true,
