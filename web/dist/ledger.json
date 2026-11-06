@@ -1,6 +1,6 @@
 {
  "schema": 2,
- "generated_utc": "2026-11-05T22:36:31Z",
+ "generated_utc": "2026-11-06T02:36:57Z",
  "poller": "A (a datacentre host in the EU; the home poller was retired on 3 Oct 2026)",
  "method": "built from each cycle's cycle.json, witness.json and ship.json in the poller's spool; coverage is the fraction of the last 24 h's minutes with a watcher heartbeat under 10 minutes old (D18); a cadence hold is a manifest first-seen gap over 9 h; source bytes are the responses as served, stored bytes are the gzipped archive objects the shipper recorded",
  "totals": {
@@ -10,8 +10,8 @@
   "witness_defects": 45,
   "bytes_raw": 4818240656737,
   "bytes_stored": 1981190123520,
-  "bytes_stored_local": 37296353280,
-  "bytes_stored_cold_only": 1943893770240,
+  "bytes_stored_local": 27975526400,
+  "bytes_stored_cold_only": 1953214597120,
   "files": 2373815,
   "cadence_holds": 19,
   "cadence_unobserved": 3
@@ -41295,8 +41295,13 @@
   ],
   "latest": "cycle_77b1818cbde5"
  },
- "catalogue_snapshots": 642,
+ "catalogue_snapshots": 643,
  "catalogue": [
+  {
+   "fetched_utc": "2026-11-05T22:58:54Z",
+   "records": 13026,
+   "sha12": "7116836d0994"
+  },
   {
    "fetched_utc": "2026-11-05T20:56:03Z",
    "records": 13026,
@@ -41351,11 +41356,6 @@
    "fetched_utc": "2026-11-04T16:12:05Z",
    "records": 12999,
    "sha12": "b58f6a5f7382"
-  },
-  {
-   "fetched_utc": "2026-11-04T14:08:54Z",
-   "records": 12999,
-   "sha12": "68cf234e844b"
   }
  ],
  "cycles": [
@@ -41739,8 +41739,8 @@
    "storage": {
     "bytes_stored": 9320826880,
     "storage_class": "DEEP_ARCHIVE",
-    "local_files": true,
-    "deleted_locally_utc": null
+    "local_files": false,
+    "deleted_locally_utc": "2026-11-05T23:17:06Z"
    }
   },
   {
@@ -61530,6 +61530,14 @@
   }
  ],
  "daily_roots": [
+  {
+   "date": "2026-11-05",
+   "merkle_root": "8894310e0b0e80ac1060422c7f52daed8c87cd76169360fe228604dc389c63f4",
+   "built_utc": "2026-11-06T00:02:31Z",
+   "leaves": 3,
+   "excluded": [],
+   "attested_block": 974736
+  },
   {
    "date": "2026-11-04",
    "merkle_root": "b239a3476281cf71f07d7670b1b8b1c779f1d726c7a6b43821e1c9dd9ee90cda",
