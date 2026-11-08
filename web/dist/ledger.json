@@ -1,17 +1,17 @@
 {
  "schema": 2,
- "generated_utc": "2026-11-07T22:39:59Z",
+ "generated_utc": "2026-11-08T02:40:17Z",
  "poller": "A (a datacentre host in the EU; the home poller was retired on 3 Oct 2026)",
  "method": "built from each cycle's cycle.json, witness.json and ship.json in the poller's spool; coverage is the fraction of the last 24 h's minutes with a watcher heartbeat under 10 minutes old (D18); a cadence hold is a manifest first-seen gap over 9 h; source bytes are the responses as served, stored bytes are the gzipped archive objects the shipper recorded",
  "totals": {
   "cycles": 219,
   "complete": 218,
-  "attested": 217,
+  "attested": 218,
   "witness_defects": 45,
   "bytes_raw": 4977350053421,
   "bytes_stored": 2046479708160,
-  "bytes_stored_local": 37304883200,
-  "bytes_stored_cold_only": 2009174824960,
+  "bytes_stored_local": 27974246400,
+  "bytes_stored_cold_only": 2018505461760,
   "files": 2452239,
   "cadence_holds": 19,
   "cadence_unobserved": 3
@@ -42462,8 +42462,13 @@
   ],
   "latest": "cycle_471e9cbebe41"
  },
- "catalogue_snapshots": 656,
+ "catalogue_snapshots": 657,
  "catalogue": [
+  {
+   "fetched_utc": "2026-11-08T02:03:40Z",
+   "records": 13026,
+   "sha12": "ffcfd96b566a"
+  },
   {
    "fetched_utc": "2026-11-07T19:51:54Z",
    "records": 13026,
@@ -42518,11 +42523,6 @@
    "fetched_utc": "2026-11-06T19:22:53Z",
    "records": 13026,
    "sha12": "d14652025711"
-  },
-  {
-   "fetched_utc": "2026-11-06T07:08:39Z",
-   "records": 13026,
-   "sha12": "ad3df57b326b"
   }
  ],
  "cycles": [
@@ -42539,7 +42539,7 @@
    "merkle_root": "19e9951661b0483caa844454bc2bb23d58783a3b5f5eccf26b040d72df565d2d",
    "ots": {
     "stamped": true,
-    "attested_block": null
+    "attested_block": 974994
    },
    "wayback": {
     "attempted": true,
@@ -42845,8 +42845,8 @@
    "storage": {
     "bytes_stored": 9330636800,
     "storage_class": "DEEP_ARCHIVE",
-    "local_files": true,
-    "deleted_locally_utc": null
+    "local_files": false,
+    "deleted_locally_utc": "2026-11-08T01:47:06Z"
    }
   },
   {
@@ -63308,6 +63308,19 @@
   }
  ],
  "daily_roots": [
+  {
+   "date": "2026-11-07",
+   "merkle_root": "72b7e9ab82a6dddeb3c9c072ea420bccbc40a181ce5d1de4425e6fe27dbe2d17",
+   "built_utc": "2026-11-08T00:03:21Z",
+   "leaves": 3,
+   "excluded": [
+    [
+     "cycle_a6e7b58ab22a",
+     "incomplete pull, no root"
+    ]
+   ],
+   "attested_block": 975007
+  },
   {
    "date": "2026-11-06",
    "merkle_root": "233aaa88ac6f87e6ecd29cc3ce478cf145ee8aced5abac10c9635d5095339b17",
