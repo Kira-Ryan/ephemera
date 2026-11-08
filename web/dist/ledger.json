@@ -1,10 +1,10 @@
 {
  "schema": 2,
- "generated_utc": "2026-11-08T21:06:07Z",
+ "generated_utc": "2026-11-08T21:22:57Z",
  "poller": "A (a datacentre host in the EU; the home poller was retired on 3 Oct 2026)",
  "method": "built from each cycle's cycle.json, witness.json and ship.json in the poller's spool; coverage is the fraction of the last 24 h's minutes with a watcher heartbeat under 10 minutes old (D18); a cadence hold is a manifest first-seen gap over 9 h; source bytes are the responses as served, stored bytes are the gzipped archive objects the shipper recorded; a block is the lowest in the cycle's own proof; a copy marked found later was located in the Wayback index afterwards and hashed against the record (probe P10)",
  "totals": {
-  "cycles": 221,
+  "cycles": 222,
   "complete": 220,
   "attested": 220,
   "witness_defects": 17,
@@ -42935,6 +42935,42 @@
   }
  ],
  "cycles": [
+  {
+   "cycle": "cycle_66ecb255e463",
+   "manifest_sha256": "66ecb255e4631ae560f74205a60b67277c9aab32802acf97c79c56733e9eee5c",
+   "first_seen_utc": "2026-11-08T21:15:56Z",
+   "status": "in-progress",
+   "files_listed": 11201,
+   "files_recorded": 0,
+   "files_failed": 0,
+   "bytes_raw": 0,
+   "wall_seconds": null,
+   "merkle_root": null,
+   "ots": {
+    "stamped": false,
+    "attested_block": null,
+    "proof": null
+   },
+   "wayback": {
+    "attempted": false,
+    "manifest_verified": false,
+    "manifest_captured": false,
+    "manifest_error": null,
+    "samples_verified": 0,
+    "samples_total": 0,
+    "losses": 0,
+    "skipped": null,
+    "manifest_copy_url": null,
+    "manifest_copy_sha256": null,
+    "samples": []
+   },
+   "storage": {
+    "bytes_stored": 0,
+    "storage_class": null,
+    "local_files": true,
+    "deleted_locally_utc": null
+   }
+  },
   {
    "cycle": "cycle_9ec210965132",
    "manifest_sha256": "9ec210965132b2a22fd01439a0471054ab4c247b4049a2a2d5ec03e158946b51",
