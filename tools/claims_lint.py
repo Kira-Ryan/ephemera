@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
 """Claims lint: fail when an outward document uses wording the claims register prohibits.
 
-Rules come from the "Prohibited wording" section of DOCS/claims-register.md: every double-quoted
+Rules come from the "Prohibited wording" section of tools/claims_rules.md: every double-quoted
 phrase in that section is a prohibited phrase. A phrase that appears in a scanned document inside
 double quotes, backticks or *emphasis* is a *mention* (the README saying it is not "covariance
 realism") and is allowed; an unquoted use is a violation. Two phrases, "confirms" and "refutes",
 are only violations in a sentence that also talks about the FCC / SpaceX / manoeuvre figure, which
-is the sense D04 prohibits. The register itself is never scanned.
+is the sense D04 prohibits. The rules file itself is never scanned.
 
 In HTML there is no quoting-as-mention convention: attribute values and script string literals are
 the page's own words, so only backticks and *emphasis* count as mentions there. Without that, the
@@ -30,10 +30,11 @@ import sys
 from pathlib import Path
 
 REPO = Path(__file__).resolve().parents[1]
-REGISTER = REPO / "DOCS" / "claims-register.md"
-# Outward artefacts only (the register's own scope): the rulebook under DOCS/ and the task ledger
-# PLAN.md discuss the prohibited wording by name and are not scanned.
-DEFAULT_TARGETS = ["README.md", "VERIFY.md", "archive/README.md", "probes", "web/dist", "bulletins"]
+# In the repository because the host's publish step runs this lint: the private notes under DOCS/ are
+# on the owner's machine only, and a rule that lived there would stop every publish on the host.
+REGISTER = REPO / "tools" / "claims_rules.md"
+# Outward artefacts only. The rules file discusses the prohibited wording by name and is not scanned.
+DEFAULT_TARGETS = ["README.md", "VERIFY.md", "CORRECTIONS.md", "archive/README.md", "probes", "web/dist", "bulletins"]
 # Built pages that must each carry every required caveat, relative to a scanned directory.
 ALLOW_MARKER = "<!-- lint:allow -->"   # a line carrying this is skipped (a deliberate mention)
 CONTEXT_BOUND = {"confirms", "refutes"}

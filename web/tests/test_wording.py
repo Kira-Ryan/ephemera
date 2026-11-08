@@ -2,6 +2,7 @@
 wording to what the rendered page can stand behind, on the page a reader would see it on."""
 from __future__ import annotations
 
+import re
 import sys
 from datetime import timedelta
 from pathlib import Path
@@ -68,6 +69,25 @@ def test_the_archive_says_a_verified_link_can_answer_404(tmp_path):
     assert "Of the 18 that did on 5 Nov 2026, 15 served the right bytes again on 8 Nov" in doc
     assert "which is an inference" in doc
     assert "NEVER CAPTURED" not in doc
+
+
+def test_the_site_does_not_cite_decisions_no_reader_can_see(tmp_path):
+    """The decision log is private, so "the thirty days D06 allowed" points a reader at nothing.
+
+    Mutation: put a decision number back into a sentence in pages.py or build.py and this fails."""
+    _, _, out = build_site(tmp_path)
+    for page in sorted(out.rglob("*.html")):
+        doc = re.sub(r"<(style|script)\b.*?</\1>", " ", page.read_text(encoding="utf-8"), flags=re.S)
+        assert not re.findall(r"\bD\d\d\b", text(doc)), page.name
+
+
+def test_the_corrections_the_site_promises_can_be_found(tmp_path):
+    """The colophon says corrections get published, and the log has moved out of the private register.
+
+    Mutation: drop the CORRECTIONS.md link from pages.check, or delete the file, and this fails."""
+    _, _, out = build_site(tmp_path)
+    assert 'github.com/Kira-Ryan/ephemera/blob/main/CORRECTIONS.md' in page_at(out, "check")
+    assert (Path(__file__).resolve().parents[2] / "CORRECTIONS.md").is_file()
 
 
 def test_the_404_says_only_what_is_true(tmp_path):

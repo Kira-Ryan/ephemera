@@ -14,6 +14,16 @@ import claims_lint  # noqa: E402
 REPO = Path(__file__).resolve().parents[2]
 
 
+def test_the_rules_are_in_the_repository_because_the_host_publishes_with_them():
+    """web/publish.py runs this lint on the host, where the private notes under DOCS/ do not exist. A rule
+    file there would make the lint fail and stop every publish, freezing the site.
+
+    Mutation: point REGISTER back into DOCS/ and this fails."""
+    assert claims_lint.REGISTER == REPO / "tools" / "claims_rules.md"
+    assert claims_lint.REGISTER.is_file()
+    assert len(claims_lint.load_required()) == 4
+
+
 def test_rules_come_from_the_real_register_and_exclude_recommended_wording():
     rules = claims_lint.load_rules()
     assert "Covariance realism" in rules and "Ground truth" in rules and "confirms" in rules

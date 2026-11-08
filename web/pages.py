@@ -34,7 +34,7 @@ DESCRIPTION = ("An archive of the public Starlink ephemerides, hashed and anchor
 PAGES = (("", "Front page"), ("finding/", "The finding"), ("scored/", "Scored cycles"),
          ("archive/", "The archive"), ("check/", "Check it"), ("globe/", "The globe"))
 
-# The four caveats DOCS/claims-register.md requires on every page, verbatim, plus the two house
+# The four caveats tools/claims_rules.md requires on every page, verbatim, plus the two house
 # sentences. tools/claims_lint.py asserts the four on every built page.
 CAVEATS = ("Operator ephemerides are predictions, not observations. Starlink is the only operator with public "
            "covariance; other operators enter via CelesTrak SupGP without covariance. Public GP data is too noisy "
@@ -109,7 +109,7 @@ def licence_request(ledger: dict) -> str:
     if gen < "2026-10-01":
         return "a written request went to SpaceX on 31 August 2026 and is unanswered as of this build"
     return ("a written request went to SpaceX on 31 August 2026 and had received no answer by 30 September 2026, "
-            "the thirty days D06 allowed; the files are held as published and come down on request")
+            "the thirty days it was given; the files are held as published and come down on request")
 
 
 def pack_link(ledger: dict, rel: str) -> str:
@@ -1361,6 +1361,8 @@ def check(ledger: dict, pack_mb: float | None) -> str:
       They move to public object storage once the storage layer is finished.</li>
       <li>The raw operator files are held as published, hashed and witnessed. They are not re-published here while the
       licence question below is open.</li>
+      <li>Corrections to anything published here are logged in
+      <a href="https://github.com/Kira-Ryan/ephemera/blob/main/CORRECTIONS.md">CORRECTIONS.md</a>.</li>
     </ul>
     <p class="fine"><b>Licence.</b> Code is MIT, and the <a href="https://github.com/Kira-Ryan/ephemera">repository
     is public</a>, so the propagation, the frame handling and the cut every headline figure is taken at can be read

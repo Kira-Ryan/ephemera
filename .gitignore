@@ -41,3 +41,8 @@ data/
 # from its scored report and the archived files. Committing them grew .git to 96 MB in eleven days.
 # infra/r2_packs.py publishes each one to R2 under its own cycle key and the site links it there.
 web/dist/globe/pack.json
+
+# Private, on the owner's machine only, never committed: design notes, decision log, claims register and
+# task ledger. The lint's rules are in tools/claims_rules.md, because the host publishes without these.
+DOCS/
+PLAN.md

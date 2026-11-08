@@ -23,8 +23,8 @@ published covariance by lead time, and an honestly defined census of trajectory 
 > manifest and ten root-chosen files into the Wayback Machine and re-hashes the copies, ships the raw
 > files to cold storage, scores each cycle against the public catalogue, and publishes the site every
 > four hours. Not yet in place: a second poller, the self-consistency series, the census, a restore
-> drill. Progress is tracked in `PLAN.md`. Read `DOCS/concept.md` first, then `DOCS/decisions.md`,
-> then `probes/README.md`, then `archive/README.md`.
+> drill. Read `probes/README.md`, then `archive/README.md`. The design notes, decision log and task
+> ledger are kept privately; the D numbers in the code and notes refer to them.
 
 ## The one number
 
@@ -49,11 +49,11 @@ re-measure before quoting.
 
 | Path | What |
 |---|---|
-| `DOCS/` | Concept, decision log, claims register — read before building |
+| `CORRECTIONS.md` | Every correction to something this project published |
 | `probes/` | Cheap experiments that retire the big unknowns before anything is built on them |
 | `archive/` | Poller, watcher and witness: hashing, Merkle roots, OpenTimestamps, Wayback |
 | `infra/` | Account guards (AWS and Cloudflare) and guarded deploy scripts |
-| `tools/` | The claims lint that enforces the register's wording in `make test` |
+| `tools/` | The claims lint that enforces `tools/claims_rules.md` in `make test` and on every publish |
 | `web/` | The static site (build-time computation only, no server) |
 | `score/` | Clean-room SGP4 scoring against the operator's published trajectories; self-consistency and the census are planned |
 | `data/` | *Planned:* derived products only; raw files live on cold object storage, never here |
@@ -69,7 +69,7 @@ restated in `CLAUDE.md` because coding agents build most of this.
 
 MIT for this repository's code. Derived datasets are intended for CC BY 4.0 (D06, proposed). The
 raw SpaceX files are to be mirrored as published, under terms SpaceX has not stated; the position
-taken is D06 and the status of the request to SpaceX (sent 31 Aug 2026; no answer by 30 Sep 2026,
-the thirty days D06 allowed, so the files are held as published and come down on request) is in
-`DOCS/claims-register.md`. Space-Track general perturbations will be redistributed only under
+taken is D06, and the request to SpaceX was sent on 31 Aug 2026 with no answer by 30 Sep 2026, the
+thirty days it was given, so the files are held as published and come down on request. Space-Track
+general perturbations will be redistributed only under
 Space-Track's blanket approval for basic SSA data, with citation.

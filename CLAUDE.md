@@ -1,7 +1,8 @@
 # Ephemera — rules for coding agents
 
 Read `DOCS/concept.md`, `DOCS/decisions.md` and `DOCS/claims-register.md` before writing anything.
-Decisions are binding; propose a new decision entry rather than working around one.
+Decisions are binding; propose a new decision entry rather than working around one. `DOCS/` and `PLAN.md`
+are private: gitignored, on the owner's machine only, never committed. Say so if they are missing here.
 
 ## Non-negotiable
 
@@ -14,10 +15,12 @@ Decisions are binding; propose a new decision entry rather than working around o
 3. **Raw files are never committed.** `data/raw/` and anything under it is gitignored; raw archives
    live on cold object storage with published hashes.
 4. **Claims discipline.** Any user-visible text (site, bulletin, README, docstring that renders) is
-   checked against `DOCS/claims-register.md`. Prohibited wording is a build failure once the browser
+   checked against `tools/claims_rules.md`. Prohibited wording is a build failure once the browser
    tests exist.
 5. **Never a single ratio against the FCC count (D04). Never "realism" for the overlap scoreboard
    (D05).**
+6. **Nothing private in the repository (D23, D24).** It is public. No letter, draft, quote or paraphrase of
+   correspondence, no plan naming people to approach, no decision log, no task ledger.
 
 ## Engineering rules (in addition to the user's global rules)
 
@@ -38,7 +41,8 @@ Decisions are binding; propose a new decision entry rather than working around o
 
 | Path | Owner | Notes |
 |---|---|---|
-| `DOCS/` | human | agents propose edits as decision entries |
+| `DOCS/`, `PLAN.md` | human, private | gitignored; agents propose edits as decision entries |
+| `CORRECTIONS.md` | agents | the public log of anything published and then corrected |
 | `probes/` | agents, reviewed | one folder per probe, `README.md` with result and date |
 | `archive/` | agents | pollers, hashing, witnessing; no scoring logic |
 | `score/` | agents | SGP4 scoring, self-consistency, census; no I/O against live feeds |
