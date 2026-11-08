@@ -33,7 +33,9 @@ POLICY_NAME = "ephemera-shipper-bucket-only"
 def policy_document(bucket: str = BUCKET) -> dict:
     """What archive/ship.py needs and nothing more: upload_file (PutObject, plus the abort and
     list-parts calls of a multipart upload), head_object (GetObject), put_object for the records
-    (PutObject); list on the bucket so a hand check from the host can see what is there."""
+    (PutObject); list on the bucket so a hand check from the host can see what is there. The owner's
+    private notes (infra/private_backup.py) are in the same bucket and the host has no business reading
+    them, so that prefix is denied outright."""
     return {"Version": "2012-10-17", "Statement": [
         {"Sid": "ObjectsInTheArchiveBucketOnly", "Effect": "Allow",
          "Action": ["s3:PutObject", "s3:GetObject", "s3:AbortMultipartUpload", "s3:ListMultipartUploadParts"],
@@ -42,6 +44,9 @@ def policy_document(bucket: str = BUCKET) -> dict:
          "Action": ["s3:ListBucket", "s3:ListBucketMultipartUploads", "s3:GetBucketLocation",
                     "s3:ListBucketVersions"],
          "Resource": f"arn:aws:s3:::{bucket}"},
+        {"Sid": "NotThePrivateNotes", "Effect": "Deny",
+         "Action": ["s3:PutObject", "s3:GetObject"],
+         "Resource": f"arn:aws:s3:::{bucket}/private/*"},
     ]}
 
 

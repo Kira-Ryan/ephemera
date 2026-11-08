@@ -37,8 +37,15 @@ def test_the_policy_can_add_to_the_bucket_and_never_remove_from_it():
     actions = [a for s in doc["Statement"] for a in s["Action"]]
     assert {"s3:PutObject", "s3:GetObject", "s3:ListBucket"} <= set(actions)
     assert not [a for a in actions if "Delete" in a or "Retention" in a or "Bypass" in a or a.endswith("*")]
-    assert all(s["Effect"] == "Allow" for s in doc["Statement"])
-    assert {s["Resource"] for s in doc["Statement"]} == {f"arn:aws:s3:::{BUCKET}", f"arn:aws:s3:::{BUCKET}/*"}
+    allowed = [s for s in doc["Statement"] if s["Effect"] == "Allow"]
+    assert {s["Resource"] for s in allowed} == {f"arn:aws:s3:::{BUCKET}", f"arn:aws:s3:::{BUCKET}/*"}
+
+
+def test_the_host_cannot_read_or_write_the_private_notes():
+    """The private notes share the bucket. Mutation: drop the Deny statement and this fails."""
+    denied = [s for s in iam_shipper.policy_document(BUCKET)["Statement"] if s["Effect"] == "Deny"]
+    assert [s["Resource"] for s in denied] == [f"arn:aws:s3:::{BUCKET}/private/*"]
+    assert {"s3:GetObject", "s3:PutObject"} <= set(denied[0]["Action"])
 
 
 def test_first_run_creates_user_policy_and_key_and_writes_the_profile_file(iam, tmp_path, capsys):

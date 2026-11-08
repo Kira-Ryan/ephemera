@@ -41,7 +41,7 @@ are private: gitignored, on the owner's machine only, never committed. Say so if
 
 | Path | Owner | Notes |
 |---|---|---|
-| `DOCS/`, `PLAN.md` | human, private | gitignored; agents propose edits as decision entries |
+| `DOCS/`, `PLAN.md` | human, private | gitignored; agents propose edits as decision entries; `infra/private_backup.py` after any change |
 | `CORRECTIONS.md` | agents | the public log of anything published and then corrected |
 | `probes/` | agents, reviewed | one folder per probe, `README.md` with result and date |
 | `archive/` | agents | pollers, hashing, witnessing; no scoring logic |
