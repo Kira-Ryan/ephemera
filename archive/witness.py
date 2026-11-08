@@ -330,10 +330,12 @@ def ots_step(target_dir: Path, ots: dict, runner: OtsRunner | None, args) -> boo
             if due:
                 runner.upgrade(target_dir)
                 ots["last_upgrade_attempt_utc"] = poll.utc_now()
-                m = ATTESTATION_RE.search(runner.info(target_dir))
-                if m:
-                    ots["attested"] = {"block_height": int(m.group(1)), "upgraded_utc": poll.utc_now()}
-                    log.info("%s: attested at Bitcoin block %s", target_dir.name, m.group(1))
+                # `ots verify` reports the lowest block in a proof that holds several, so that is
+                # the one to record; `ots info` prints them in the order of the proof's tree.
+                heights = [int(h) for h in ATTESTATION_RE.findall(runner.info(target_dir))]
+                if heights:
+                    ots["attested"] = {"block_height": min(heights), "upgraded_utc": poll.utc_now()}
+                    log.info("%s: attested at Bitcoin block %s", target_dir.name, min(heights))
         return True
     except (RuntimeError, subprocess.SubprocessError, OSError) as e:
         ots["error"] = str(e)[:400]

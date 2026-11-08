@@ -5,6 +5,7 @@ real browser (headless Chrome DOM dump) when one is installed, per the repo rule
 is not a picture."""
 from __future__ import annotations
 
+import hashlib
 import json
 import re
 import shutil
@@ -29,6 +30,32 @@ def utc(dt: datetime) -> str:
     return dt.strftime("%Y-%m-%dT%H:%M:%SZ")
 
 
+BLOCK_TAG = bytes.fromhex("0588960d73d71901")   # what OpenTimestamps writes ahead of a Bitcoin attestation
+
+
+def varuint(n: int) -> bytes:
+    out = bytearray()
+    while True:
+        byte = n & 0x7f
+        n >>= 7
+        out.append(byte | (0x80 if n else 0))
+        if not n:
+            return bytes(out)
+
+
+def fake_proof(*blocks: int) -> bytes:
+    """An OpenTimestamps proof as far as the build reads one: each attestation's tag, length and
+    height. test_proofs.py checks the same reader against a real proof from probe P2."""
+    return b"\x00OpenTimestamps stub" + b"".join(BLOCK_TAG + varuint(len(varuint(h))) + varuint(h) for h in blocks)
+
+
+def write_root(d: Path, root: str, *blocks: int) -> None:
+    """A root file and a proof that commits to it. A real proof carries the SHA-256 of what it stamps."""
+    raw = root.encode("ascii") + b"\n"
+    (d / "root.txt").write_bytes(raw)
+    (d / "root.txt.ots").write_bytes(hashlib.sha256(raw).digest() + fake_proof(*blocks))
+
+
 def make_spool(tmp_path: Path, now: datetime) -> Path:
     spool = tmp_path / "spool"
     a = now - timedelta(hours=30)          # healthy, attested, fully witnessed
@@ -46,6 +73,9 @@ def make_spool(tmp_path: Path, now: datetime) -> Path:
         (d / "cycle.json").write_text(json.dumps(rec))
         if witness is not None:
             (d / "witness.json").write_text(json.dumps(witness))
+        if root:
+            block = ((witness or {}).get("ots", {}).get("attested") or {}).get("block_height")
+            write_root(d, root, *([block] if block else []))
 
     cyc("cycle_aaaaaaaaaaaa", a, "complete", 9000, 9000, "a1" * 32, witness={
         "ots": {"stamped_utc": utc(a), "attested": {"block_height": 964904}},
@@ -70,6 +100,7 @@ def make_spool(tmp_path: Path, now: datetime) -> Path:
         "date": a.strftime("%Y-%m-%d"), "merkle_root": "d4" * 32,
         "cycles": [{"cycle": "cycle_aaaaaaaaaaaa"}], "gapped_cycles_excluded": 0,
         "ots": {"stamped_utc": utc(a), "attested": {"block_height": 964950}}}))
+    write_root(ddir, "d4" * 32, 964950)
 
     with open(spool / "heartbeats.jsonl", "w") as f:      # 31 h of ticks (from before cycle a), one 30-min hole
         t = now - timedelta(hours=31)

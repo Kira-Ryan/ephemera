@@ -741,10 +741,11 @@ def test_a_stale_worked_example_says_which_cycle_it_is(tmp_path):
     out = tmp_path / "dist"
     assert build.main(["--spool", str(spool), "--out", str(out)]) == 0
     front = text((out / "index.html").read_text(encoding="utf-8"))
-    assert "the newest one whose independent copy verified" in front
+    assert "the newest one with a Bitcoin attestation and a verified independent copy" in front
     check = text(page_at(out, "check"))
     assert "is not the newest one" in check
-    assert "It is the most recent cycle whose independent copy verified" in check
+    assert "It is the most recent cycle with a Bitcoin attestation, a published proof and a verified independent copy" in check
+    assert "the independent copies of 4 cycles since then failed" in check
 
 
 def test_the_finding_page_does_not_reprint_the_front_page(tmp_path):

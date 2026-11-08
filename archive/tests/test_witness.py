@@ -309,6 +309,27 @@ def test_upgrade_records_the_block_height_and_respects_the_backoff(tmp_path, stu
         wb.close()
 
 
+def test_a_proof_holding_several_blocks_records_the_lowest(tmp_path, stub_runner, monkeypatch):
+    """`ots verify` reports the lowest block in a proof that holds several, and `ots info` prints them
+    in the order of the proof's tree, so taking the first one printed recorded a later block than a
+    reader sees on 44 of 210 cycles (5 Nov 2026).
+
+    Mutation: go back to ATTESTATION_RE.search in ots_step and this fails."""
+    feed, spool, rec, cycle, origin = build_cycle(tmp_path)
+    wb = FakeWayback(origin)
+    monkeypatch.setattr(stub_runner, "info", lambda _d: "verify BitcoinBlockHeaderAttestation(964904)\n"
+                                                        "verify BitcoinBlockHeaderAttestation(964903)\n")
+    try:
+        set_current(spool, rec["manifest_sha256"])
+        assert wmain(feed, spool, wb) == 0                             # pass 1: stamps only
+        assert wmain(feed, spool, wb, "--upgrade-every", "0") == 0     # pass 2: upgrade -> attested
+        w = json.loads((cycle / "witness.json").read_text())
+        assert w["ots"]["attested"]["block_height"] == 964903
+    finally:
+        feed.close()
+        wb.close()
+
+
 def test_one_cycle_failing_does_not_block_the_next(tmp_path, stub_runner):
     feed, spool, rec1, cycle1, origin = build_cycle(tmp_path)
     (feed.site / "MEME_9_STARLINK-9_1_Operational_1_UNCLASSIFIED.txt").write_bytes(make_file(9))

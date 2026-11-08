@@ -6,8 +6,9 @@ published, never suppressed).
   python web/build.py --spool Z:/ephemera/spool
 
 Writes the six pages of D20 (the front page, finding/, scored/, archive/, check/, and the globe with
-its pack), 404.html, ledger.json and the brand assets into web/dist, and removes any HTML under
-web/dist that this build did not write, so a retired page cannot ship with a frozen build stamp.
+its pack), 404.html, ledger.json, the brand assets and every root.txt with its OpenTimestamps proof
+(D22) into web/dist, and removes any HTML or proof under web/dist that this build did not write, so a
+retired page cannot ship with a frozen build stamp.
 Every figure carries the build's as-of time and the method note; a gapped cycle renders as a loud
 row, not a missing one, and a cycle whose independent copy failed renders amber even though its own
 pull succeeded. The committed dist/ is the publication of record, so every figure that was ever
@@ -19,6 +20,7 @@ from __future__ import annotations
 import argparse
 import html
 import bisect
+import hashlib
 import json
 import math
 import shutil
@@ -36,6 +38,11 @@ COVERAGE_WINDOW_H = 24
 HEARTBEAT_FRESH_S = 600          # D18: a minute is covered while a heartbeat is under ten minutes old
 CADENCE_HOLD_H = 9.0             # a manifest held longer than this counts as a cadence hold
 LOST_KM = pages.LOST_KM
+# Copies the witness recorded as never made, found in the Wayback index afterwards and hashed against
+# the archive's records (probe P10). A dated statement of its own: the witness records stay as written.
+LATE_COPIES = REPO / "archive" / "late_copies.json"
+# The tag OpenTimestamps writes ahead of a Bitcoin attestation (BitcoinBlockHeaderAttestation.TAG).
+BLOCK_TAG = bytes.fromhex("0588960d73d71901")
 
 
 def utc_now() -> datetime:
@@ -49,7 +56,73 @@ def parse_utc(s: str) -> datetime:
 # ---------------------------------------------------------------- reading the spool
 
 
+def _varuint(buf: bytes, i: int) -> tuple[int, int]:
+    value = shift = 0
+    while True:
+        byte = buf[i]
+        i += 1
+        value |= (byte & 0x7f) << shift
+        shift += 7
+        if not byte & 0x80:
+            return value, i
+
+
+def proof_blocks(proof: bytes) -> list[int]:
+    """Every Bitcoin block an OpenTimestamps proof is attested in, lowest first. Found by the eight
+    byte tag, each followed by a length and the height, because the build has no OpenTimestamps
+    client and a chance match of eight bytes is not a real risk. A proof can hold more than one block
+    when its calendars landed in different ones."""
+    heights, i = set(), 0
+    while (i := proof.find(BLOCK_TAG, i)) >= 0:
+        i += len(BLOCK_TAG)
+        try:
+            _, j = _varuint(proof, i)
+            heights.add(_varuint(proof, j)[0])
+        except IndexError:
+            break
+    return sorted(heights)
+
+
+def proof_state(rec_dir: Path, root: str | None, recorded_block: int | None, site_dir: str) -> tuple[int | None, str | None]:
+    """(the block to print, the proof's path under the site, or None when it cannot be published).
+
+    `ots verify` sorts a proof's attestations by height and reports the first that verifies, so the
+    lowest block in the proof is what a reader will see. The witness recorded whichever one `ots
+    info` printed first, which was a later block on 44 of 210 cycles on 5 Nov 2026, so the file being
+    published decides the number. The record only speaks for a cycle with no proof to publish."""
+    proof, root_txt = rec_dir / "root.txt.ots", rec_dir / "root.txt"
+    if not root or not proof.exists() or not root_txt.exists():
+        return recorded_block, None
+    root_bytes, proof_bytes = root_txt.read_bytes(), proof.read_bytes()
+    if root_bytes != root.encode("ascii") + b"\n":
+        print(f"build: {rec_dir.name}: root.txt is not the recorded root (D12); its proof is not published", file=sys.stderr)
+        return recorded_block, None
+    # A proof carries the SHA-256 of the file it stamps. Without it here, the page's own command fails.
+    if hashlib.sha256(root_bytes).digest() not in proof_bytes:
+        print(f"build: {rec_dir.name}: root.txt.ots does not commit to root.txt; it is not published", file=sys.stderr)
+        return recorded_block, None
+    blocks = proof_blocks(proof_bytes)
+    if recorded_block and not blocks:
+        print(f"build: {rec_dir.name}: the record names block {recorded_block} but its proof holds none; "
+              "the page says pending", file=sys.stderr)
+    return (blocks[0] if blocks else None), f"{site_dir}/root.txt.ots"
+
+
+def with_late_copies(wb: dict, late: dict) -> dict:
+    """A cycle's Wayback state once its late-found copies are counted. A sample with no matching copy
+    stays unverified and is a loss, so the row and the defect count still say so."""
+    found = late["samples"]
+    samples = [{**s, "copy_url": found[s["name"]]["id_url"], "sha256_of_copy": found[s["name"]]["sha256_of_copy"],
+                "verified": True} if s["name"] in found else s for s in wb["samples"]]
+    verified = sum(1 for s in samples if s["verified"])
+    return {**wb, "manifest_verified": True, "manifest_captured": True, "manifest_error": None,
+            "manifest_copy_url": late["manifest"]["id_url"], "manifest_copy_sha256": late["manifest"]["sha256_of_copy"],
+            "samples": samples, "samples_verified": verified, "losses": len(samples) - verified,
+            "found_later": late["checked_utc"][:10]}
+
+
 def load_cycles(spool: Path) -> list[dict]:
+    late = json.loads(LATE_COPIES.read_text(encoding="utf-8")) if LATE_COPIES.exists() else {"cycles": {}}
     cycles = []
     for cdir in sorted(spool.glob("cycle_*")):
         rec_path = cdir / "cycle.json"
@@ -65,6 +138,9 @@ def load_cycles(spool: Path) -> list[dict]:
         ship = json.loads(ship_path.read_text()) if ship_path.exists() else {}
         shipped = ship.get("shipped") or {}
         files_dir = cdir / "files"
+        block, proof = proof_state(cdir, rec.get("merkle_root"),
+                                   ((w.get("ots") or {}).get("attested") or {}).get("block_height"),
+                                   f"proofs/{rec['cycle'][6:]}")
         cycles.append({
             "cycle": rec["cycle"],
             "manifest_sha256": rec["manifest_sha256"],
@@ -76,8 +152,7 @@ def load_cycles(spool: Path) -> list[dict]:
             "bytes_raw": rec.get("bytes_raw", 0),
             "wall_seconds": rec.get("wall_seconds"),
             "merkle_root": rec.get("merkle_root"),
-            "ots": {"stamped": bool((w.get("ots") or {}).get("stamped_utc")),
-                    "attested_block": ((w.get("ots") or {}).get("attested") or {}).get("block_height")},
+            "ots": {"stamped": bool((w.get("ots") or {}).get("stamped_utc")), "attested_block": block, "proof": proof},
             "wayback": {
                 "attempted": bool(w),
                 # A capture that exists but hashes to another cycle's manifest is not "missing": it is
@@ -102,6 +177,9 @@ def load_cycles(spool: Path) -> list[dict]:
                         "local_files": files_dir.is_dir() and any(files_dir.iterdir()),
                         "deleted_locally_utc": ship.get("local_files_deleted_utc")},
         })
+        # Only ever a record that says no copy was made: a copy the witness verified stands as written.
+        if rec["cycle"] in late["cycles"] and not man.get("verified") and not man.get("timestamp"):
+            cycles[-1]["wayback"] = with_late_copies(cycles[-1]["wayback"], late["cycles"][rec["cycle"]])
     cycles.sort(key=lambda c: c["first_seen_utc"] or "", reverse=True)
     return cycles
 
@@ -128,9 +206,10 @@ def load_dailies(spool: Path, cycles: list[dict]) -> list[dict]:
             else:
                 why = "not under this root"
             excluded.append((c["cycle"], why))
+        block, proof = proof_state(ddir, d["merkle_root"], ((d.get("ots") or {}).get("attested") or {}).get("block_height"),
+                                   f"proofs/daily/{d['date']}")
         dailies.append({"date": d["date"], "merkle_root": d["merkle_root"], "built_utc": built,
-                        "leaves": len(leaves), "excluded": excluded,
-                        "attested_block": ((d.get("ots") or {}).get("attested") or {}).get("block_height")})
+                        "leaves": len(leaves), "excluded": excluded, "attested_block": block, "proof": proof})
     dailies.sort(key=lambda d: d["date"], reverse=True)
     return dailies
 
@@ -254,7 +333,7 @@ def witness_defect(c: dict) -> str | None:
     # verified implies captured, so ask that first: an older witness record may carry the verdict
     # without the capture timestamp, and that is not a missing capture.
     if not wb["manifest_verified"]:
-        return ("the manifest was never captured" if not wb["manifest_captured"]
+        return ("no copy of the manifest was found" if not wb["manifest_captured"]
                 else "the archived manifest copy is another cycle's file")
     if wb["losses"]:
         return f"{wb['losses']} of {wb['samples_total']} sample captures were lost"
@@ -277,7 +356,9 @@ def build_ledger(spool: Path, now: datetime, pack_base_url: str | None = None) -
                   "spool; coverage is the fraction of the last 24 h's minutes with a watcher "
                   "heartbeat under 10 minutes old (D18); a cadence hold is a manifest first-seen "
                   "gap over 9 h; source bytes are the responses as served, stored bytes are the "
-                  "gzipped archive objects the shipper recorded",
+                  "gzipped archive objects the shipper recorded; a block is the lowest in the cycle's own "
+                  "proof; a copy marked found later was located in the Wayback index afterwards and hashed "
+                  "against the record (probe P10)",
         "totals": {
             "cycles": len(cycles),
             "complete": len(complete),
@@ -332,6 +413,26 @@ def inject_globe_chrome(source: str, ledger: dict, pack_bytes: int | None,
     # would print "front page" twice in the same small panel.
     out = out.replace(' <a href="../">front page</a>', "", 1)
     return out.replace("Loading the latest globe pack.", status, 1)
+
+
+def publish_proofs(ledger: dict, spool: Path, out: Path) -> int:
+    """Copy each publishable root.txt and root.txt.ots into the site (D22), and remove any proof the
+    build did not write. The bytes are the proof's whole point, so they are copied, never re-encoded.
+    Returns how many proofs were written."""
+    sources = [(spool / c["cycle"], c["ots"]["proof"]) for c in ledger["cycles"] if c["ots"]["proof"]]
+    sources += [(spool / "daily" / d["date"], d["proof"]) for d in ledger["daily_roots"] if d["proof"]]
+    written = set()
+    for src, proof in sources:
+        target = out / proof
+        target.parent.mkdir(parents=True, exist_ok=True)
+        for name in ("root.txt", "root.txt.ots"):
+            shutil.copyfile(src / name, target.parent / name)
+            written.add((target.parent / name).resolve())
+    if (out / "proofs").is_dir():
+        for stale in sorted(p for p in (out / "proofs").rglob("*") if p.is_file()):
+            if stale.resolve() not in written:
+                stale.unlink()
+    return len(sources)
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -393,6 +494,7 @@ def main(argv: list[str] | None = None) -> int:
         inject_globe_chrome(globe_src, ledger, pack_bytes, pack_url), encoding="utf-8")
     written.add((globe_out / "index.html").resolve())
     shutil.copyfile(args.out / "icon.svg", globe_out / "icon.svg")
+    proofs = publish_proofs(ledger, args.spool, args.out)
 
     # Prune: any page this build did not write would otherwise ship forever with a frozen stamp.
     for stale in sorted(args.out.rglob("*.html")):
@@ -403,7 +505,7 @@ def main(argv: list[str] | None = None) -> int:
     print(f"built: {t['cycles']} cycles ({t['complete']} complete, {t['attested']} attested, "
           f"{t['witness_defects']} witness defects), coverage={ledger['coverage_24h']}, "
           f"holds={t['cadence_holds']} (+{t['cadence_unobserved']} unwatched), scored={len(ledger['visibility']['reports'])}, "
-          f"pages={len(written)} -> {args.out}")
+          f"pages={len(written)}, proofs={proofs} -> {args.out}")
     return 0
 
 

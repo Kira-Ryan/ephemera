@@ -32,15 +32,20 @@ the whole specification - you can reimplement it yourself in a dozen lines rathe
 
 ## The third-party checks
 
-**OpenTimestamps** proves the root existed no later than a Bitcoin block's timestamp.
-`ots verify root.txt.ots` gives the full check but needs a Bitcoin node. Without one:
-`ots info root.txt.ots` prints the attestation's block height and block merkle root - compare
+**OpenTimestamps** proves the root existed no later than a Bitcoin block's timestamp. Every
+cycle's `root.txt` and `root.txt.ots` are public at `https://ephemera.space/proofs/<sha12>/`, each
+day's at `https://ephemera.space/proofs/daily/<date>/`, and each row of the archive page links its
+own. With both files in one folder, `ots verify root.txt.ots` gives the full check but needs a
+Bitcoin node. A proof can hold several blocks, because its calendars do not all land in the same
+one; `ots verify` reports the lowest, and that is the block the site prints. Without a node:
+`ots info root.txt.ots` prints each attestation's block height and block merkle root - compare
 that merkle root against the same block on any block explorer you trust.
 
 **Wayback Machine** captures prove the inputs existed at the source: each cycle's manifest and ten
-files - chosen by index as `int(sha256(root_hex + ":" + k), 16) mod n_files` for k = 0, 1, ... -
-were submitted while live. Fetch a capture's `id_` URL (in `witness.json`), gunzip it (the copy is
-the origin's gzip transfer encoding), and its SHA-256 must equal the recorded hash:
+files - chosen by index, counting from zero, as `int(sha256(root_hex + ":" + k), 16) mod n_files`
+for k = 0, 1, ..., skipping repeats until there are ten - were submitted while live. Fetch a
+capture's `id_` URL (in `ledger.json` and `witness.json`) with `curl -s --compressed`, or gunzip it
+(the copy is the origin's gzip transfer encoding), and its SHA-256 must equal the recorded hash:
 `python archive/verify.py <cycle> --wayback` does exactly that. The manifest is captured under
 `MANIFEST.txt?cycle=<sha12>`: the origin serves the same bytes with or without the query (checked
 2 Sep 2026), and the query is there because the Wayback Machine would otherwise hand back the
@@ -57,10 +62,10 @@ after one cycle - which is why the witnessing exists.
 | Cycle | `cycle_72bcd7796b49`, first seen 2026-08-30 13:32 UTC |
 | Files | 17,861 recorded of 17,861 listed |
 | Merkle root | `677d3043ef282de6ca7260c2b08e793f527321143ca991a37b9b72e468c520fd` |
-| OpenTimestamps | attested at Bitcoin block **964904** (stamped 15:55 UTC, upgraded 17:06 UTC, 31 Aug 2026) |
+| OpenTimestamps | attested at Bitcoin blocks **964903** and 964904 (stamped 15:55 UTC, upgraded 17:06 UTC, 31 Aug 2026) |
 
 A historical footnote: the probe-P2 evidence proof (`probes/p2_witnessing/evidence/`, Bitcoin
-block 964715) commits to a root.txt whose bytes end in CRLF, because it was written on Windows
+blocks 964641, 964667 and 964715) commits to a root.txt whose bytes end in CRLF, because it was written on Windows
 before D12 fixed the canonical form; it is kept exactly as stamped, and `ots verify` must be run
 against those bytes as they are.
 

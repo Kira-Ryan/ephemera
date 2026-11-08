@@ -75,6 +75,30 @@ def month_label(ym: str) -> str:
     return datetime.strptime(ym, "%Y-%m").strftime("%B %Y")
 
 
+def n_cycles(n: int) -> str:
+    return f"{n:,} cycle{'' if n == 1 else 's'}"
+
+
+def year_of(row: dict) -> str:
+    return (row.get("first_seen_utc") or "")[:4]
+
+
+def years_held(rows: list[dict]) -> list[str]:
+    """The UTC years these rows fall in, newest first. The newest is what a landing page holds and
+    every other year has a page of its own (D20)."""
+    return sorted({year_of(r) for r in rows if year_of(r)}, reverse=True)
+
+
+def other_years(years: list[str], year: str, landing: bool) -> str:
+    """Links from one year's page to the others, as a sentence, or "" when only one year exists. A
+    landing page sits one level above the year pages, and a year page one level below the landing
+    page and beside the other years."""
+    def href(y: str) -> str:
+        return f"{y}/" if landing else "../" if y == years[0] else f"../{y}/"
+    links = [f'<a href="{href(y)}">{y}</a>' for y in years if y != year]
+    return f"{'Earlier years' if landing else 'Other years'}: {', '.join(links)}." if links else ""
+
+
 def licence_request(ledger: dict) -> str:
     """The state of the written request to SpaceX, as a clause. D06 gave the request thirty days,
     closing 30 September 2026. Until then the site says it is unanswered as of this build; from
@@ -149,7 +173,7 @@ def witness_defect(c: dict) -> str | None:
     if wb["skipped"]:
         return "no independent copy was made"
     if not wb["manifest_verified"]:
-        return ("the manifest was never captured" if not wb["manifest_captured"]
+        return ("no copy of the manifest was found" if not wb["manifest_captured"]
                 else "the archived manifest copy is another cycle's file")
     if wb["losses"]:
         return f"{wb['losses']} of {wb['samples_total']} sample captures were lost"
@@ -485,11 +509,15 @@ def page(title: str, path: str, desc: str, current: str, body: str, ledger: dict
 # ---------------------------------------------------------------- figures
 
 
-def cycle_strip(ledger: dict, rel: str, rows: int | None = 1) -> str:
+def cycle_strip(ledger: dict, rel: str, rows: int | None = 1, year: str | None = None, target: str | None = None,
+                label: str = "Every cycle kept") -> str:
     """One block per cycle on a real time axis, one row per 30 days, newest row first. `rows`
     limits the rows (the front page shows one); None shows every row. Each block links to the
-    cycle's row on the archive page, so the strip is the visual index to the growing table."""
-    cycles = [c for c in ledger["cycles"] if c["first_seen_utc"]]
+    cycle's row on the archive page, so the strip is the visual index to the growing table. `year`
+    limits the blocks to one UTC year, for a page holding that year, and `target` is where the rows
+    are when that is not the landing page."""
+    cycles = [c for c in ledger["cycles"] if c["first_seen_utc"] and (year is None or year_of(c) == year)]
+    target = f"{rel}archive/" if target is None else target
     if len(cycles) < 2:
         return ""
     newest = max(parse_utc(c["first_seen_utc"]) for c in cycles)
@@ -524,7 +552,7 @@ def cycle_strip(ledger: dict, rel: str, rows: int | None = 1) -> str:
                    else "pending" if not c["wayback"].get("attempted") or not c["wayback"]["samples_total"] else "kept")
             title = (f"{c['cycle'][6:]} first seen {utc_min(c['first_seen_utc'])} UTC, {c['files_recorded']:,} files"
                      + (f", {witness_defect(c)}" if witness_defect(c) else ""))
-            out.append(f'<a href="{rel}archive/#c-{c["cycle"][6:]}"><rect class="{cls}" x="{x:.1f}" y="{y0 + top}" '
+            out.append(f'<a href="{target}#c-{c["cycle"][6:]}"><rect class="{cls}" x="{x:.1f}" y="{y0 + top}" '
                        f'width="7" height="{ROW - top - bot:.0f}" rx="1"><title>{esc(title)}</title></rect></a>')
         # Ticks: weekly on a 30-day row, every other day on a shorter row, daily on a very short one,
         # so a young archive is labelled rather than showing one tick in eight days of blocks.
@@ -541,12 +569,12 @@ def cycle_strip(ledger: dict, rel: str, rows: int | None = 1) -> str:
     return (f'<figure class="z-full strip"><svg viewBox="-6 0 {W + 12:.0f} {H:.0f}" role="img" '
             f'aria-label="Every archived cycle on a time axis, one block each, coloured by state; each block links to its row.">'
             f'{"".join(out)}</svg><figcaption>'
-            + ("The last 30 days" if rows == 1 else "Every cycle kept") + ", one block per cycle on a time axis"
+            + ("The last 30 days" if rows == 1 else label) + ", one block per cycle on a time axis"
             + ("" if rows == 1 else ", one row per 30 days, newest row first")
             + ". Green is complete and independently copied, grey is complete with the copy still pending, amber is "
               "complete but the independent copy failed, red is an incomplete pull, and a hollow block is a pull still running. "
-              "Gaps in the spacing are the "
-              f"feed's own cadence. Each block links to its row. As of {esc(utc_min(ledger['generated_utc']))} UTC."
+              "Gaps in the spacing are the feed's own cadence, apart from any the poller was down for, counted above. "
+              f"Each block links to its row. As of {esc(utc_min(ledger['generated_utc']))} UTC."
               "</figcaption></figure>")
 
 
@@ -580,25 +608,16 @@ def visibility_curve(report: dict, cls: str = "z-side") -> str:
             f"</figcaption></figure>")
 
 
-def visibility_history(reports: list[dict], gen: str) -> str:
+def visibility_history(reports: list[dict], gen: str, scope: str = "Every scored cycle") -> str:
     """Per cycle, the share within 10 km at file start on a time axis. Cycles scored with hindsight
-    are drawn hollow: their figure is not comparable and must not read as part of the trend. Past a
-    year of cycles, one point per UTC day (the median of the day's live cycles)."""
+    are drawn hollow: their figure is not comparable and must not read as part of the trend. One
+    point per report, each linking to its row on the same page: a page holds one year (D20), which
+    is about 1,200 points, so nothing here ever needs to be folded into a daily figure."""
     pts = [(parse_utc(r["first_seen_utc"]), r["at_file_start"]["within_km"]["10"], r["snapshot_relation"] == "before_cycle", r["cycle"][6:])
            for r in reports if r["at_file_start"] and r["first_seen_utc"]]
     if len(pts) < 2:
         return ""
     pts.sort()
-    if len(pts) > 365:
-        by_day: dict[str, list] = {}
-        for t, v, live, sha in pts:
-            by_day.setdefault(t.strftime("%Y-%m-%d"), []).append((t, v, live, sha))
-        agg = []
-        for day, items in sorted(by_day.items()):
-            live = [i for i in items if i[2]] or items
-            vals = sorted(i[1] for i in live)
-            agg.append((live[0][0], vals[len(vals) // 2], bool([i for i in items if i[2]]), f"{day}, {len(items)} cycles"))
-        pts = agg
     W, H, L, R, T, B = 1000.0, 220.0, 46.0, 16.0, 14.0, 34.0
     t0, t1 = pts[0][0], pts[-1][0]
     span = max((t1 - t0).total_seconds(), 1.0)
@@ -614,7 +633,7 @@ def visibility_history(reports: list[dict], gen: str) -> str:
     live_n = sum(1 for p in pts if p[2])
     return (f'<figure class="z-full history"><svg viewBox="0 0 {W:.0f} {H:.0f}" role="img" '
             f'aria-label="Share of satellites within 10 km at file start, one point per scored cycle on a time axis.">'
-            f'{grid}{labels}{marks}</svg><figcaption>Every scored cycle: the share of scored satellites the public '
+            f'{grid}{labels}{marks}</svg><figcaption>{esc(scope)}: the share of scored satellites the public '
             f"catalogue places within 10 km at the first instant of the file. A hollow point is a cycle scored with "
             f"hindsight, whose figure is not comparable and is drawn only so the record is complete. {live_n} live, "
             f"{len(pts) - live_n} hindsight. Each point links to its row. As of {esc(gen)} UTC.</figcaption></figure>")
@@ -659,7 +678,7 @@ def lost_line(start: dict | None) -> str:
     if not start or not start["lost"]:
         return ""
     return (f'<p class="fine"><b class="warnk">{start["lost"]}</b> satellites ({pct(start["lost_fraction"])}) are more '
-            f"than {LOST_KM:,} km from the public prediction at publication, which is a large part of an orbit. For "
+            f"than {LOST_KM:,} km from the public prediction at publication, more than two minutes of flight along the orbit. For "
             f"those the public element set is not on the operator's trajectory at all. Ephemera does not label any "
             f"separation as a manoeuvre; that needs a detector this project has not built.</p>")
 
@@ -779,24 +798,32 @@ def archive_pulls(ledger: dict, rel: str, more: bool) -> str:
 
 
 def verify_kit(ledger: dict) -> dict | None:
+    """The newest cycle a stranger can run all three checks on, so it needs a proof file to fetch."""
     latest = next((c for c in ledger["cycles"]
-                   if c["merkle_root"] and c["ots"]["attested_block"] and c["wayback"]["manifest_copy_url"]), None)
+                   if c["merkle_root"] and c["ots"]["attested_block"] and c["ots"].get("proof")
+                   and c["wayback"]["manifest_copy_url"]), None)
     return latest
 
 
 def kit_is_stale(ledger: dict, kit: dict) -> str:
     """Why the worked example is not the newest cycle, or "" when it is.
 
-    verify_kit takes the newest cycle that has a root, an attestation AND an independent copy. When
-    the copies are failing, that is mechanically an older cycle, so the page shows its best
-    remaining case. That is innocent and it is also indistinguishable from choosing the flattering
-    one, which is the single thing this page exists to rule out. So it is said out loud."""
+    verify_kit takes the newest cycle that has a root, a published proof, an attestation AND an
+    independent copy. That is routinely an older cycle, because a new root waits a few hours for its
+    block, and it is also what the page falls back to when the copies are failing. Either way it is
+    innocent and indistinguishable from choosing the flattering one, which is the single thing this
+    page exists to rule out. So it is said out loud, with the reason the newer cycles actually have:
+    this sentence used to say the copies were failing whenever a new root was merely waiting."""
     newest = next((c for c in ledger["cycles"] if c["first_seen_utc"]), None)
     if not newest or newest["cycle"] == kit["cycle"]:
         return ""
+    failed = sum(1 for c in ledger["cycles"] if (c["first_seen_utc"] or "") > kit["first_seen_utc"]
+                 and c["wayback"].get("attempted") and not c["wayback"]["manifest_verified"])
+    why = (f"the independent copies of {n_cycles(failed)} since then failed" if failed
+           else "cycles since then do not have all of these yet")
     return (f' Cycle {esc(kit["cycle"][6:])} was first seen {esc(utc_min(kit["first_seen_utc"]))} UTC and is not the '
-            f'newest one. It is the most recent cycle whose independent copy verified, and the copies have been '
-            f'failing since then.')
+            f'newest one. It is the most recent cycle with a Bitcoin attestation, a published proof and a verified '
+            f'independent copy; {why}.')
 
 
 def scored_row(r: dict, rel: str) -> str:
@@ -820,6 +847,16 @@ def scored_row(r: dict, rel: str) -> str:
             f'<td class="num">{pct(rs["within_km"]["10"])}</td><td class="num">{rs["lost"]:,}</td></tr>')
 
 
+def proof_link(label: str, proof: str | None, rel: str) -> str:
+    """A block number linked to the proof a reader can check it with, or plain when there is none."""
+    return f'<a href="{rel}{esc(proof)}">{esc(label)}</a>' if proof else esc(label)
+
+
+def root_link(root: str, proof: str | None, rel: str) -> str:
+    """The first twelve characters of a root, linked to the root file `ots verify` needs beside its proof."""
+    return f'<a href="{rel}{esc(proof.removesuffix(".ots"))}">{esc(root[:12])}</a>' if proof else esc(root[:12])
+
+
 def archive_row(c: dict, rel: str, scored: set) -> str:
     in_progress = c["status"] == "in-progress"
     gap = c["merkle_root"] is None and not in_progress
@@ -830,7 +867,7 @@ def archive_row(c: dict, rel: str, scored: set) -> str:
     elif wb["skipped"]:
         state = f"no independent copy: {esc(wb['skipped'])}"
     elif not wb["manifest_verified"]:
-        state = (("manifest NEVER CAPTURED" if not wb["manifest_captured"]
+        state = (("manifest: NO COPY FOUND" if not wb["manifest_captured"]
                   else "manifest COPY DOES NOT MATCH (the archived copy is another cycle's manifest)")
                  + f", {wb['samples_verified']}/{wb['samples_total']} samples verified")
         if wb["losses"]:
@@ -839,11 +876,13 @@ def archive_row(c: dict, rel: str, scored: set) -> str:
         state = f"manifest ok, {wb['samples_verified']}/{wb['samples_total']} samples verified"
         if wb["losses"]:
             state += f", {wb['losses']} lost"
+        if wb.get("found_later"):
+            state += ", found later"
     else:
         state = "pending"
     if wb.get("manifest_copy_url") and wb.get("manifest_verified"):
         state = f'<a href="{esc(wb["manifest_copy_url"])}">{state}</a>'
-    ots = (f"block {c['ots']['attested_block']}" if c["ots"]["attested_block"] else
+    ots = (proof_link(f"block {c['ots']['attested_block']}", c["ots"].get("proof"), rel) if c["ots"]["attested_block"] else
            "stamped, attestation pending" if c["ots"]["stamped"] else
            "follows the pull" if in_progress else "pending")
     files = (f"pulling now: {c['files_recorded']:,} of {c['files_listed']:,} so far" if in_progress else
@@ -856,7 +895,7 @@ def archive_row(c: dict, rel: str, scored: set) -> str:
     cls = "gap" if gap else "warn" if defect else ""
     return (f'<tr class="{cls}" id="c-{sha}"><td>{esc(utc_min(c["first_seen_utc"]))}</td><td class="mono">{cell}</td>'
             f'<td class="num">{files}</td><td class="num">{c["bytes_raw"] / 1e9:.1f}</td>'
-            f'<td class="mono">{esc((c["merkle_root"] or "none")[:12])}</td><td class="wrap">{esc(ots)}</td>'
+            f'<td class="mono">{root_link(c["merkle_root"] or "none", c["ots"].get("proof"), rel)}</td><td class="wrap">{ots}</td>'
             f'<td class="state wrap">{state}</td><td class="wrap">{esc(where)}</td></tr>')
 
 
@@ -876,6 +915,28 @@ def month_sections(items: list[dict], key: str, row_fn, head_fn, colspan: int) -
 
 TOGGLE = ("""<script>(function(){var b=document.getElementById('only-defects');if(!b)return;"""
           """b.addEventListener('change',function(){document.body.classList.toggle('only-defects',b.checked);});})();</script>""")
+
+
+# D20: a row's URL never moves, and a year move is a redirect stub. A fragment never reaches a server,
+# so the stub lives in the landing page: an empty element with the row's id, inside a block naming the
+# year. This sends the reader on; without JavaScript they land on that sentence and its link.
+MOVED_SCRIPT = ("""<script>(function(){function go(){var h=location.hash.slice(1),e=h&&document.getElementById(h),"""
+                """p=e&&e.closest('[data-year]');if(p)location.replace(p.getAttribute('data-year')+'/#'+h);}"""
+                """go();addEventListener('hashchange',go);})();</script>""")
+
+
+def moved_rows(prefix: str, rows: list[dict], earlier: list[str]) -> str:
+    """The stubs for every row and month section that has moved to an earlier year's page."""
+    if not earlier:
+        return ""
+    blocks = []
+    for y in earlier:
+        inside = [r for r in rows if year_of(r) == y]
+        ids = "".join(f'<span id="{prefix}-{esc(r["cycle"][6:])}"></span>' for r in inside)
+        months = "".join(f'<span id="m-{esc(m)}"></span>' for m in sorted({r["first_seen_utc"][:7] for r in inside}))
+        blocks.append(f'<p class="fine" data-year="{esc(y)}">Rows from {esc(y)} are on <a href="{esc(y)}/">their own '
+                      f'page</a>.{ids}{months}</p>')
+    return f'<div class="z-prose">{"".join(blocks)}</div>{MOVED_SCRIPT}'
 
 
 # ---------------------------------------------------------------- the pages
@@ -944,17 +1005,22 @@ def home(ledger: dict, pack_mb: float | None) -> str:
         wb = kit["wayback"]
         # When the worked example is not the newest cycle, the front page says which cycle it is
         # instead of letting the reader assume it is current. check() gives the fuller reason.
-        which = (', the newest one whose independent copy verified' if kit_is_stale(ledger, kit) else "")
+        which = (', the newest one with a Bitcoin attestation and a verified independent copy'
+                 if kit_is_stale(ledger, kit) else "")
+        proof = kit["ots"]["proof"]
         check = (f'<p>None of this is worth anything if you have to take my word for it. Three things you can run right '
                  f'now, for cycle <span class="mono">{esc(kit["cycle"][6:])}</span>{which}:</p><ol>'
                  f'<li>Fetch the <a href="{esc(wb["manifest_copy_url"])}">independent copy</a> of the file list and hash '
-                 f'it. SHA-256 <code>{esc(wb["manifest_copy_sha256"] or "")}</code>.</li>'
-                 f'<li>Recompute which ten files were copied: <code>int(sha256(root + ":" + k), 16) mod n</code> for k from 0 to 9.</li>'
-                 f'<li>Run <code>ots verify root.txt.ots</code> against a Bitcoin node: this root is in block '
-                 f'{esc(kit["ots"]["attested_block"])}.</li></ol>'
-                 f'<p class="more"><a href="check/">The full procedure</a>, and what still needs the data release.</p>')
+                 f'it. SHA-256 <code>{esc(wb["manifest_copy_sha256"] or "")}</code>. It arrives gzipped, so with curl '
+                 f'use <code>--compressed</code>.</li>'
+                 f'<li>Recompute which ten files were copied: <code>int(sha256(root + ":" + k), 16) mod n</code>, counting '
+                 f'files from zero, for k = 0, 1, 2 and on, skipping repeats until there are ten.</li>'
+                 f'<li>Download <a href="{esc(proof.removesuffix(".ots"))}">root.txt</a> and '
+                 f'<a href="{esc(proof)}">root.txt.ots</a>, then run <code>ots verify root.txt.ots</code> against a '
+                 f'Bitcoin node: this root is in block {esc(kit["ots"]["attested_block"])}.</li></ol>'
+                 f'<p class="more"><a href="check/">The full procedure</a>, and what you cannot check from here yet.</p>')
     else:
-        check = ("<p>No cycle yet has both a Bitcoin attestation and an independent copy, so there is nothing here a "
+        check = ("<p>No cycle yet has a Bitcoin attestation, a published proof and an independent copy, so there is nothing here a "
                  'stranger could run today. This fills in as soon as one does.</p><p class="more"><a href="check/">The '
                  "procedure</a>, ready for when it does.</p>")
 
@@ -1068,41 +1134,70 @@ def finding(ledger: dict, pack_mb: float | None) -> str:
                 body, ledger, pack_mb)
 
 
-def scored(ledger: dict, pack_mb: float | None) -> str:
-    gen = utc_min(ledger["generated_utc"])
+def no_report(ledger: dict) -> list[dict]:
+    """Archived cycles the scorer has passed without leaving a report, newest first. A cycle newer
+    than the newest report is only waiting its turn, so it is not one of these."""
     reports = ledger["visibility"]["reports"]
-    live = sum(1 for r in reports if r["snapshot_relation"] == "before_cycle")
-    hind = sum(1 for r in reports if r["snapshot_relation"] == "after_cycle")
-    year = (reports[0]["first_seen_utc"] or gen)[:4] if reports else gen[:4]
-    if not reports:
+    have = {r["cycle"] for r in reports}
+    newest = max((r["first_seen_utc"] or "" for r in reports), default="")
+    return [c for c in ledger["cycles"] if c["cycle"] not in have and c["first_seen_utc"] and c["first_seen_utc"] < newest]
+
+
+def scored(ledger: dict, pack_mb: float | None, year: str | None = None) -> str:
+    """One year of scored cycles (D20): the newest year on /scored/, each earlier one on its own
+    page in the same template. The pulls and the sentence about hindsight are about every report."""
+    gen = utc_min(ledger["generated_utc"])
+    every = ledger["visibility"]["reports"]
+    live = sum(1 for r in every if r["snapshot_relation"] == "before_cycle")
+    hind = sum(1 for r in every if r["snapshot_relation"] == "after_cycle")
+    years = years_held(every)
+    current = years[0] if years else gen[:4]
+    year = year or current
+    landing = year == current
+    rel = "../" if landing else "../../"
+    path = "scored/" if landing else f"scored/{year}/"
+    reports = [r for r in every if year_of(r) == year]
+    if not every:
         body = (f'<header class="z-full section" id="scored"><h2>Every scored cycle</h2><p class="stamp">No cycle has been '
                 f'scored yet. As of {esc(gen)} UTC.</p></header><div class="z-prose"><p>Scoring starts once the public '
                 f"catalogue feed has a snapshot to pair with an archived cycle.</p></div>")
         return page("Scored cycles", "scored/", "Every scored Starlink cycle, one row per cycle.", "scored/", body, ledger, pack_mb)
-    head = headline_report(reports)
+    head = headline_report(every)
     health = (f'<p class="fine"><b>Feed health for this cycle.</b> The headline cycle, <b>{esc(head["cycle"][6:])}</b>: '
               f'{health_line(ledger, head)}</p>' if head else "")
-    links, bodies = month_sections(
-        reports, "first_seen_utc", lambda r: scored_row(r, "../"),
-        lambda v: f"{len(v)} cycles, {sum(1 for r in v if r['snapshot_relation'] == 'before_cycle')} live, "
-                  f"{sum(1 for r in v if r['snapshot_relation'] == 'after_cycle')} hindsight, "
-                  f"{sum(1 for r in v if r['overall'] is None)} with nothing scored", 8)
+    unreported = no_report(ledger)
+
+    def month_head(v: list[dict]) -> str:
+        gone = sum(1 for c in unreported if c["first_seen_utc"][:7] == v[0]["first_seen_utc"][:7])
+        return (f"{n_cycles(len(v))}, {sum(1 for r in v if r['snapshot_relation'] == 'before_cycle')} live, "
+                f"{sum(1 for r in v if r['snapshot_relation'] == 'after_cycle')} hindsight, "
+                f"{sum(1 for r in v if r['overall'] is None)} with nothing scored"
+                + (f", {n_cycles(gone)} with no report" if gone else ""))
+
+    links, bodies = month_sections(reports, "first_seen_utc", lambda r: scored_row(r, rel), month_head, 8)
+    missing = [c["cycle"][6:] for c in unreported if year_of(c) == year]
+    missing_note = (f'<p class="fine">{n_cycles(len(missing))} in the archive {"has" if len(missing) == 1 else "have"} no '
+                    f'report and no row here: {esc(", ".join(missing))}.</p>' if missing else "")
+    year_live = sum(1 for r in reports if r["snapshot_relation"] == "before_cycle")
+    year_hind = sum(1 for r in reports if r["snapshot_relation"] == "after_cycle")
+    multi = len(years) > 1
     body = f"""  <header class="z-full section" id="scored">
-    <h2>Every scored cycle</h2>
-    <p class="stamp">{esc(year)}: <b>{len(reports)}</b> scored, {live} live, {hind} with hindsight. As of {esc(gen)} UTC.</p>
+    <h2>Every scored cycle{f" of {esc(year)}" if multi else ""}</h2>
+    <p class="stamp">{esc(year)}: <b>{len(reports)}</b> scored, {year_live} live, {year_hind} with hindsight. {other_years(years, year, landing)} As of {esc(gen)} UTC.</p>
   </header>
   <div class="z-prose">
     <p>One row per cycle, measured at the first instant of each operator file so the rows are comparable. A cycle
     marked <b class="warnk">scored with hindsight</b> was matched against a catalogue snapshot fetched after it, because
     the cycle predates this project's catalogue feed. Its element sets already know what the satellite did during the
-    file, so its numbers look better than they should and are not comparable with the rest. {hind} of {len(reports)}
-    scored cycles are in that state, and the count only falls from here.</p>
+    file, so its numbers look better than they should and are not comparable with the rest. {hind} of {len(every)}
+    scored cycles are in that state, and that share only falls from here.</p>
+    {missing_note}
   </div>
   <aside class="z-side pulls" aria-label="Scored cycle counts">
-    <div class="pull"><b>{len(reports)}</b><span>cycles scored so far</span><small>as of {esc(gen)} UTC</small></div>
+    <div class="pull"><b>{len(every)}</b><span>cycles scored so far</span><small>as of {esc(gen)} UTC</small></div>
     <div class="pull"><b>{live}</b><span>scored live, comparable between cycles</span><small>{hind} with hindsight</small></div>
   </aside>
-  {visibility_history(reports, gen)}
+  {visibility_history(reports, gen, f"Every scored cycle of {year}" if multi else "Every scored cycle")}
   <nav class="months z-full" aria-label="Months">{links}<label><input type="checkbox" id="only-defects"> only rows with a defect or hindsight</label></nav>
   <div class="tablewrap"><table>
     <caption>One row per cycle, measured at the first instant of each file. Newest first. As of {esc(gen)} UTC.</caption>
@@ -1111,36 +1206,53 @@ def scored(ledger: dict, pack_mb: float | None) -> str:
       <th scope="col" class="num">within 10 km</th><th scope="col" class="num">lost</th></tr></thead>
     {bodies}
   </table></div>
-  <div class="z-prose"><p class="fine">Method: {esc(reports[0]["method"])}</p>{health}</div>
+  <div class="z-prose"><p class="fine">Method: {esc(every[0]["method"])}</p>{health}</div>
+  {moved_rows("s", every, years[1:]) if landing else ""}
   {TOGGLE}
 """
-    return page("Scored cycles", "scored/", "Every scored Starlink cycle, one row per cycle, measured at the first "
-                "instant of each operator file.", "scored/", body, ledger, pack_mb)
+    return page("Scored cycles" if landing else f"Scored cycles, {year}", path, "Every scored Starlink cycle, one row per "
+                "cycle, measured at the first instant of each operator file.", "scored/", body, ledger, pack_mb)
 
 
-def archive(ledger: dict, pack_mb: float | None) -> str:
+def archive(ledger: dict, pack_mb: float | None, year: str | None = None) -> str:
+    """One year of the archive record (D20): the newest year on /archive/, each earlier one on its
+    own page in the same template. The figures in the prose are about the whole archive."""
     gen = utc_min(ledger["generated_utc"])
-    cycles = ledger["cycles"]
+    years = years_held(ledger["cycles"])
+    current = years[0] if years else gen[:4]
+    year = year or current
+    landing = year == current
+    rel = "../" if landing else "../../"
+    path = "archive/" if landing else f"archive/{year}/"
+    multi = len(years) > 1
+    cycles = [c for c in ledger["cycles"] if year_of(c) == year]
     scored_ids = {r["cycle"][6:] for r in ledger["visibility"]["reports"]}
-    year = (cycles[0]["first_seen_utc"] or gen)[:4] if cycles else gen[:4]
     links, bodies = month_sections(
-        cycles, "first_seen_utc", lambda c: archive_row(c, "../", scored_ids),
-        lambda v: f"{len(v)} cycles, {sum(1 for c in v if c['merkle_root'])} complete, "
+        cycles, "first_seen_utc", lambda c: archive_row(c, rel, scored_ids),
+        lambda v: f"{n_cycles(len(v))}, {sum(1 for c in v if c['merkle_root'])} complete, "
                   f"{sum(1 for c in v if not c['merkle_root'] and c['status'] != 'in-progress')} incomplete, "
                   f"{sum(1 for c in v if witness_defect(c))} with a witness defect", 8)
     droots = "".join(
-        f'<tr><td>{esc(d["date"])}</td><td class="mono">{esc(d["merkle_root"][:12])}</td><td class="num">{d["leaves"]}</td>'
-        f'<td>{("block " + str(d["attested_block"])) if d["attested_block"] else "stamp pending"}</td>'
+        f'<tr><td>{esc(d["date"])}</td><td class="mono">{root_link(d["merkle_root"], d.get("proof"), rel)}</td><td class="num">{d["leaves"]}</td>'
+        f'<td>{proof_link("block " + str(d["attested_block"]), d.get("proof"), rel) if d["attested_block"] else "stamp pending"}</td>'
         f'<td class="wrap">{"none" if not d["excluded"] else "excluded " + ", ".join(f"{esc(n[6:])} ({esc(w)})" for n, w in d["excluded"])}</td></tr>'
-        for d in ledger["daily_roots"])
+        for d in ledger["daily_roots"] if d["date"][:4] == year)
+    where = (f"{esc(year)} so far. {other_years(years, year, True)}" if landing and multi
+             else f"{esc(year)} so far; earlier years get their own page once they exist." if landing
+             else f"Every cycle of {esc(year)}. {other_years(years, year, False)}")
+    late = ", ".join(sorted({c["wayback"]["found_later"] for c in cycles if c["wayback"].get("found_later")}))
+    late_note = (f'<div class="z-prose"><p class="fine">A row marked <b>found later</b>: Save Page Now answered with an '
+                 f'error at the time, so the witness recorded no copy, but the Wayback Machine had made one. On {esc(late)} '
+                 f"the copies were found in its index and hashed against this archive's records. The capture times are "
+                 f"the Wayback Machine's own.</p></div>" if late else "")
     body = f"""  <header class="z-full section" id="archive">
-    <h2>The archive record</h2>
-    <p class="stamp">As of {esc(gen)} UTC. Poller: {esc(ledger["poller"])}. {esc(year)} so far; earlier years get their
-    own page once they exist.</p>
+    <h2>The archive record{f" of {esc(year)}" if multi else ""}</h2>
+    <p class="stamp">As of {esc(gen)} UTC. Poller: {esc(ledger["poller"])}. {where}</p>
   </header>
   <div class="z-prose">{ARCHIVE_PROSE}{archive_asof(ledger)}</div>
-  {archive_pulls(ledger, "../", more=False)}
-  {cycle_strip(ledger, "../", rows=None)}
+  {archive_pulls(ledger, rel, more=False)}
+  {cycle_strip(ledger, rel, rows=None, year=year, target=None if landing else "",
+               label=f"Every cycle of {year}" if multi else "Every cycle kept")}
   <nav class="months z-full" aria-label="Months" id="cycles">{links}<label><input type="checkbox" id="only-defects"> only rows with a defect</label></nav>
   <div class="tablewrap"><table>
     <caption>Every cycle of {esc(year)}, newest first. Amber marks a cycle whose own pull succeeded but whose independent
@@ -1152,18 +1264,25 @@ def archive(ledger: dict, pack_mb: float | None) -> str:
   </table></div>
   <div class="z-prose"><p class="fine">Method: {esc(ledger["method"])}. Poller: {esc(ledger["poller"])}.</p></div>
   <div class="tablewrap"><table>
-    <caption>Daily roots. A root over each day's complete cycle roots, built shortly after midnight UTC and stamped separately.</caption>
+    <caption>Daily roots. A root over each day's complete cycle roots in first-seen order, joined as raw digests by the
+    same construction as a cycle root, built shortly after midnight UTC and stamped separately.</caption>
     <thead><tr><th scope="col">date</th><th scope="col">root</th><th scope="col" class="num">leaves</th>
       <th scope="col">opentimestamps</th><th scope="col">note</th></tr></thead>
-    <tbody>{droots or '<tr><td colspan="5">the first daily root arrives after the first full UTC day</td></tr>'}</tbody>
+    <tbody>{droots or f'<tr><td colspan="5">the first daily root of {esc(year)} arrives after its first full UTC day</td></tr>'}</tbody>
   </table></div>
   <div class="z-prose"><p class="fine">A cycle still pulling at midnight is left out of that day's root and stays out. It
   keeps its own cycle root and its own OpenTimestamps proof, so nothing is unwitnessed, but it sits under no daily
   root.</p></div>
+  {late_note}
+  <div class="z-prose"><p class="fine">A link in the Wayback Machine column can answer 404 for a while, even though the copy
+  was fetched and hashed when it was made. Of the 18 that did on 5 Nov 2026, 15 served the right bytes again on 8 Nov. The
+  likely cause is the Wayback Machine's index catching up, which is an inference.</p></div>
+  {moved_rows("c", ledger["cycles"], years[1:]) if landing else ""}
   {TOGGLE}
 """
-    return page("The archive", "archive/", "Every archived Starlink cycle: its Merkle root, its Bitcoin attestation, "
-                "its independent Wayback copy, and the daily roots.", "archive/", body, ledger, pack_mb, skip="#cycles")
+    return page("The archive" if landing else f"The archive, {year}", path, "Every archived Starlink cycle: its Merkle root, "
+                "its Bitcoin attestation, its independent Wayback copy, and the daily roots.", "archive/", body, ledger,
+                pack_mb, skip="#cycles")
 
 
 def check(ledger: dict, pack_mb: float | None) -> str:
@@ -1171,27 +1290,35 @@ def check(ledger: dict, pack_mb: float | None) -> str:
     kit = verify_kit(ledger)
     if kit:
         wb = kit["wayback"]
+        proof = kit["ots"]["proof"]
         prose = f"""  <div class="z-prose">
     <p>None of this is worth anything if you have to take my word for it. Here is what you can run right now, and
     what still needs data this site does not publish yet. I would rather say which is which.{esc(kit_is_stale(ledger, kit)) if kit else ""}</p>
-    <p><b>Fetch an independent copy and hash it.</b> Each cycle's file list is pushed into the Wayback Machine the
-    moment it is caught, so a copy exists that I do not control. For cycle <span class="mono">{esc(kit["cycle"][6:])}</span>
+    <p><b>Fetch an independent copy and hash it.</b> Each cycle's file list is pushed into the Wayback Machine soon
+    after it is caught, so a copy exists that I do not control. For cycle <span class="mono">{esc(kit["cycle"][6:])}</span>
     that copy is <a href="{esc(wb["manifest_copy_url"])}">here</a>, and its SHA-256 is
     <code>{esc(wb["manifest_copy_sha256"] or "")}</code>. Download it, hash it, and you have checked that the list of
-    files I claim to have caught is the list the source was actually serving. Ten files from each cycle are copied the
-    same way, and every copy URL and digest is in <a href="../ledger.json">ledger.json</a>.</p>
-    <p><b>Check which ten files were copied.</b> I do not get to choose them. File number
-    <code>int(sha256(root + ":" + k), 16) mod n</code> for k from 0 to 9, where n is the number of files in the list
-    you just downloaded. Run that and you get the same ten names this site published.</p>
-    <p><b>Check the timestamp.</b> Each cycle root is stamped through OpenTimestamps. Running
-    <code>ots verify root.txt.ots</code> against a Bitcoin node shows this cycle's root committed in block
-    {esc(kit["ots"]["attested_block"])}, which fixes the latest moment it could have been written. Nobody, including me,
-    can move a root backwards once it is in a block. The proof files ship with the data release.</p>
+    files I claim to have caught is the list the source was actually serving. The Wayback Machine sends the copy
+    gzip-encoded whether you ask or not, and plain curl does not unpack it, so use
+    <code>curl -s --compressed URL | sha256sum</code>. Ten files from each cycle are copied the same way, and every copy
+    URL and digest is in <a href="../ledger.json">ledger.json</a>.</p>
+    <p><b>Check which ten files were copied.</b> I do not get to choose them. Take
+    <code>int(sha256(root + ":" + k), 16) mod n</code> for k = 0, 1, 2 and on, where root is the hex string in the kit
+    and n is the number of names in the list you just downloaded (<code>wc -l</code> reads one short, because the list
+    has no final newline). Each result is a position in the list, counting from zero. Skip any repeat until you have
+    ten, and you get the same ten names this site published.</p>
+    <p><b>Check the timestamp.</b> Each cycle root is stamped through OpenTimestamps. Put this cycle's
+    <a href="../{esc(proof.removesuffix(".ots"))}">root.txt</a> and <a href="../{esc(proof)}">root.txt.ots</a> in one
+    folder and run <code>ots verify root.txt.ots</code> against a Bitcoin node. It shows this cycle's root committed in
+    block {esc(kit["ots"]["attested_block"])}, which fixes the latest moment it could have been written. Without a node,
+    <code>ots info root.txt.ots</code> prints the block and its Merkle root to compare on any block explorer. Nobody,
+    including me, can move a root backwards once it is in a block. Every cycle's proof is linked from its row on
+    <a href="../archive/">the archive page</a>.</p>
     <p class="fine">What you cannot do from this page alone is rebuild the Merkle root, because that needs the SHA-256
     of every one of the {kit["files_recorded"]:,} files in the cycle and this site publishes the summary rather than the
-    full digest list. Those digests, and the exact byte format of the root file, come with the data release described
-    below. The construction is the plain one: leaves are the file digests in manifest order, adjacent pairs are hashed
-    as SHA-256 of the two digests joined end to end, and an odd trailing node is paired with a copy of itself.</p>
+    full digest list. Those digests are not published yet. The root file is 64 lowercase hexadecimal characters and one
+    line feed, 65 bytes. The construction is the plain one: leaves are the file digests in manifest order, adjacent pairs
+    are hashed as SHA-256 of the two digests joined end to end, and an odd trailing node is paired with a copy of itself.</p>
   </div>
   <aside class="z-side note">
     <h3>The kit for cycle {esc(kit["cycle"][6:])}</h3>
@@ -1199,6 +1326,7 @@ def check(ledger: dict, pack_mb: float | None) -> str:
       <li>manifest copy: <a href="{esc(wb["manifest_copy_url"])}">web.archive.org</a></li>
       <li>SHA-256 of the copy: <code>{esc(wb["manifest_copy_sha256"] or "")}</code></li>
       <li>Bitcoin block: {esc(kit["ots"]["attested_block"])}</li>
+      <li>proof: <a href="../{esc(proof.removesuffix(".ots"))}">root.txt</a>, <a href="../{esc(proof)}">root.txt.ots</a></li>
       <li>files in the cycle: {kit["files_recorded"]:,}</li>
       <li>root: <code>{esc(kit["merkle_root"])}</code></li>
       <li>first seen: {esc(utc_min(kit["first_seen_utc"]))} UTC</li>
@@ -1207,7 +1335,7 @@ def check(ledger: dict, pack_mb: float | None) -> str:
   </aside>
 """
     else:
-        prose = ('  <div class="z-prose"><p>No cycle yet has both a Bitcoin attestation and an independent copy, so there '
+        prose = ('  <div class="z-prose"><p>No cycle yet has a Bitcoin attestation, a published proof and an independent copy, so there '
                  "is nothing here a stranger could run today. This section fills in as soon as one does.</p></div>")
     body = f"""  <header class="z-full section" id="check">
     <h2>Check it yourself</h2>
@@ -1224,7 +1352,11 @@ def check(ledger: dict, pack_mb: float | None) -> str:
       every scored summary on this site, as machine-readable JSON. It is the same file the pages are built from.</li>
       <li>The globe's per-cycle pack, with the element sets and the scored separations, is at
       <a href="{esc(pack_link(ledger, "../"))}">the newest cycle's pack</a>{f" ({pack_mb:.1f} MB)" if pack_mb else ""}.
-      Every scored cycle keeps its own, named by the cycle, so an older globe can be replayed.</li>
+      Every scored cycle keeps its own, named by the cycle, though the globe page itself only loads the headline
+      cycle's.</li>
+      <li>Every cycle's and every day's <code>root.txt</code> and OpenTimestamps proof are published under
+      <code>proofs/&lt;cycle&gt;/</code> and <code>proofs/daily/&lt;date&gt;/</code>, and linked from the rows of
+      <a href="../archive/">the archive page</a>.</li>
       <li>The full per-comparison rows, about 140,000 per cycle, are kept in the archive and are available on request.
       They move to public object storage once the storage layer is finished.</li>
       <li>The raw operator files are held as published, hashed and witnessed. They are not re-published here while the
@@ -1247,9 +1379,9 @@ def check(ledger: dict, pack_mb: float | None) -> str:
 def not_found(ledger: dict, pack_mb: float | None) -> str:
     body = """  <header class="z-full section"><h2>There is no page at this address</h2>
     <p class="stamp">The archive, the scored cycles and the checks are in the tabs above.</p></header>
-  <div class="z-prose"><p>If a link brought you here, the page it named has moved or never existed. Every table row on
-  this site has a permanent address of the form <code>archive/#c-&lt;cycle&gt;</code> or
-  <code>scored/#s-&lt;cycle&gt;</code>, and the front page is one tab to the left.</p></div>
+  <div class="z-prose"><p>If a link brought you here, the page it named has moved or never existed. Every cycle has a
+  permanent address of the form <code>archive/#c-&lt;cycle&gt;</code> or <code>scored/#s-&lt;cycle&gt;</code>, and the
+  front page is the first tab above.</p></div>
 """
     # Cloudflare Pages serves this file for a missing path at any depth, so a relative link on it
     # would resolve under whatever directory the visitor typed. Every internal href (icons, tabs,
@@ -1262,7 +1394,7 @@ def not_found(ledger: dict, pack_mb: float | None) -> str:
 def render_site(ledger: dict, pack_bytes: int | None) -> dict[str, str]:
     """Every page the site publishes, keyed by its path under the site root."""
     pack_mb = pack_bytes / 1e6 if pack_bytes else None
-    return {
+    site = {
         "index.html": home(ledger, pack_mb),
         "finding/index.html": finding(ledger, pack_mb),
         "scored/index.html": scored(ledger, pack_mb),
@@ -1270,6 +1402,12 @@ def render_site(ledger: dict, pack_bytes: int | None) -> dict[str, str]:
         "check/index.html": check(ledger, pack_mb),
         "404.html": not_found(ledger, pack_mb),
     }
+    # D20: once a second year exists, each earlier year moves to a page of its own.
+    for y in years_held(ledger["visibility"]["reports"])[1:]:
+        site[f"scored/{y}/index.html"] = scored(ledger, pack_mb, y)
+    for y in years_held(ledger["cycles"])[1:]:
+        site[f"archive/{y}/index.html"] = archive(ledger, pack_mb, y)
+    return site
 
 
 def globe_chrome(ledger: dict, pack_bytes: int | None) -> tuple[str, str]:

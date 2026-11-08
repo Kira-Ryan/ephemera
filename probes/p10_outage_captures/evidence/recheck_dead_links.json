@@ -1,0 +1,258 @@
+[
+{
+"cycle": "cdc930461493",
+"first_seen": "2026-10-21T13:38:30Z",
+"was_dead_5_nov": true,
+"in_index_now": false,
+"http": 404,
+"digest_ok": false
+},
+{
+"cycle": "e91846ed183a",
+"first_seen": "2026-10-23T04:34:32Z",
+"was_dead_5_nov": true,
+"in_index_now": true,
+"http": 200,
+"digest_ok": true
+},
+{
+"cycle": "eaa945b04114",
+"first_seen": "2026-10-27T13:07:32Z",
+"was_dead_5_nov": true,
+"in_index_now": true,
+"http": 200,
+"digest_ok": true
+},
+{
+"cycle": "2288c26bbeea",
+"first_seen": "2026-10-27T20:06:26Z",
+"was_dead_5_nov": true,
+"in_index_now": true,
+"http": 200,
+"digest_ok": true
+},
+{
+"cycle": "50874ace28b4",
+"first_seen": "2026-10-28T00:45:38Z",
+"was_dead_5_nov": true,
+"in_index_now": true,
+"http": 200,
+"digest_ok": true
+},
+{
+"cycle": "a648b38e76b9",
+"first_seen": "2026-10-28T07:25:42Z",
+"was_dead_5_nov": true,
+"in_index_now": true,
+"http": 200,
+"digest_ok": true
+},
+{
+"cycle": "754cd83ec71d",
+"first_seen": "2026-10-28T14:12:09Z",
+"was_dead_5_nov": true,
+"in_index_now": true,
+"http": 200,
+"digest_ok": true
+},
+{
+"cycle": "a879013f0100",
+"first_seen": "2026-10-28T20:52:42Z",
+"was_dead_5_nov": true,
+"in_index_now": true,
+"http": 200,
+"digest_ok": true
+},
+{
+"cycle": "d98c9ca2bdf4",
+"first_seen": "2026-10-29T04:22:58Z",
+"was_dead_5_nov": true,
+"in_index_now": true,
+"http": 200,
+"digest_ok": true
+},
+{
+"cycle": "a80375a03051",
+"first_seen": "2026-10-29T12:31:30Z",
+"was_dead_5_nov": true,
+"in_index_now": true,
+"http": 200,
+"digest_ok": true
+},
+{
+"cycle": "0229c43347fc",
+"first_seen": "2026-10-29T22:16:48Z",
+"was_dead_5_nov": true,
+"in_index_now": true,
+"http": 200,
+"digest_ok": true
+},
+{
+"cycle": "6637e5bd6772",
+"first_seen": "2026-10-30T04:50:52Z",
+"was_dead_5_nov": true,
+"in_index_now": true,
+"http": 200,
+"digest_ok": true
+},
+{
+"cycle": "9e87c37c7507",
+"first_seen": "2026-10-30T20:11:53Z",
+"was_dead_5_nov": true,
+"in_index_now": true,
+"http": 200,
+"digest_ok": true
+},
+{
+"cycle": "ef0599f4eb00",
+"first_seen": "2026-10-31T04:12:24Z",
+"was_dead_5_nov": true,
+"in_index_now": true,
+"http": 200,
+"digest_ok": true
+},
+{
+"cycle": "b10586a473bf",
+"first_seen": "2026-10-31T12:12:50Z",
+"was_dead_5_nov": true,
+"in_index_now": false,
+"http": 404,
+"digest_ok": false
+},
+{
+"cycle": "6b7d86853540",
+"first_seen": "2026-11-01T13:10:58Z",
+"was_dead_5_nov": true,
+"in_index_now": true,
+"http": 200,
+"digest_ok": true
+},
+{
+"cycle": "1555093aa225",
+"first_seen": "2026-11-02T05:04:23Z",
+"was_dead_5_nov": true,
+"in_index_now": true,
+"http": 200,
+"digest_ok": true
+},
+{
+"cycle": "1df076d68cde",
+"first_seen": "2026-11-02T22:58:33Z",
+"was_dead_5_nov": false,
+"in_index_now": false,
+"http": 200,
+"digest_ok": true
+},
+{
+"cycle": "21c30f522c4f",
+"first_seen": "2026-11-03T13:14:27Z",
+"was_dead_5_nov": true,
+"in_index_now": false,
+"http": 404,
+"digest_ok": false
+},
+{
+"cycle": "b3f1f050ca40",
+"first_seen": "2026-11-03T21:15:16Z",
+"was_dead_5_nov": false,
+"in_index_now": false,
+"http": 404,
+"digest_ok": false
+},
+{
+"cycle": "08eed5393d9a",
+"first_seen": "2026-11-04T05:18:14Z",
+"was_dead_5_nov": false,
+"in_index_now": false,
+"http": 404,
+"digest_ok": false
+},
+{
+"cycle": "13f2c4b7bfbd",
+"first_seen": "2026-11-04T13:19:03Z",
+"was_dead_5_nov": false,
+"in_index_now": false,
+"http": 404,
+"digest_ok": false
+},
+{
+"cycle": "6df7d4ca15e9",
+"first_seen": "2026-11-04T22:52:18Z",
+"was_dead_5_nov": false,
+"in_index_now": false,
+"http": 404,
+"digest_ok": false
+},
+{
+"cycle": "f79642ace60f",
+"first_seen": "2026-11-05T02:51:39Z",
+"was_dead_5_nov": false,
+"in_index_now": false,
+"http": 200,
+"digest_ok": true
+},
+{
+"cycle": "8e244aea12ee",
+"first_seen": "2026-11-05T12:44:59Z",
+"was_dead_5_nov": false,
+"in_index_now": false,
+"http": 404,
+"digest_ok": false
+},
+{
+"cycle": "77b1818cbde5",
+"first_seen": "2026-11-05T20:47:54Z",
+"was_dead_5_nov": false,
+"in_index_now": false,
+"http": 404,
+"digest_ok": false
+},
+{
+"cycle": "b01b3d5144be",
+"first_seen": "2026-11-06T04:56:36Z",
+"was_dead_5_nov": false,
+"in_index_now": false,
+"http": 200,
+"digest_ok": true
+},
+{
+"cycle": "4f77360b29f4",
+"first_seen": "2026-11-06T12:51:06Z",
+"was_dead_5_nov": false,
+"in_index_now": false,
+"http": 200,
+"digest_ok": true
+},
+{
+"cycle": "7a5b6db651b8",
+"first_seen": "2026-11-06T21:08:02Z",
+"was_dead_5_nov": false,
+"in_index_now": false,
+"http": 200,
+"digest_ok": true
+},
+{
+"cycle": "72a68da7ad42",
+"first_seen": "2026-11-07T15:01:20Z",
+"was_dead_5_nov": false,
+"in_index_now": false,
+"http": 200,
+"digest_ok": true
+},
+{
+"cycle": "cd8a0af59e41",
+"first_seen": "2026-11-08T05:20:21Z",
+"was_dead_5_nov": false,
+"in_index_now": false,
+"http": 200,
+"digest_ok": true
+},
+{
+"cycle": "9ec210965132",
+"first_seen": "2026-11-08T13:14:58Z",
+"was_dead_5_nov": false,
+"in_index_now": false,
+"http": 200,
+"digest_ok": true
+}
+]
