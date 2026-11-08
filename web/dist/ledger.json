@@ -1,17 +1,17 @@
 {
  "schema": 2,
- "generated_utc": "2026-11-08T14:41:35Z",
+ "generated_utc": "2026-11-08T18:41:39Z",
  "poller": "A (a datacentre host in the EU; the home poller was retired on 3 Oct 2026)",
  "method": "built from each cycle's cycle.json, witness.json and ship.json in the poller's spool; coverage is the fraction of the last 24 h's minutes with a watcher heartbeat under 10 minutes old (D18); a cadence hold is a manifest first-seen gap over 9 h; source bytes are the responses as served, stored bytes are the gzipped archive objects the shipper recorded",
  "totals": {
   "cycles": 221,
   "complete": 220,
-  "attested": 219,
+  "attested": 220,
   "witness_defects": 45,
   "bytes_raw": 5022798374670,
   "bytes_stored": 2065125191680,
-  "bytes_stored_local": 37294612480,
-  "bytes_stored_cold_only": 2027830579200,
+  "bytes_stored_local": 27967672320,
+  "bytes_stored_cold_only": 2037157519360,
   "files": 2474642,
   "cadence_holds": 19,
   "cadence_unobserved": 3
@@ -42871,8 +42871,13 @@
   ],
   "latest": "cycle_9ec210965132"
  },
- "catalogue_snapshots": 662,
+ "catalogue_snapshots": 663,
  "catalogue": [
+  {
+   "fetched_utc": "2026-11-08T18:20:54Z",
+   "records": 13026,
+   "sha12": "e6ee5ab4e744"
+  },
   {
    "fetched_utc": "2026-11-08T12:14:24Z",
    "records": 13026,
@@ -42927,11 +42932,6 @@
    "fetched_utc": "2026-11-07T09:38:51Z",
    "records": 13026,
    "sha12": "8e3c0adc5248"
-  },
-  {
-   "fetched_utc": "2026-11-07T07:34:04Z",
-   "records": 13026,
-   "sha12": "917d9250dc99"
   }
  ],
  "cycles": [
@@ -42948,7 +42948,7 @@
    "merkle_root": "546e3ba1609a542bf297146562b1dc05552abe26ee0b2e538bb19112f86b2f77",
    "ots": {
     "stamped": true,
-    "attested_block": null
+    "attested_block": 975069
    },
    "wayback": {
     "attempted": true,
@@ -43315,8 +43315,8 @@
    "storage": {
     "bytes_stored": 9326940160,
     "storage_class": "DEEP_ARCHIVE",
-    "local_files": true,
-    "deleted_locally_utc": null
+    "local_files": false,
+    "deleted_locally_utc": "2026-11-08T15:25:07Z"
    }
   },
   {
