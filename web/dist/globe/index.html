@@ -93,7 +93,7 @@
     <span style="background:var(--km-10)"></span>under 10 km
     <span style="background:var(--km-30)"></span>under 30 km
     <span style="background:var(--km-far)"></span>30 km and beyond
-    <span style="background:var(--km-lost)"></span>beyond 1,000 km, most of an orbit
+    <span style="background:var(--km-lost)"></span>beyond 1,000 km
     <br>line: drawn between the two whenever they disagree by 10 km or more, so its length is the
     disagreement. A line crossing the globe is a satellite the public catalogue has lost track of.
     <br>ghost: the public catalogue's element set, propagated in your browser. The solid point is
@@ -109,7 +109,7 @@
   <label class="find"><span>Find</span>
     <input id="find" type="search" placeholder="catalogue number or name" autocomplete="off"></label>
   <div id="sel">Click a point, type a number above, or pick one from the list.</div>
-  <h2>Largest deviation in this cycle</h2>
+  <h2>Largest deviation up to 1,000 km</h2>
   <div id="worst"></div>
 </div>
 
@@ -117,7 +117,9 @@
   <b>Operator ephemerides are predictions, not observations.</b> Both positions shown are predictions.
   The ghost is the public catalogue's element set (Space-Track) propagated with SGP4 in your browser.
   The solid point is the operator-published trajectory, rebuilt from the scored deviation at six-hour
-  epochs, so it is a reconstruction, not the file itself. The operator's file includes planned
+  epochs, so it is a reconstruction, not the file itself. Files start hours apart, and outside a
+  satellite's own file its distance is held at the file's first or last value, so near either end of
+  the timeline the counts are mostly held values. The operator's file includes planned
   trajectory changes the public set cannot know about; a large distance is that gap, not an error of
   the satellite. Starlink is the only operator with public covariance; other operators enter via
   CelesTrak SupGP without covariance. Public GP data is too noisy to test sub-metre covariance; the
@@ -234,8 +236,8 @@
     let select = () => {};
     $("worst").innerHTML = (gross.length ? '<p class="mono" style="color:var(--dim);margin-bottom:.4rem">' + fmt(gross.length)
       + " satellites are more than 1,000 km from the ghost at some point in this cycle: the public element"
-      + " set is not on the file's trajectory at all. They are listed apart from the smaller separations"
-      + " below because they would otherwise fill the list. Ephemera does not label any separation as a"
+      + " set is not on the file's trajectory at all. They are left out of the list below, which they would"
+      + " otherwise fill; Find shows any of them by number or name. Ephemera does not label any separation as a"
       + " manoeuvre; that needs a detector this project has not built.</p>" : "")
       + worst.map((s, i) => '<button data-i="' + i + '"><span class="mono">' + esc(s.id) + "</span> "
       + esc(s.name) + ' <span class="mono">' + s.max.toFixed(1) + " km at most</span></button>").join("");
