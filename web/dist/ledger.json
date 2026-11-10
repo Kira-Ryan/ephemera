@@ -1,24 +1,206 @@
 {
  "schema": 2,
- "generated_utc": "2026-11-10T19:26:59Z",
+ "generated_utc": "2026-11-10T23:27:10Z",
  "poller": "A (a datacentre host in the EU; the home poller was retired on 3 Oct 2026)",
  "method": "built from each cycle's cycle.json, witness.json and ship.json in the poller's spool; coverage is the fraction of the last 24 h's minutes with a watcher heartbeat under 10 minutes old; a cadence hold is a manifest first-seen gap over 9 h; source bytes are the responses as served, stored bytes are the gzipped archive objects the shipper recorded; a block is the lowest in the cycle's own proof; a copy marked found later was located in the Wayback index afterwards and hashed against the record (probe P10)",
  "totals": {
-  "cycles": 227,
-  "complete": 226,
+  "cycles": 228,
+  "complete": 227,
   "attested": 226,
   "witness_defects": 17,
-  "bytes_raw": 5159079608529,
-  "bytes_stored": 2121061652480,
-  "bytes_stored_local": 27963463680,
-  "bytes_stored_cold_only": 2093098188800,
-  "files": 2541843,
+  "bytes_raw": 5181788710328,
+  "bytes_stored": 2130377922560,
+  "bytes_stored_local": 27958978560,
+  "bytes_stored_cold_only": 2102418944000,
+  "files": 2553039,
   "cadence_holds": 20,
   "cadence_unobserved": 3
  },
  "coverage_24h": 1.0,
  "visibility": {
   "reports": [
+   {
+    "cycle": "cycle_5ea442111233",
+    "first_seen_utc": "2026-11-10T21:04:38Z",
+    "as_of": "2026-11-10T21:42:29Z",
+    "method": "Public element set (Space-Track gp snapshot) propagated with SGP4 (skyfield 1.55, python-sgp4 2.27; TEME to GCRS by Skyfield, taken as J2000) and differenced against the operator-published trajectory (EME2000) at the file's own record epochs every 360 min. Distance in km; components in the operator's radial/in-track/cross-track frame; altitude is geocentric radius minus 6378.137 km; element age is evaluation epoch minus element-set epoch, signed. A comparison beyond 1000 km is counted as lost: the public set is not on the file's trajectory at all. at_file_start takes each satellite once, at the first epoch of its own file, which is the only cut comparable between cycles. Both inputs are predictions; the operator's includes planned trajectory changes the public set cannot know about.",
+    "eval_step_min": 360.0,
+    "snapshot": "20261110T192346Z_329037c3ab87",
+    "snapshot_fetched_utc": "2026-11-10T19:23:46Z",
+    "snapshot_relation": "before_cycle",
+    "catalogue_sets": 13026,
+    "counts": {
+     "files": 11196,
+     "scored": 11196,
+     "no_public_set": 0,
+     "uncatalogued": 0,
+     "decayed_set": 0,
+     "propagation_failed": 0,
+     "unreadable": 0,
+     "corrupt": 0
+    },
+    "overall": {
+     "n": 144483,
+     "median_km": 34.687,
+     "p90_km": 239.85,
+     "mean_age_h": 54.95,
+     "median_age_h": 54.89,
+     "within_km": {
+      "1": 0.0359,
+      "10": 0.2732,
+      "30": 0.4715
+     },
+     "lost": 3703,
+     "lost_fraction": 0.0256
+    },
+    "at_file_start": {
+     "median_km": 4.94,
+     "p90_km": 22.808,
+     "mean_age_h": 19.1,
+     "median_age_h": 17.78,
+     "within_km": {
+      "1": 0.1253,
+      "10": 0.7187,
+      "30": 0.9256
+     },
+     "lost": 6,
+     "lost_fraction": 0.0005,
+     "satellites": 11196
+    },
+    "catalogue_age": {
+     "sets": 11196,
+     "mean_h": 19.14,
+     "median_h": 17.41,
+     "p90_h": 25.4,
+     "over_72h": 0
+    },
+    "by_age": [
+     {
+      "bin": "6-12 h",
+      "n": 167,
+      "median_km": 6.363,
+      "p90_km": 48.935,
+      "mean_age_h": 11.18,
+      "median_age_h": 11.31,
+      "within_km": {
+       "1": 0.0958,
+       "10": 0.6108,
+       "30": 0.8144
+      },
+      "lost": 0,
+      "lost_fraction": 0.0
+     },
+     {
+      "bin": "12-24 h",
+      "n": 15727,
+      "median_km": 5.707,
+      "p90_km": 23.207,
+      "mean_age_h": 19.18,
+      "median_age_h": 19.56,
+      "within_km": {
+       "1": 0.112,
+       "10": 0.6707,
+       "30": 0.924
+      },
+      "lost": 2,
+      "lost_fraction": 0.0001
+     },
+     {
+      "bin": "24-48 h",
+      "n": 43915,
+      "median_km": 19.961,
+      "p90_km": 83.188,
+      "mean_age_h": 36.28,
+      "median_age_h": 36.18,
+      "within_km": {
+       "1": 0.0427,
+       "10": 0.3277,
+       "30": 0.6307
+      },
+      "lost": 128,
+      "lost_fraction": 0.0029
+     },
+     {
+      "bin": "48-72 h",
+      "n": 44391,
+      "median_km": 62.103,
+      "p90_km": 217.796,
+      "mean_age_h": 60.1,
+      "median_age_h": 59.89,
+      "within_km": {
+       "1": 0.0213,
+       "10": 0.1894,
+       "30": 0.3399
+      },
+      "lost": 1121,
+      "lost_fraction": 0.0253
+     },
+     {
+      "bin": "over 72 h",
+      "n": 40283,
+      "median_km": 120.628,
+      "p90_km": 403.527,
+      "mean_age_h": 83.77,
+      "median_age_h": 82.91,
+      "within_km": {
+       "1": 0.0145,
+       "10": 0.1495,
+       "30": 0.265
+      },
+      "lost": 2452,
+      "lost_fraction": 0.0609
+     }
+    ],
+    "by_shell": [
+     {
+      "bin": "under 400 km",
+      "n": 14140,
+      "median_km": 166.257,
+      "p90_km": 1157.425,
+      "mean_age_h": 53.55,
+      "median_age_h": 52.46,
+      "within_km": {
+       "1": 0.0138,
+       "10": 0.1339,
+       "30": 0.2537
+      },
+      "lost": 1813,
+      "lost_fraction": 0.1282
+     },
+     {
+      "bin": "400-500 km",
+      "n": 127154,
+      "median_km": 30.27,
+      "p90_km": 180.867,
+      "mean_age_h": 55.14,
+      "median_age_h": 55.21,
+      "within_km": {
+       "1": 0.0378,
+       "10": 0.289,
+       "30": 0.4983
+      },
+      "lost": 1200,
+      "lost_fraction": 0.0094
+     },
+     {
+      "bin": "500-600 km",
+      "n": 3189,
+      "median_km": 117.248,
+      "p90_km": 1887.126,
+      "mean_age_h": 53.44,
+      "median_age_h": 52.44,
+      "within_km": {
+       "1": 0.0561,
+       "10": 0.2593,
+       "30": 0.3716
+      },
+      "lost": 690,
+      "lost_fraction": 0.2164
+     }
+    ],
+    "pack": "globe_5ea442111233.json",
+    "pack_url": "https://packs.ephemera.space/globe/5ea442111233.json"
+   },
    {
     "cycle": "cycle_47b58de68614",
     "first_seen_utc": "2026-11-10T13:01:21Z",
@@ -44051,7 +44233,7 @@
     "pack_url": "https://packs.ephemera.space/globe/513b92c4683e.json"
    }
   ],
-  "latest": "cycle_47b58de68614"
+  "latest": "cycle_5ea442111233"
  },
  "catalogue_snapshots": 669,
  "catalogue": [
@@ -44117,6 +44299,103 @@
   }
  ],
  "cycles": [
+  {
+   "cycle": "cycle_5ea442111233",
+   "manifest_sha256": "5ea442111233174f4c537d57df2560dffc9041cfce54e68282ca7a4cd3198857",
+   "first_seen_utc": "2026-11-10T21:04:38Z",
+   "status": "complete",
+   "files_listed": 11196,
+   "files_recorded": 11196,
+   "files_failed": 0,
+   "bytes_raw": 22709101799,
+   "wall_seconds": 861.2,
+   "merkle_root": "1bc37b68a5f2e0f597bc688e2b16f7e112f722bc9b2394ca8ad8400b0909017d",
+   "ots": {
+    "stamped": true,
+    "attested_block": null,
+    "proof": "proofs/5ea442111233/root.txt.ots"
+   },
+   "wayback": {
+    "attempted": true,
+    "manifest_verified": true,
+    "manifest_captured": true,
+    "manifest_error": null,
+    "samples_verified": 10,
+    "samples_total": 10,
+    "losses": 0,
+    "skipped": null,
+    "manifest_copy_url": "https://web.archive.org/web/20261110212216id_/https://api.starlink.com/public-files/ephemerides/MANIFEST.txt?cycle=5ea442111233",
+    "manifest_copy_sha256": "5ea442111233174f4c537d57df2560dffc9041cfce54e68282ca7a4cd3198857",
+    "samples": [
+     {
+      "name": "MEME_100302_STARLINK-38253_3141752_Operational_1478627580_UNCLASSIFIED.txt",
+      "copy_url": "https://web.archive.org/web/20261110212222id_/https://api.starlink.com/public-files/ephemerides/MEME_100302_STARLINK-38253_3141752_Operational_1478627580_UNCLASSIFIED.txt",
+      "sha256_of_copy": "f1698e0ed584357a711edaebcb14d37224017972da78def3459d572c19bd8378",
+      "verified": true
+     },
+     {
+      "name": "MEME_52094_STARLINK-3714_3142015_Operational_1478636160_UNCLASSIFIED.txt",
+      "copy_url": "https://web.archive.org/web/20261110212316id_/https://api.starlink.com/public-files/ephemerides/MEME_52094_STARLINK-3714_3142015_Operational_1478636160_UNCLASSIFIED.txt",
+      "sha256_of_copy": "342330e081e191d5fc2e5c4a7474ab3b764eae8a2593af692271abc6d0a1e227",
+      "verified": true
+     },
+     {
+      "name": "MEME_59513_STARLINK-31658_3141934_Operational_1478633700_UNCLASSIFIED.txt",
+      "copy_url": "https://web.archive.org/web/20261110212326id_/https://api.starlink.com/public-files/ephemerides/MEME_59513_STARLINK-31658_3141934_Operational_1478633700_UNCLASSIFIED.txt",
+      "sha256_of_copy": "210f5d839c51aff77d823ad2e42807e7d4f9d2c78681158abbc75b6c4ef52c03",
+      "verified": true
+     },
+     {
+      "name": "MEME_62136_STARLINK-32554_3141919_Operational_1478632800_UNCLASSIFIED.txt",
+      "copy_url": "https://web.archive.org/web/20261110212335id_/https://api.starlink.com/public-files/ephemerides/MEME_62136_STARLINK-32554_3141919_Operational_1478632800_UNCLASSIFIED.txt",
+      "sha256_of_copy": "918c858eb9f4d907e28e775495c969e1829edc124ecab7a303d08a129cf49f1d",
+      "verified": true
+     },
+     {
+      "name": "MEME_64215_STARLINK-34349_3141900_Operational_1478631660_UNCLASSIFIED.txt",
+      "copy_url": "https://web.archive.org/web/20261110212344id_/https://api.starlink.com/public-files/ephemerides/MEME_64215_STARLINK-34349_3141900_Operational_1478631660_UNCLASSIFIED.txt",
+      "sha256_of_copy": "fef49921ac128bde595e1a7c888a4ea8a62733f8b01cb5029fc3ac78923ef165",
+      "verified": true
+     },
+     {
+      "name": "MEME_66426_STARLINK-35589_3141837_Operational_1478630280_UNCLASSIFIED.txt",
+      "copy_url": "https://web.archive.org/web/20261110213022id_/https://api.starlink.com/public-files/ephemerides/MEME_66426_STARLINK-35589_3141837_Operational_1478630280_UNCLASSIFIED.txt",
+      "sha256_of_copy": "689c8ed7294d1b2d0e432de8b8c593efbd010abe43caab5a9ef3bdb5e86f4f56",
+      "verified": true
+     },
+     {
+      "name": "MEME_67886_STARLINK-36390_3141827_Operational_1478629680_UNCLASSIFIED.txt",
+      "copy_url": "https://web.archive.org/web/20261110213030id_/https://api.starlink.com/public-files/ephemerides/MEME_67886_STARLINK-36390_3141827_Operational_1478629680_UNCLASSIFIED.txt",
+      "sha256_of_copy": "3e6c3eaeacd5d847669f061599f5e9b4dc91ba695d05178fa40037b3291f4564",
+      "verified": true
+     },
+     {
+      "name": "MEME_67924_STARLINK-36714_3141821_Operational_1478629320_UNCLASSIFIED.txt",
+      "copy_url": "https://web.archive.org/web/20261110213039id_/https://api.starlink.com/public-files/ephemerides/MEME_67924_STARLINK-36714_3141821_Operational_1478629320_UNCLASSIFIED.txt",
+      "sha256_of_copy": "8cc8ac4eb4b24d65075ee338225e3671aa490266ab29387f104f1cf4dcaf74ae",
+      "verified": true
+     },
+     {
+      "name": "MEME_67989_STARLINK-36957_3141817_Operational_1478629080_UNCLASSIFIED.txt",
+      "copy_url": "https://web.archive.org/web/20261110213616id_/https://api.starlink.com/public-files/ephemerides/MEME_67989_STARLINK-36957_3141817_Operational_1478629080_UNCLASSIFIED.txt",
+      "sha256_of_copy": "84423275cde19e3893e4884c045b036ef65ce15a80ab4126e4fdd6b8d9292a87",
+      "verified": true
+     },
+     {
+      "name": "MEME_68605_STARLINK-37131_3141814_Operational_1478628900_UNCLASSIFIED.txt",
+      "copy_url": "https://web.archive.org/web/20261110212458id_/https://api.starlink.com/public-files/ephemerides/MEME_68605_STARLINK-37131_3141814_Operational_1478628900_UNCLASSIFIED.txt",
+      "sha256_of_copy": "6b273d7c015229dee4e585e81e6f6747baa792615464e07600e53b62aa13b868",
+      "verified": true
+     }
+    ]
+   },
+   "storage": {
+    "bytes_stored": 9316270080,
+    "storage_class": "DEEP_ARCHIVE",
+    "local_files": true,
+    "deleted_locally_utc": null
+   }
+  },
   {
    "cycle": "cycle_47b58de68614",
    "manifest_sha256": "47b58de68614b35e86f48b66382210b6600ee10e05c5b77c59e2821555a1c6ae",
@@ -44404,8 +44683,8 @@
    "storage": {
     "bytes_stored": 9320755200,
     "storage_class": "DEEP_ARCHIVE",
-    "local_files": true,
-    "deleted_locally_utc": null
+    "local_files": false,
+    "deleted_locally_utc": "2026-11-10T22:30:44Z"
    }
   },
   {
