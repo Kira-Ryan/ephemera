@@ -1,13 +1,13 @@
 {
  "schema": 2,
- "generated_utc": "2026-11-11T07:28:18Z",
+ "generated_utc": "2026-11-11T11:28:40Z",
  "poller": "A (a datacentre host in the EU; the home poller was retired on 3 Oct 2026)",
  "method": "built from each cycle's cycle.json, witness.json and ship.json in the poller's spool; coverage is the fraction of the last 24 h's minutes with a watcher heartbeat under 10 minutes old; a cadence hold is a manifest first-seen gap over 9 h; source bytes are the responses as served, stored bytes are the gzipped archive objects the shipper recorded; a block is the lowest in the cycle's own proof; a copy marked found later was located in the Wayback index afterwards and hashed against the record (probe P10)",
  "totals": {
   "cycles": 229,
   "complete": 228,
-  "attested": 227,
-  "witness_defects": 17,
+  "attested": 228,
+  "witness_defects": 16,
   "bytes_raw": 5204491590589,
   "bytes_stored": 2139695994880,
   "bytes_stored_local": 27958159360,
@@ -44432,8 +44432,13 @@
   ],
   "latest": "cycle_a928f0c965f5"
  },
- "catalogue_snapshots": 671,
+ "catalogue_snapshots": 672,
  "catalogue": [
+  {
+   "fetched_utc": "2026-11-11T07:43:46Z",
+   "records": 13026,
+   "sha12": "2eb4a32e47a9"
+  },
   {
    "fetched_utc": "2026-11-11T03:38:16Z",
    "records": 13026,
@@ -44488,11 +44493,6 @@
    "fetched_utc": "2026-11-08T10:11:04Z",
    "records": 13026,
    "sha12": "7859e6f1f8b0"
-  },
-  {
-   "fetched_utc": "2026-11-08T08:08:00Z",
-   "records": 13026,
-   "sha12": "9bf895490c35"
   }
  ],
  "cycles": [
@@ -44509,7 +44509,7 @@
    "merkle_root": "5a973d0e4da36287e17c690cf00ff02f66724c1ceddd8235e19c72c29ce0046c",
    "ots": {
     "stamped": true,
-    "attested_block": null,
+    "attested_block": 975396,
     "proof": "proofs/a928f0c965f5/root.txt.ots"
    },
    "wayback": {
@@ -46105,7 +46105,7 @@
     "manifest_verified": true,
     "manifest_captured": true,
     "manifest_error": null,
-    "samples_verified": 9,
+    "samples_verified": 10,
     "samples_total": 10,
     "losses": 0,
     "skipped": null,
@@ -46151,8 +46151,8 @@
      {
       "name": "MEME_61680_STARLINK-32412_3091914_Operational_1478200500_UNCLASSIFIED.txt",
       "copy_url": "https://web.archive.org/web/20261105211407id_/https://api.starlink.com/public-files/ephemerides/MEME_61680_STARLINK-32412_3091914_Operational_1478200500_UNCLASSIFIED.txt",
-      "sha256_of_copy": null,
-      "verified": false
+      "sha256_of_copy": "60910f74939cbd3d78b9f14e3ce71e15619e5cd3f618659ff78752fca3626da7",
+      "verified": true
      },
      {
       "name": "MEME_64263_STARLINK-34276_3091854_Operational_1478199300_UNCLASSIFIED.txt",
