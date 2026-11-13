@@ -1,12 +1,12 @@
 {
  "schema": 2,
- "generated_utc": "2026-11-12T23:31:00Z",
+ "generated_utc": "2026-11-13T03:31:06Z",
  "poller": "A (a datacentre host in the EU; the home poller was retired on 3 Oct 2026)",
  "method": "built from each cycle's cycle.json, witness.json and ship.json in the poller's spool; coverage is the fraction of the last 24 h's minutes with a watcher heartbeat under 10 minutes old; a cadence hold is a manifest first-seen gap over 9 h; source bytes are the responses as served, stored bytes are the gzipped archive objects the shipper recorded; a block is the lowest in the cycle's own proof; a copy marked found later was located in the Wayback index afterwards and hashed against the record (probe P10)",
  "totals": {
   "cycles": 234,
   "complete": 233,
-  "attested": 232,
+  "attested": 233,
   "witness_defects": 16,
   "bytes_raw": 5317948087569,
   "bytes_stored": 2186276116480,
@@ -45417,8 +45417,13 @@
   ],
   "latest": "cycle_6014200d7a7f"
  },
- "catalogue_snapshots": 682,
+ "catalogue_snapshots": 683,
  "catalogue": [
+  {
+   "fetched_utc": "2026-11-13T00:36:46Z",
+   "records": 13026,
+   "sha12": "6ede0bc0f049"
+  },
   {
    "fetched_utc": "2026-11-12T22:36:26Z",
    "records": 13026,
@@ -45473,11 +45478,6 @@
    "fetched_utc": "2026-11-11T07:43:46Z",
    "records": 13026,
    "sha12": "2eb4a32e47a9"
-  },
-  {
-   "fetched_utc": "2026-11-11T03:38:16Z",
-   "records": 13026,
-   "sha12": "6be81a64fce2"
   }
  ],
  "cycles": [
@@ -45494,7 +45494,7 @@
    "merkle_root": "e3d2a8e7a2da7d5527398cf9a8ccdbd85c5c8782e3a6c2d2ad72b425b845f053",
    "ots": {
     "stamped": true,
-    "attested_block": null,
+    "attested_block": 975602,
     "proof": "proofs/6014200d7a7f/root.txt.ots"
    },
    "wayback": {
@@ -67970,6 +67970,15 @@
   }
  ],
  "daily_roots": [
+  {
+   "date": "2026-11-12",
+   "merkle_root": "a02352b714abbf4a7fbdb107919cfb540cbe6636f15b84db37ae6dbb8cdd2311",
+   "built_utc": "2026-11-13T00:02:55Z",
+   "leaves": 3,
+   "excluded": [],
+   "attested_block": 975619,
+   "proof": "proofs/daily/2026-11-12/root.txt.ots"
+  },
   {
    "date": "2026-11-11",
    "merkle_root": "5a2a02ce2a860c69d5d32fd4e7fe87a1d09fb89375a1f64aaf1d0ab5236756b1",
