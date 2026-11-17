@@ -1,16 +1,16 @@
 {
  "schema": 2,
- "generated_utc": "2026-11-16T23:36:12Z",
+ "generated_utc": "2026-11-17T03:36:20Z",
  "poller": "A (a datacentre host in the EU; the home poller was retired on 3 Oct 2026)",
  "method": "built from each cycle's cycle.json, witness.json and ship.json in the poller's spool; coverage is the fraction of the last 24 h's minutes with a watcher heartbeat under 10 minutes old; a cadence hold is a manifest first-seen gap over 9 h; source bytes are the responses as served, stored bytes are the gzipped archive objects the shipper recorded; a block is the lowest in the cycle's own proof; a copy marked found later was located in the Wayback index afterwards and hashed against the record (probe P10)",
  "totals": {
   "cycles": 246,
   "complete": 245,
-  "attested": 244,
+  "attested": 245,
   "witness_defects": 21,
   "bytes_raw": 5590062557272,
-  "bytes_stored": 2288715735040,
-  "bytes_stored_local": 18608660480,
+  "bytes_stored": 2298011750400,
+  "bytes_stored_local": 27904675840,
   "bytes_stored_cold_only": 2270107074560,
   "files": 2754680,
   "cadence_holds": 21,
@@ -47781,8 +47781,18 @@
   ],
   "latest": "cycle_a098517c018b"
  },
- "catalogue_snapshots": 720,
+ "catalogue_snapshots": 722,
  "catalogue": [
+  {
+   "fetched_utc": "2026-11-17T02:53:16Z",
+   "records": 13026,
+   "sha12": "70a749b4a24e"
+  },
+  {
+   "fetched_utc": "2026-11-17T00:50:37Z",
+   "records": 13026,
+   "sha12": "2db4bb1b944b"
+  },
   {
    "fetched_utc": "2026-11-16T18:38:26Z",
    "records": 13026,
@@ -47832,16 +47842,6 @@
    "fetched_utc": "2026-11-15T20:04:46Z",
    "records": 13026,
    "sha12": "5c1b5ced2d66"
-  },
-  {
-   "fetched_utc": "2026-11-15T18:02:36Z",
-   "records": 13026,
-   "sha12": "1bbbef44eea7"
-  },
-  {
-   "fetched_utc": "2026-11-15T15:58:16Z",
-   "records": 13026,
-   "sha12": "849a3f208f97"
   }
  ],
  "cycles": [
@@ -47858,7 +47858,7 @@
    "merkle_root": "76fd137a30a183a29f67d73e2879037d4471a834980acc4ad4d5c536c85bb756",
    "ots": {
     "stamped": true,
-    "attested_block": null,
+    "attested_block": 976199,
     "proof": "proofs/a098517c018b/root.txt.ots"
    },
    "wayback": {
@@ -47936,8 +47936,8 @@
     ]
    },
    "storage": {
-    "bytes_stored": 0,
-    "storage_class": null,
+    "bytes_stored": 9296015360,
+    "storage_class": "DEEP_ARCHIVE",
     "local_files": true,
     "deleted_locally_utc": null
    }
@@ -71498,6 +71498,15 @@
   }
  ],
  "daily_roots": [
+  {
+   "date": "2026-11-16",
+   "merkle_root": "e37f4c25c9f04ead46422df2d01ded221f5c3be435abb1fc9eb93225f947c708",
+   "built_utc": "2026-11-17T00:00:29Z",
+   "leaves": 3,
+   "excluded": [],
+   "attested_block": 976199,
+   "proof": "proofs/daily/2026-11-16/root.txt.ots"
+  },
   {
    "date": "2026-11-15",
    "merkle_root": "3ae45173eb8478415a28650607dce40dbdc30605fc2c836553a46af908020eb0",
