@@ -1,17 +1,17 @@
 {
  "schema": 2,
- "generated_utc": "2026-11-19T03:39:22Z",
+ "generated_utc": "2026-11-19T07:39:27Z",
  "poller": "A (a datacentre host in the EU; the home poller was retired on 3 Oct 2026)",
  "method": "built from each cycle's cycle.json, witness.json and ship.json in the poller's spool; coverage is the fraction of the last 24 h's minutes with a watcher heartbeat under 10 minutes old; a cadence hold is a manifest first-seen gap over 9 h; source bytes are the responses as served, stored bytes are the gzipped archive objects the shipper recorded; a block is the lowest in the cycle's own proof; a copy marked found later was located in the Wayback index afterwards and hashed against the record (probe P10)",
  "totals": {
   "cycles": 252,
   "complete": 251,
-  "attested": 250,
+  "attested": 251,
   "witness_defects": 24,
   "bytes_raw": 5726111021602,
   "bytes_stored": 2353852405760,
-  "bytes_stored_local": 27922677760,
-  "bytes_stored_cold_only": 2325929728000,
+  "bytes_stored_local": 18613975040,
+  "bytes_stored_cold_only": 2335238430720,
   "files": 2821931,
   "cadence_holds": 23,
   "cadence_unobserved": 3
@@ -48993,8 +48993,18 @@
   ],
   "latest": "cycle_5e45bbf815e0"
  },
- "catalogue_snapshots": 743,
+ "catalogue_snapshots": 745,
  "catalogue": [
+  {
+   "fetched_utc": "2026-11-19T06:04:46Z",
+   "records": 13052,
+   "sha12": "a4beaa6de6b0"
+  },
+  {
+   "fetched_utc": "2026-11-19T04:02:06Z",
+   "records": 13052,
+   "sha12": "3a445691b3a3"
+  },
   {
    "fetched_utc": "2026-11-18T23:56:48Z",
    "records": 13052,
@@ -49044,16 +49054,6 @@
    "fetched_utc": "2026-11-18T03:32:47Z",
    "records": 13026,
    "sha12": "94d16b20d605"
-  },
-  {
-   "fetched_utc": "2026-11-18T01:31:35Z",
-   "records": 13026,
-   "sha12": "229f2c256b9b"
-  },
-  {
-   "fetched_utc": "2026-11-17T23:28:47Z",
-   "records": 13026,
-   "sha12": "27ad8cfc352f"
   }
  ],
  "cycles": [
@@ -49070,7 +49070,7 @@
    "merkle_root": "922492f1d4bed2b64be69176a176b2f1d766c9aaacc6f32e912beeaf981ba0a4",
    "ots": {
     "stamped": true,
-    "attested_block": null,
+    "attested_block": 976521,
     "proof": "proofs/5e45bbf815e0/root.txt.ots"
    },
    "wayback": {
@@ -49344,8 +49344,8 @@
    "storage": {
     "bytes_stored": 9308702720,
     "storage_class": "DEEP_ARCHIVE",
-    "local_files": true,
-    "deleted_locally_utc": null
+    "local_files": false,
+    "deleted_locally_utc": "2026-11-19T05:35:11Z"
    }
   },
   {
