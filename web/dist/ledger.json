@@ -1,6 +1,6 @@
 {
  "schema": 2,
- "generated_utc": "2026-11-22T11:45:11Z",
+ "generated_utc": "2026-11-22T15:45:17Z",
  "poller": "A (a datacentre host in the EU; the home poller was retired on 3 Oct 2026)",
  "method": "built from each cycle's cycle.json, witness.json and ship.json in the poller's spool; coverage is the fraction of the last 24 h's minutes with a watcher heartbeat under 10 minutes old; a cadence hold is a manifest first-seen gap over 9 h; source bytes are the responses as served, stored bytes are the gzipped archive objects the shipper recorded; a block is the lowest in the cycle's own proof; a copy marked found later was located in the Wayback index afterwards and hashed against the record (probe P10)",
  "totals": {
@@ -50841,8 +50841,13 @@
   ],
   "latest": "cycle_53430d300fcb"
  },
- "catalogue_snapshots": 778,
+ "catalogue_snapshots": 779,
  "catalogue": [
+  {
+   "fetched_utc": "2026-11-22T13:43:17Z",
+   "records": 13052,
+   "sha12": "cd1bc88348d6"
+  },
   {
    "fetched_utc": "2026-11-22T11:39:46Z",
    "records": 13052,
@@ -50897,11 +50902,6 @@
    "fetched_utc": "2026-11-21T11:02:46Z",
    "records": 13052,
    "sha12": "8f50dc676b78"
-  },
-  {
-   "fetched_utc": "2026-11-21T09:02:36Z",
-   "records": 13052,
-   "sha12": "847c6635ccc6"
   }
  ],
  "cycles": [
