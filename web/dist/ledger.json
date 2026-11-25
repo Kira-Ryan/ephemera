@@ -1,16 +1,16 @@
 {
  "schema": 2,
- "generated_utc": "2026-11-25T03:49:00Z",
+ "generated_utc": "2026-11-25T07:49:11Z",
  "poller": "A (a datacentre host in the EU; the home poller was retired on 3 Oct 2026)",
  "method": "built from each cycle's cycle.json, witness.json and ship.json in the poller's spool; coverage is the fraction of the last 24 h's minutes with a watcher heartbeat under 10 minutes old; a cadence hold is a manifest first-seen gap over 9 h; source bytes are the responses as served, stored bytes are the gzipped archive objects the shipper recorded; a block is the lowest in the cycle's own proof; a copy marked found later was located in the Wayback index afterwards and hashed against the record (probe P10)",
  "totals": {
   "cycles": 269,
   "complete": 268,
-  "attested": 267,
+  "attested": 268,
   "witness_defects": 21,
   "bytes_raw": 6110057153458,
-  "bytes_stored": 2502357084160,
-  "bytes_stored_local": 18543124480,
+  "bytes_stored": 2511622440960,
+  "bytes_stored_local": 27808481280,
   "bytes_stored_cold_only": 2483813959680,
   "files": 3012347,
   "cadence_holds": 26,
@@ -19,6 +19,218 @@
  "coverage_24h": 1.0,
  "visibility": {
   "reports": [
+   {
+    "cycle": "cycle_90ac7074f766",
+    "first_seen_utc": "2026-11-25T03:25:38Z",
+    "as_of": "2026-11-25T03:57:47Z",
+    "method": "Public element set (Space-Track gp snapshot) propagated with SGP4 (skyfield 1.55, python-sgp4 2.27; TEME to GCRS by Skyfield, taken as J2000) and differenced against the operator-published trajectory (EME2000) at the file's own record epochs every 360 min. Distance in km; components in the operator's radial/in-track/cross-track frame; altitude is geocentric radius minus 6378.137 km; element age is evaluation epoch minus element-set epoch, signed. A comparison beyond 1000 km is counted as lost: the public set is not on the file's trajectory at all. at_file_start takes each satellite once, at the first epoch of its own file, which is the only cut comparable between cycles. Both inputs are predictions; the operator's includes planned trajectory changes the public set cannot know about.",
+    "eval_step_min": 360.0,
+    "snapshot": "20261125T025516Z_89bec6be2aea",
+    "snapshot_fetched_utc": "2026-11-25T02:55:16Z",
+    "snapshot_relation": "before_cycle",
+    "catalogue_sets": 13052,
+    "counts": {
+     "files": 11196,
+     "scored": 11196,
+     "no_public_set": 0,
+     "uncatalogued": 0,
+     "decayed_set": 0,
+     "propagation_failed": 0,
+     "unreadable": 0,
+     "corrupt": 0
+    },
+    "overall": {
+     "n": 143334,
+     "median_km": 15.39,
+     "p90_km": 138.809,
+     "mean_age_h": 49.56,
+     "median_age_h": 49.07,
+     "within_km": {
+      "1": 0.0816,
+      "10": 0.4236,
+      "30": 0.6277
+     },
+     "lost": 2587,
+     "lost_fraction": 0.018
+    },
+    "at_file_start": {
+     "median_km": 2.184,
+     "p90_km": 23.356,
+     "mean_age_h": 13.83,
+     "median_age_h": 8.99,
+     "within_km": {
+      "1": 0.284,
+      "10": 0.8064,
+      "30": 0.9301
+     },
+     "lost": 7,
+     "lost_fraction": 0.0006,
+     "satellites": 11196
+    },
+    "catalogue_age": {
+     "sets": 11196,
+     "mean_h": 21.24,
+     "median_h": 16.56,
+     "p90_h": 47.96,
+     "over_72h": 94
+    },
+    "by_age": [
+     {
+      "bin": "set newer than epoch",
+      "n": 1694,
+      "median_km": 1.586,
+      "p90_km": 21.911,
+      "mean_age_h": -1.69,
+      "median_age_h": -1.47,
+      "within_km": {
+       "1": 0.3672,
+       "10": 0.853,
+       "30": 0.938
+      },
+      "lost": 0,
+      "lost_fraction": 0.0
+     },
+     {
+      "bin": "0-6 h",
+      "n": 4224,
+      "median_km": 1.148,
+      "p90_km": 6.873,
+      "mean_age_h": 3.51,
+      "median_age_h": 3.84,
+      "within_km": {
+       "1": 0.4545,
+       "10": 0.9344,
+       "30": 0.9796
+      },
+      "lost": 0,
+      "lost_fraction": 0.0
+     },
+     {
+      "bin": "6-12 h",
+      "n": 7087,
+      "median_km": 2.191,
+      "p90_km": 11.87,
+      "mean_age_h": 9.35,
+      "median_age_h": 9.54,
+      "within_km": {
+       "1": 0.2603,
+       "10": 0.8774,
+       "30": 0.9773
+      },
+      "lost": 1,
+      "lost_fraction": 0.0001
+     },
+     {
+      "bin": "12-24 h",
+      "n": 17415,
+      "median_km": 4.613,
+      "p90_km": 28.183,
+      "mean_age_h": 18.26,
+      "median_age_h": 18.32,
+      "within_km": {
+       "1": 0.1398,
+       "10": 0.7326,
+       "30": 0.9045
+      },
+      "lost": 4,
+      "lost_fraction": 0.0002
+     },
+     {
+      "bin": "24-48 h",
+      "n": 39718,
+      "median_km": 13.645,
+      "p90_km": 117.566,
+      "mean_age_h": 36.42,
+      "median_age_h": 36.72,
+      "within_km": {
+       "1": 0.0666,
+       "10": 0.4183,
+       "30": 0.743
+      },
+      "lost": 241,
+      "lost_fraction": 0.0061
+     },
+     {
+      "bin": "48-72 h",
+      "n": 42582,
+      "median_km": 33.523,
+      "p90_km": 326.995,
+      "mean_age_h": 60.16,
+      "median_age_h": 60.21,
+      "within_km": {
+       "1": 0.0362,
+       "10": 0.2815,
+       "30": 0.4647
+      },
+      "lost": 1613,
+      "lost_fraction": 0.0379
+     },
+     {
+      "bin": "over 72 h",
+      "n": 30614,
+      "median_km": 51.899,
+      "p90_km": 173.683,
+      "mean_age_h": 88.18,
+      "median_age_h": 83.09,
+      "within_km": {
+       "1": 0.0224,
+       "10": 0.2531,
+       "30": 0.4009
+      },
+      "lost": 728,
+      "lost_fraction": 0.0238
+     }
+    ],
+    "by_shell": [
+     {
+      "bin": "under 400 km",
+      "n": 14560,
+      "median_km": 59.731,
+      "p90_km": 568.527,
+      "mean_age_h": 40.86,
+      "median_age_h": 39.53,
+      "within_km": {
+       "1": 0.0913,
+       "10": 0.3105,
+       "30": 0.4231
+      },
+      "lost": 504,
+      "lost_fraction": 0.0346
+     },
+     {
+      "bin": "400-500 km",
+      "n": 126520,
+      "median_km": 14.1,
+      "p90_km": 100.926,
+      "mean_age_h": 50.63,
+      "median_age_h": 50.32,
+      "within_km": {
+       "1": 0.0799,
+       "10": 0.4362,
+       "30": 0.6505
+      },
+      "lost": 1964,
+      "lost_fraction": 0.0155
+     },
+     {
+      "bin": "500-600 km",
+      "n": 2254,
+      "median_km": 13.574,
+      "p90_km": 653.372,
+      "mean_age_h": 45.69,
+      "median_age_h": 43.63,
+      "within_km": {
+       "1": 0.1145,
+       "10": 0.4485,
+       "30": 0.6695
+      },
+      "lost": 119,
+      "lost_fraction": 0.0528
+     }
+    ],
+    "pack": "globe_90ac7074f766.json",
+    "pack_url": "https://packs.ephemera.space/globe/90ac7074f766.json"
+   },
    {
     "cycle": "cycle_c565a01dea36",
     "first_seen_utc": "2026-11-24T19:11:51Z",
@@ -52323,10 +52535,20 @@
     "pack_url": "https://packs.ephemera.space/globe/513b92c4683e.json"
    }
   ],
-  "latest": "cycle_c565a01dea36"
+  "latest": "cycle_90ac7074f766"
  },
- "catalogue_snapshots": 808,
+ "catalogue_snapshots": 810,
  "catalogue": [
+  {
+   "fetched_utc": "2026-11-25T07:00:26Z",
+   "records": 13052,
+   "sha12": "924c328a73c2"
+  },
+  {
+   "fetched_utc": "2026-11-25T04:55:46Z",
+   "records": 13052,
+   "sha12": "8efd13227c0f"
+  },
   {
    "fetched_utc": "2026-11-25T02:55:16Z",
    "records": 13052,
@@ -52376,16 +52598,6 @@
    "fetched_utc": "2026-11-24T08:35:46Z",
    "records": 13052,
    "sha12": "c00f258a63a7"
-  },
-  {
-   "fetched_utc": "2026-11-24T06:33:57Z",
-   "records": 13052,
-   "sha12": "b84f4d0310fd"
-  },
-  {
-   "fetched_utc": "2026-11-24T04:31:47Z",
-   "records": 13052,
-   "sha12": "2d6d19744136"
   }
  ],
  "cycles": [
@@ -52402,7 +52614,7 @@
    "merkle_root": "b962223eb444f19d4b4061d8f6156d8198433b062bc13ffcc42dcf27f5fa3a75",
    "ots": {
     "stamped": true,
-    "attested_block": null,
+    "attested_block": 977462,
     "proof": "proofs/90ac7074f766/root.txt.ots"
    },
    "wayback": {
@@ -52480,8 +52692,8 @@
     ]
    },
    "storage": {
-    "bytes_stored": 0,
-    "storage_class": null,
+    "bytes_stored": 9265356800,
+    "storage_class": "DEEP_ARCHIVE",
     "local_files": true,
     "deleted_locally_utc": null
    }
