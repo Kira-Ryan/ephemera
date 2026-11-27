@@ -1,12 +1,12 @@
 {
  "schema": 2,
- "generated_utc": "2026-11-26T23:51:42Z",
+ "generated_utc": "2026-11-27T03:52:06Z",
  "poller": "A (a datacentre host in the EU; the home poller was retired on 3 Oct 2026)",
  "method": "built from each cycle's cycle.json, witness.json and ship.json in the poller's spool; coverage is the fraction of the last 24 h's minutes with a watcher heartbeat under 10 minutes old; a cadence hold is a manifest first-seen gap over 9 h; source bytes are the responses as served, stored bytes are the gzipped archive objects the shipper recorded; a block is the lowest in the cycle's own proof; a copy marked found later was located in the Wayback index afterwards and hashed against the record (probe P10)",
  "totals": {
   "cycles": 275,
   "complete": 274,
-  "attested": 273,
+  "attested": 274,
   "witness_defects": 21,
   "bytes_raw": 6245354830858,
   "bytes_stored": 2567227904000,
@@ -53749,8 +53749,18 @@
   ],
   "latest": "cycle_e39dd43608c0"
  },
- "catalogue_snapshots": 828,
+ "catalogue_snapshots": 830,
  "catalogue": [
+  {
+   "fetched_utc": "2026-11-27T01:57:38Z",
+   "records": 13052,
+   "sha12": "e029ed52f751"
+  },
+  {
+   "fetched_utc": "2026-11-26T23:57:35Z",
+   "records": 13052,
+   "sha12": "b52c644c8738"
+  },
   {
    "fetched_utc": "2026-11-26T21:53:36Z",
    "records": 13052,
@@ -53800,16 +53810,6 @@
    "fetched_utc": "2026-11-26T03:29:26Z",
    "records": 13052,
    "sha12": "4aefe28f621e"
-  },
-  {
-   "fetched_utc": "2026-11-26T01:26:29Z",
-   "records": 13052,
-   "sha12": "6940c6d95e77"
-  },
-  {
-   "fetched_utc": "2026-11-25T23:21:56Z",
-   "records": 13052,
-   "sha12": "95385fd48905"
   }
  ],
  "cycles": [
@@ -53826,7 +53826,7 @@
    "merkle_root": "99016f6030126887ffc6b5c974aaa0f4474068e387910606ad205dd1d2898c68",
    "ots": {
     "stamped": true,
-    "attested_block": null,
+    "attested_block": 977731,
     "proof": "proofs/e39dd43608c0/root.txt.ots"
    },
    "wayback": {
@@ -80279,6 +80279,15 @@
   }
  ],
  "daily_roots": [
+  {
+   "date": "2026-11-26",
+   "merkle_root": "51a7ca10f3e54df5bed91ece082f143ced9c520abefe58aa745c74df659dc46a",
+   "built_utc": "2026-11-27T00:02:35Z",
+   "leaves": 3,
+   "excluded": [],
+   "attested_block": 977735,
+   "proof": "proofs/daily/2026-11-26/root.txt.ots"
+  },
   {
    "date": "2026-11-25",
    "merkle_root": "9b56f6334f6b887765dc1055554d9418600cd06d06fb356e82cb00f40e09a2d1",
