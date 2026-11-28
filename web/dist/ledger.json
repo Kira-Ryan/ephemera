@@ -1,17 +1,17 @@
 {
  "schema": 2,
- "generated_utc": "2026-11-28T11:53:22Z",
+ "generated_utc": "2026-11-28T15:53:35Z",
  "poller": "A (a datacentre host in the EU; the home poller was retired on 3 Oct 2026)",
  "method": "built from each cycle's cycle.json, witness.json and ship.json in the poller's spool; coverage is the fraction of the last 24 h's minutes with a watcher heartbeat under 10 minutes old; a cadence hold is a manifest first-seen gap over 9 h; source bytes are the responses as served, stored bytes are the gzipped archive objects the shipper recorded; a block is the lowest in the cycle's own proof; a copy marked found later was located in the Wayback index afterwards and hashed against the record (probe P10)",
  "totals": {
-  "cycles": 279,
+  "cycles": 280,
   "complete": 278,
   "attested": 278,
   "witness_defects": 21,
   "bytes_raw": 6335552491814,
   "bytes_stored": 2604288102400,
-  "bytes_stored_local": 27796817920,
-  "bytes_stored_cold_only": 2576491284480,
+  "bytes_stored_local": 18536540160,
+  "bytes_stored_cold_only": 2585751562240,
   "files": 3124253,
   "cadence_holds": 26,
   "cadence_unobserved": 3
@@ -54567,8 +54567,18 @@
   ],
   "latest": "cycle_b8bf0fb0e8e1"
  },
- "catalogue_snapshots": 844,
+ "catalogue_snapshots": 846,
  "catalogue": [
+  {
+   "fetched_utc": "2026-11-28T14:48:33Z",
+   "records": 13052,
+   "sha12": "5a64cac3cabd"
+  },
+  {
+   "fetched_utc": "2026-11-28T12:45:17Z",
+   "records": 13052,
+   "sha12": "4e6e6cb10046"
+  },
   {
    "fetched_utc": "2026-11-28T10:40:12Z",
    "records": 13052,
@@ -54618,19 +54628,45 @@
    "fetched_utc": "2026-11-27T14:14:06Z",
    "records": 13052,
    "sha12": "ce550135c623"
-  },
-  {
-   "fetched_utc": "2026-11-27T12:13:45Z",
-   "records": 13052,
-   "sha12": "df3e90b2c6d1"
-  },
-  {
-   "fetched_utc": "2026-11-27T10:09:16Z",
-   "records": 13052,
-   "sha12": "0e6b359e8622"
   }
  ],
  "cycles": [
+  {
+   "cycle": "cycle_c956fa1951fe",
+   "manifest_sha256": "c956fa1951fe01fde2bd4b2d57c1f311f316ee92ddefa174850dc2a3fcde7c0e",
+   "first_seen_utc": "2026-11-28T15:47:08Z",
+   "status": "in-progress",
+   "files_listed": 11184,
+   "files_recorded": 0,
+   "files_failed": 0,
+   "bytes_raw": 0,
+   "wall_seconds": null,
+   "merkle_root": null,
+   "ots": {
+    "stamped": false,
+    "attested_block": null,
+    "proof": null
+   },
+   "wayback": {
+    "attempted": false,
+    "manifest_verified": false,
+    "manifest_captured": false,
+    "manifest_error": null,
+    "samples_verified": 0,
+    "samples_total": 0,
+    "losses": 0,
+    "skipped": null,
+    "manifest_copy_url": null,
+    "manifest_copy_sha256": null,
+    "samples": []
+   },
+   "storage": {
+    "bytes_stored": 0,
+    "storage_class": null,
+    "local_files": true,
+    "deleted_locally_utc": null
+   }
+  },
   {
    "cycle": "cycle_b8bf0fb0e8e1",
    "manifest_sha256": "b8bf0fb0e8e12c5afdcc5f3a56105838850c53637a1ea1c2c245614b71c17f8e",
@@ -54918,8 +54954,8 @@
    "storage": {
     "bytes_stored": 9260277760,
     "storage_class": "DEEP_ARCHIVE",
-    "local_files": true,
-    "deleted_locally_utc": null
+    "local_files": false,
+    "deleted_locally_utc": "2026-11-28T15:34:05Z"
    }
   },
   {
